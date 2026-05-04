@@ -22,6 +22,8 @@ import com.example.passedpath.feature.placebookmark.presentation.viewmodel.Place
 import com.example.passedpath.feature.placebookmark.presentation.viewmodel.PlaceBookmarkMapMarkerViewModelFactory
 import com.example.passedpath.feature.permission.presentation.policy.PermissionActionTarget
 import com.example.passedpath.feature.permission.presentation.policy.resolvePermissionActionTarget
+import com.example.passedpath.feature.summary.presentation.viewmodel.DaySummaryViewModel
+import com.example.passedpath.feature.summary.presentation.viewmodel.DaySummaryViewModelFactory
 import com.example.passedpath.util.AppSettingsNavigator
 
 @Composable
@@ -47,6 +49,10 @@ fun MainRoute(
         )
     )
     val dayNoteUiState by dayNoteViewModel.uiState.collectAsStateWithLifecycle()
+    val daySummaryViewModel: DaySummaryViewModel = viewModel(
+        factory = DaySummaryViewModelFactory(appContainer = appContainer)
+    )
+    val daySummaryUiState by daySummaryViewModel.uiState.collectAsStateWithLifecycle()
     val placeViewModel: PlaceViewModel = viewModel(
         factory = PlaceViewModelFactory(
             appContainer = appContainer,
@@ -157,6 +163,7 @@ fun MainRoute(
     MainScreen(
         uiState = uiState,
         dayNoteUiState = dayNoteUiState,
+        daySummaryUiState = daySummaryUiState,
         placeUiState = placeUiState,
         markerPlaces = markerPlaces,
         bookmarkMarkers = placeBookmarkMapMarkerUiState.bookmarkPlaces,
@@ -168,6 +175,15 @@ fun MainRoute(
         onDayNoteTitleChanged = dayNoteViewModel::updateTitle,
         onDayNoteMemoChanged = dayNoteViewModel::updateMemo,
         onDayNoteSaveClick = dayNoteViewModel::submitDayNote,
+        onDaySummaryLoadRequest = { dateKey ->
+            daySummaryViewModel.loadSummary(dateKey = dateKey)
+        },
+        onDaySummaryRetryClick = {
+            daySummaryViewModel.loadSummary(
+                dateKey = uiState.selectedDateKey,
+                forceRefresh = true
+            )
+        },
         onDayNoteFeedbackDismissed = dayNoteViewModel::consumeFeedback,
         onPlaceListRefreshRequested = placeViewModel::fetchVisitedPlaces,
         onNavigateToAddPlace = onNavigateToAddPlace,

@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -87,7 +88,8 @@ import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.input.BaseInputButton
 import com.example.passedpath.ui.component.input.BaseInputField
-import com.example.passedpath.ui.component.loading.BaseLoadingIndicator
+import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
@@ -95,6 +97,7 @@ import com.example.passedpath.ui.component.toast.ToastOverlayItem
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray200
 import com.example.passedpath.ui.theme.Gray400
+import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green50
@@ -470,8 +473,15 @@ private fun PlaceBookmarkListContent(
 
     when {
         uiState.isLoading && !uiState.hasLoaded -> {
-            Box(modifier = modifier, contentAlignment = Alignment.Center) {
-                BaseLoadingIndicator()
+            Column(modifier = modifier) {
+                PlaceBookmarkListDivider(visible = false)
+                PlaceBookmarkLoadingSkeletonList(
+                    placeCount = uiState.placeCount,
+                    onAddPlaceBookmarkClick = onAddPlaceBookmarkClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
             }
         }
 
@@ -502,19 +512,10 @@ private fun PlaceBookmarkListContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item(key = "header") {
-                        BaseButton(
-                            text = stringResource(R.string.place_bookmark_add_button),
-                            onClick = onAddPlaceBookmarkClick,
-                            border = BorderStroke(width = 1.dp, color = Green100),
-                            containerColor = Green50,
-                            contentColor = Green500,
-                            leadingIconResId = R.drawable.ic_plus,
-                            textFontSize = 16.sp,
-                            textFontWeight = FontWeight.SemiBold
+                        PlaceBookmarkListHeader(
+                            placeCount = uiState.placeCount,
+                            onAddPlaceBookmarkClick = onAddPlaceBookmarkClick
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        PlaceBookmarkCountText(placeCount = uiState.placeCount)
-                        Spacer(modifier = Modifier.height(4.dp))
                     }
 
                     if (uiState.bookmarkPlaces.isEmpty()) {
@@ -557,6 +558,114 @@ private fun PlaceBookmarkListContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PlaceBookmarkLoadingSkeletonList(
+    placeCount: Int,
+    onAddPlaceBookmarkClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val skeletonBrush = rememberBaseSkeletonBrush()
+
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 16.dp,
+            end = 16.dp,
+            bottom = 40.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item(key = "bookmark_loading_header") {
+            PlaceBookmarkListHeader(
+                placeCount = placeCount,
+                onAddPlaceBookmarkClick = onAddPlaceBookmarkClick
+            )
+        }
+
+        repeat(3) { index ->
+            item(key = "bookmark_loading_card_$index") {
+                PlaceBookmarkCardSkeleton(shimmerBrush = skeletonBrush)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaceBookmarkListHeader(
+    placeCount: Int,
+    onAddPlaceBookmarkClick: () -> Unit
+) {
+    BaseButton(
+        text = stringResource(R.string.place_bookmark_add_button),
+        onClick = onAddPlaceBookmarkClick,
+        border = BorderStroke(width = 1.dp, color = Green100),
+        containerColor = Green50,
+        contentColor = Green500,
+        leadingIconResId = R.drawable.ic_plus,
+        textFontSize = 16.sp,
+        textFontWeight = FontWeight.SemiBold
+    )
+    Spacer(modifier = Modifier.height(24.dp))
+    PlaceBookmarkCountText(placeCount = placeCount)
+    Spacer(modifier = Modifier.height(4.dp))
+}
+
+@Composable
+private fun PlaceBookmarkCardSkeleton(
+    shimmerBrush: Brush,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = Gray50,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(
+                PaddingValues(
+                    start = 20.dp,
+                    top = 14.dp,
+                    end = 12.dp,
+                    bottom = 14.dp
+                )
+            ),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape
+        )
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.58f)
+                    .height(16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.82f)
+                    .height(13.dp)
+            )
+        }
+
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
+            modifier = Modifier.size(36.dp),
+            shape = CircleShape
+        )
     }
 }
 

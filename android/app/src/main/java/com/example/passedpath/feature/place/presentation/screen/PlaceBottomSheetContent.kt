@@ -1,12 +1,7 @@
 package com.example.passedpath.feature.place.presentation.screen
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -48,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
@@ -72,9 +66,12 @@ import com.example.passedpath.feature.place.presentation.component.PlaceCard
 import com.example.passedpath.feature.place.presentation.state.PlaceListUiState
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.button.BaseButtonVariant
+import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray400
+import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray700
 import com.example.passedpath.ui.theme.Green100
@@ -442,7 +439,7 @@ private fun StalePlaceSection(
 
 @Composable
 private fun PlaceLoadingSkeletonList() {
-    val shimmerBrush = rememberPlaceSkeletonBrush()
+    val shimmerBrush = rememberBaseSkeletonBrush()
 
     Column(verticalArrangement = Arrangement.spacedBy(PlaceTimelineItemSpacing)) {
         repeat(2) { index ->
@@ -487,26 +484,26 @@ private fun SkeletonPlaceCard(
         modifier = modifier
             .height(PlaceTimelineCardHeight)
             .background(
-                brush = shimmerBrush,
+                color = Gray50,
                 shape = RoundedCornerShape(18.dp)
             )
             .padding(start = 16.dp, top = 15.dp, end = 16.dp, bottom = 15.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        SkeletonBlock(
-            shimmerBrush = shimmerBrush,
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
             modifier = Modifier
                 .fillMaxWidth(0.46f)
                 .height(14.dp)
         )
-        SkeletonBlock(
-            shimmerBrush = shimmerBrush,
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
             modifier = Modifier
                 .fillMaxWidth(0.78f)
                 .height(12.dp)
         )
-        SkeletonBlock(
-            shimmerBrush = shimmerBrush,
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
             modifier = Modifier
                 .width(96.dp)
                 .height(10.dp)
@@ -560,46 +557,18 @@ private fun SkeletonTimelineDecoration(
             modifier = Modifier
                 .padding(top = PlaceTimelinePointCenterY - 8.dp)
                 .size(16.dp)
-                .background(brush = shimmerBrush, shape = RoundedCornerShape(8.dp))
-        )
+                .background(
+                    color = Gray50,
+                    shape = RoundedCornerShape(8.dp)
+                )
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier.matchParentSize(),
+                shape = RoundedCornerShape(8.dp)
+            )
+        }
     }
-}
-
-@Composable
-private fun SkeletonBlock(
-    shimmerBrush: Brush,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier.background(
-            brush = shimmerBrush,
-            shape = RoundedCornerShape(8.dp)
-        )
-    )
-}
-
-@Composable
-private fun rememberPlaceSkeletonBrush(): Brush {
-    val transition = rememberInfiniteTransition(label = "place_skeleton")
-    val shimmerOffset by transition.animateFloat(
-        initialValue = -320f,
-        targetValue = 720f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1_250, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "place_skeleton_offset"
-    )
-
-    return Brush.linearGradient(
-        colors = listOf(
-            Gray100,
-            Color.White.copy(alpha = 0.88f),
-            Gray100
-        ),
-        start = Offset(shimmerOffset, shimmerOffset),
-        end = Offset(shimmerOffset + 220f, shimmerOffset + 220f)
-    )
 }
 
 @Composable
