@@ -23,7 +23,7 @@ internal fun resolveBottomSheetTabSelection(
 
     return BottomSheetTabSelectionDecision(
         requestedSheetValue = requestedSheetValue,
-        selectedPlaceId = if (selectedTab == MainBottomSheetTab.DAYNOTE) null else selectedPlaceId,
+        selectedPlaceId = if (selectedTab == MainBottomSheetTab.PLACE) selectedPlaceId else null,
         shouldRefreshPlaces = selectedTab == MainBottomSheetTab.PLACE
     )
 }

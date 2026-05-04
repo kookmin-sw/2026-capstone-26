@@ -109,6 +109,25 @@ class MainScreenInteractionPolicyTest {
     }
 
     @Test
+    fun `summary tab selection opens hidden sheet to middle clears selected place and keeps refresh off`() {
+        val initialState = MainScreenLocalUiState(
+            selectedBottomSheetTab = MainBottomSheetTab.PLACE,
+            bottomSheetValue = MainBottomSheetValue.HIDDEN,
+            selectedPlaceId = 9L
+        )
+
+        val result = reduceForBottomSheetTabSelection(
+            state = initialState,
+            selectedTab = MainBottomSheetTab.SUMMARY
+        )
+
+        assertEquals(MainBottomSheetTab.SUMMARY, result.state.selectedBottomSheetTab)
+        assertEquals(MainBottomSheetValue.MIDDLE, result.state.requestedSheetValue)
+        assertNull(result.state.selectedPlaceId)
+        assertFalse(result.shouldRefreshPlaces)
+    }
+
+    @Test
     fun `sheet value change keeps requested command until command completion callback`() {
         val initialState = MainScreenLocalUiState(
             bottomSheetValue = MainBottomSheetValue.HIDDEN,
