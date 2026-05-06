@@ -27,6 +27,7 @@ import com.example.passedpath.R
 import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
+import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green500
 import com.example.passedpath.ui.theme.PassedPathTheme
 
@@ -39,9 +40,9 @@ fun DaySummaryMetricCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(110.dp)
-            .background(color = Gray50, shape = RoundedCornerShape(18.dp))
-            .padding(horizontal = 22.dp),
+            .height(98.dp)
+            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -61,7 +62,7 @@ fun DaySummaryMetricCard(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge,
-                color = Black,
+                color = Gray900,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
