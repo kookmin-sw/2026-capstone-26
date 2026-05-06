@@ -1,11 +1,11 @@
 package backend.capstone.domain.region.service;
 
+import backend.capstone.domain.region.exception.RegionSeedException;
 import backend.capstone.domain.region.service.dto.RegionSeedRow;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,7 +16,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class RegionSeedExcelReader {
 
     private static final String SEED_PATH = "seed/region_seed.xlsx";
@@ -58,13 +57,13 @@ public class RegionSeedExcelReader {
 
             return rows;
         } catch (IOException e) {
-            throw new IllegalStateException("region seed 엑셀 파일을 읽을 수 없습니다.", e);
+            throw new RegionSeedException("region seed 엑셀 파일을 읽을 수 없습니다.", e);
         }
     }
 
     private void validateHeader(Row headerRow) {
         if (headerRow == null) {
-            throw new IllegalStateException("region seed 엑셀 헤더가 비어 있습니다.");
+            throw new RegionSeedException("region seed 엑셀 헤더가 비어 있습니다.");
         }
 
         DataFormatter formatter = new DataFormatter();
@@ -79,7 +78,7 @@ public class RegionSeedExcelReader {
             || !"시군구명".equals(sigunguNameHeader)
             || !"읍면동명".equals(eupMyeonDongHeader)
             || !"동리명".equals(dongRiHeader)) {
-            throw new IllegalStateException("region seed 엑셀 헤더 형식이 예상과 다릅니다.");
+            throw new RegionSeedException("region seed 엑셀 헤더 형식이 예상과 다릅니다.");
         }
     }
 
