@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,11 @@ import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 
 @Composable
-fun rememberBaseSkeletonBrush(): Brush {
+fun rememberBaseSkeletonBrush(
+    edgeColor: Color = Gray100,
+    baseColor: Color = Gray50,
+    highlightColor: Color = White.copy(alpha = 0.62f)
+): Brush {
     val transition = rememberInfiniteTransition(label = "base_skeleton")
     val shimmerOffset by transition.animateFloat(
         initialValue = -260f,
@@ -43,11 +48,11 @@ fun rememberBaseSkeletonBrush(): Brush {
 
     return Brush.linearGradient(
         colors = listOf(
-            Gray100,
-            Gray50,
-            White.copy(alpha = 0.62f),
-            Gray50,
-            Gray100
+            edgeColor,
+            baseColor,
+            highlightColor,
+            baseColor,
+            edgeColor
         ),
         start = Offset(shimmerOffset, 0f),
         end = Offset(shimmerOffset + 180f, 0f)

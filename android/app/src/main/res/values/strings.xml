@@ -170,6 +170,7 @@
     <string name="debug_panel_close">닫기</string>
     <string name="debug_panel_date">선택 날짜: %1$s</string>
     <string name="debug_panel_route">경로 모드: %1$s / 소스: %2$s / 상태: %3$s</string>
+    <string name="debug_panel_point_count">Point 수: %1$d</string>
     <string name="debug_panel_permission">권한: %1$s / GPS: %2$s</string>
     <string name="debug_panel_tracking">서비스: %1$s / 사용자 의도: %2$s</string>
     <string name="debug_panel_last_event">마지막 경로 정보: %1$s</string>
