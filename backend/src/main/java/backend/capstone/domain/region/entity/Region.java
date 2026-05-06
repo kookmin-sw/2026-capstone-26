@@ -40,18 +40,13 @@ public class Region extends BaseTimeEntity {
     private String sigunguName;
 
     @Column(name = "legal_dong_name", nullable = false, length = 50)
-    private String dongName;
-
-    @Column(name = "full_name", nullable = false, length = 200)
-    private String fullName;
+    private String dongName; //읍면동
 
     @Builder
-    public Region(String legalDongCode, String sidoName, String sigunguName, String dongName,
-        String fullName) {
+    public Region(String legalDongCode, String sidoName, String sigunguName, String dongName) {
         this.legalDongCode = legalDongCode;
         this.sidoName = sidoName;
         this.sigunguName = sigunguName;
         this.dongName = dongName;
-        this.fullName = fullName;
     }
 }
