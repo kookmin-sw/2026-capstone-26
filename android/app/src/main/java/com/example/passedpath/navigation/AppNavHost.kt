@@ -26,10 +26,15 @@ import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.friends.presentation.screen.FriendsRoute
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
+import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
 import com.example.passedpath.feature.main.presentation.screen.PlaceCreatedEvent
 import com.example.passedpath.feature.mypage.presentation.screen.MyPageRoute
 import com.example.passedpath.feature.permission.presentation.screen.LocationPermissionIntroRoute
+import com.example.passedpath.feature.place.domain.model.PlaceSearchResult
 import com.example.passedpath.feature.place.presentation.screen.AddPlaceScreen
+import com.example.passedpath.feature.place.presentation.screen.PlaceBookmarkSearchScreen
+import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkRoute
+import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkSearchResultEvent
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
 
@@ -45,6 +50,10 @@ fun AppNavHost(
     var mainTabReselectionEvent by remember { mutableStateOf(0) }
     var placeCreatedEvent by remember { mutableStateOf<PlaceCreatedEvent?>(null) }
     var placeCreatedEventId by remember { mutableStateOf(0) }
+    var placeBookmarkChangedEvent by remember { mutableStateOf<PlaceBookmarkChangedEvent?>(null) }
+    var placeBookmarkChangedEventId by remember { mutableStateOf(0) }
+    var placeBookmarkSearchResultEvent by remember { mutableStateOf<PlaceBookmarkSearchResultEvent?>(null) }
+    var placeBookmarkSearchResultEventId by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         AuthEvent.logoutEvent.collect { event ->
@@ -64,9 +73,21 @@ fun AppNavHost(
             appEntryViewModel = appEntryViewModel,
             mainTabReselectionEvent = mainTabReselectionEvent,
             placeCreatedEvent = placeCreatedEvent,
+            placeBookmarkChangedEvent = placeBookmarkChangedEvent,
+            placeBookmarkSearchResultEvent = placeBookmarkSearchResultEvent,
             onPlaceCreatedEventConsumed = { eventId ->
                 if (placeCreatedEvent?.id == eventId) {
                     placeCreatedEvent = null
+                }
+            },
+            onPlaceBookmarkSearchResultEventConsumed = { eventId ->
+                if (placeBookmarkSearchResultEvent?.id == eventId) {
+                    placeBookmarkSearchResultEvent = null
+                }
+            },
+            onPlaceBookmarkChangedEventConsumed = { eventId ->
+                if (placeBookmarkChangedEvent?.id == eventId) {
+                    placeBookmarkChangedEvent = null
                 }
             },
             onLoginToastMessage = { message ->
@@ -83,6 +104,20 @@ fun AppNavHost(
                 placeCreatedEvent = PlaceCreatedEvent(
                     id = placeCreatedEventId,
                     placeId = placeId
+                )
+            },
+            onPlaceBookmarkSearchResult = { place ->
+                placeBookmarkSearchResultEventId++
+                placeBookmarkSearchResultEvent = PlaceBookmarkSearchResultEvent(
+                    id = placeBookmarkSearchResultEventId,
+                    place = place
+                )
+            },
+            onPlaceBookmarkChanged = { bookmarkPlaceId ->
+                placeBookmarkChangedEventId++
+                placeBookmarkChangedEvent = PlaceBookmarkChangedEvent(
+                    id = placeBookmarkChangedEventId,
+                    bookmarkPlaceId = bookmarkPlaceId
                 )
             },
             modifier = Modifier.fillMaxSize()
@@ -118,10 +153,16 @@ private fun AppNavigationGraph(
     appEntryViewModel: AppEntryViewModel,
     mainTabReselectionEvent: Int,
     placeCreatedEvent: PlaceCreatedEvent?,
+    placeBookmarkChangedEvent: PlaceBookmarkChangedEvent?,
+    placeBookmarkSearchResultEvent: PlaceBookmarkSearchResultEvent?,
     onPlaceCreatedEventConsumed: (Int) -> Unit,
+    onPlaceBookmarkSearchResultEventConsumed: (Int) -> Unit,
+    onPlaceBookmarkChangedEventConsumed: (Int) -> Unit,
     onLoginToastMessage: (String) -> Unit,
     onBottomBarReselected: (String) -> Unit,
     onPlaceCreated: (Long) -> Unit,
+    onPlaceBookmarkSearchResult: (PlaceSearchResult) -> Unit,
+    onPlaceBookmarkChanged: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -183,9 +224,14 @@ private fun AppNavigationGraph(
                     MainRoute(
                         mainTabReselectionEvent = mainTabReselectionEvent,
                         placeCreatedEvent = placeCreatedEvent,
+                        placeBookmarkChangedEvent = placeBookmarkChangedEvent,
                         onPlaceCreatedEventConsumed = onPlaceCreatedEventConsumed,
+                        onPlaceBookmarkChangedEventConsumed = onPlaceBookmarkChangedEventConsumed,
                         onNavigateToAddPlace = { dateKey ->
                             navController.navigate(NavRoute.addPlace(dateKey))
+                        },
+                        onNavigateToPlaceBookmarks = {
+                            navController.navigate(NavRoute.PLACE_BOOKMARKS)
                         }
                     )
                 }
@@ -213,6 +259,40 @@ private fun AppNavigationGraph(
                 },
                 onPlaceCreated = { placeId ->
                     onPlaceCreated(placeId)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.PLACE_BOOKMARKS,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            PlaceBookmarkRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNavigateToPlaceBookmarkSearch = {
+                    navController.navigate(NavRoute.PLACE_BOOKMARK_SEARCH)
+                },
+                searchResultEvent = placeBookmarkSearchResultEvent,
+                onSearchResultEventConsumed = onPlaceBookmarkSearchResultEventConsumed,
+                onPlaceBookmarkChanged = onPlaceBookmarkChanged
+            )
+        }
+
+        composable(
+            route = NavRoute.PLACE_BOOKMARK_SEARCH,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            PlaceBookmarkSearchScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onPlaceSelected = { place ->
+                    onPlaceBookmarkSearchResult(place)
                     navController.popBackStack()
                 }
             )

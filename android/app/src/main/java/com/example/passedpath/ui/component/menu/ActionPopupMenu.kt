@@ -36,7 +36,7 @@ private val MenuMinWidth = 108.dp
 private val MenuMaxWidth = 160.dp
 private val MenuHorizontalPadding = 12.dp
 private val MenuVerticalPadding = 8.dp
-private val MenuIconSize = 20.dp
+private val MenuIconSize = 16.dp
 private val MenuItemSpacing = 6.dp
 private val MenuItemTextStyle = TextStyle(fontSize = 12.sp)
 
@@ -126,6 +126,7 @@ private fun ActionPopupMenuItem(
             color = Gray500,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            fontSize = 12.sp
         )
     }
 }
