@@ -92,6 +92,7 @@ import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
+import com.example.passedpath.ui.component.place.PlaceNameMarker
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
 import com.example.passedpath.ui.theme.Gray100
@@ -378,6 +379,9 @@ private fun PlaceBookmarkScreen(
                         R.string.place_bookmark_add_submit
                     }
                 ),
+                placeNameMarker = originalPlaceName.takeIf {
+                    isEditForm && it.isNotBlank()
+                },
                 placeName = formPlaceName,
                 roadAddress = formRoadAddress,
                 selectedType = selectedType,
@@ -811,7 +815,7 @@ private fun PlaceBookmarkDeleteConfirmDialog(
         dismissText = stringResource(R.string.place_bookmark_delete_cancel),
         confirmText = stringResource(R.string.place_bookmark_delete_confirm),
         topContent = {
-            PlaceBookmarkNamePill(placeName = placeName)
+            PlaceNameMarker(placeName = placeName)
         },
         onDismiss = onDismiss,
         onConfirm = onConfirm
@@ -819,33 +823,10 @@ private fun PlaceBookmarkDeleteConfirmDialog(
 }
 
 @Composable
-private fun PlaceBookmarkNamePill(
-    placeName: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(50))
-            .background(Green50)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = placeName,
-            color = Green500,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
 private fun PlaceBookmarkFormOverlay(
     title: String,
     submitText: String,
+    placeNameMarker: String?,
     placeName: String,
     roadAddress: String,
     selectedType: BookmarkPlaceType,
@@ -876,6 +857,7 @@ private fun PlaceBookmarkFormOverlay(
         PlaceBookmarkFormBottomSheet(
             title = title,
             submitText = submitText,
+            placeNameMarker = placeNameMarker,
             placeName = placeName,
             roadAddress = roadAddress,
             selectedType = selectedType,
@@ -955,6 +937,7 @@ private fun PlaceBookmarkFormSearchOverlay(
 private fun PlaceBookmarkFormBottomSheet(
     title: String,
     submitText: String,
+    placeNameMarker: String?,
     placeName: String,
     roadAddress: String,
     selectedType: BookmarkPlaceType,
@@ -972,6 +955,7 @@ private fun PlaceBookmarkFormBottomSheet(
     val sheetInteractionSource = remember { MutableInteractionSource() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val hasPlaceNameMarker = !placeNameMarker.isNullOrBlank()
 
     fun clearSheetInputFocus() {
         focusManager.clearFocus(force = true)
@@ -994,8 +978,23 @@ private fun PlaceBookmarkFormBottomSheet(
                     indication = null,
                     onClick = ::clearSheetInputFocus
                 )
-                .padding(start = 20.dp, top = 26.dp, end = 20.dp, bottom = 40.dp)
+                .padding(
+                    start = 20.dp,
+                    top = if (hasPlaceNameMarker) 34.dp else 26.dp,
+                    end = 20.dp,
+                    bottom = 40.dp
+                )
         ) {
+            if (hasPlaceNameMarker) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlaceNameMarker(placeName = placeNameMarker.orEmpty())
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = title,

@@ -120,13 +120,13 @@
     <string name="place_bookmark_count_prefix">즐겨찾기한 장소 · </string>
     <string name="place_bookmark_count_suffix">%1$d곳</string>
     <string name="place_bookmark_add_button">즐겨찾는 장소 추가하기</string>
-    <string name="place_bookmark_add_title">즐겨찾기 장소 추가</string>
+    <string name="place_bookmark_add_title">즐겨찾는 장소 추가</string>
     <string name="place_bookmark_name_label">장소명</string>
     <string name="place_bookmark_name_helper">자동 입력된 장소명은 언제든 수정할 수 있어요</string>
     <string name="place_bookmark_address_label">주소</string>
     <string name="place_bookmark_type_label">장소 유형 선택</string>
     <string name="place_bookmark_add_submit">추가하기</string>
-    <string name="place_bookmark_edit_title">즐겨찾기 장소 수정</string>
+    <string name="place_bookmark_edit_title">즐겨찾는 장소 수정</string>
     <string name="place_bookmark_edit_submit">수정하기</string>
     <string name="place_bookmark_delete_title">즐겨찾는 장소를 삭제할까요?</string>
     <string name="place_bookmark_delete_message">즐겨찾기 목록과 지도 마커에서 삭제돼요</string>
