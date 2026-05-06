@@ -12,6 +12,10 @@ import com.example.passedpath.feature.bookmark.data.remote.api.DayRouteBookmarkA
 import com.example.passedpath.feature.bookmark.data.repository.DayRouteBookmarkRepositoryImpl
 import com.example.passedpath.feature.bookmark.domain.repository.DayRouteBookmarkRepository
 import com.example.passedpath.feature.bookmark.domain.usecase.ToggleDayRouteBookmarkUseCase
+import com.example.passedpath.feature.calendar.data.remote.api.CalendarMonthlyRouteApi
+import com.example.passedpath.feature.calendar.data.repository.CalendarMonthlyRouteRepositoryImpl
+import com.example.passedpath.feature.calendar.domain.repository.CalendarMonthlyRouteRepository
+import com.example.passedpath.feature.calendar.domain.usecase.GetCalendarMonthlyRouteUseCase
 import com.example.passedpath.feature.daynote.data.remote.api.DayRouteMemoApi
 import com.example.passedpath.feature.daynote.data.remote.api.DayRouteTitleApi
 import com.example.passedpath.feature.daynote.data.repository.DayRouteMemoRepositoryImpl
@@ -187,6 +191,10 @@ class AppContainer(
         retrofit.create(DayRouteSummaryApi::class.java)
     }
 
+    private val calendarMonthlyRouteApi by lazy {
+        retrofit.create(CalendarMonthlyRouteApi::class.java)
+    }
+
     private val dayRouteBookmarkApi by lazy {
         retrofit.create(DayRouteBookmarkApi::class.java)
     }
@@ -253,6 +261,12 @@ class AppContainer(
 
     val dayRouteSummaryRepository: DayRouteSummaryRepository by lazy {
         DayRouteSummaryRepositoryImpl(dayRouteSummaryApi = dayRouteSummaryApi)
+    }
+
+    val calendarMonthlyRouteRepository: CalendarMonthlyRouteRepository by lazy {
+        CalendarMonthlyRouteRepositoryImpl(
+            calendarMonthlyRouteApi = calendarMonthlyRouteApi
+        )
     }
 
     val startLocationTrackingUseCase: StartLocationTrackingUseCase by lazy {
@@ -331,6 +345,12 @@ class AppContainer(
 
     val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {
         GetDayRouteSummaryUseCase(dayRouteSummaryRepository = dayRouteSummaryRepository)
+    }
+
+    val getCalendarMonthlyRouteUseCase: GetCalendarMonthlyRouteUseCase by lazy {
+        GetCalendarMonthlyRouteUseCase(
+            calendarMonthlyRouteRepository = calendarMonthlyRouteRepository
+        )
     }
 
     val patchDayRouteTitleUseCase: PatchDayRouteTitleUseCase by lazy {

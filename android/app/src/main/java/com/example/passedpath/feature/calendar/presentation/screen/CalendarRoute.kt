@@ -1,6 +1,7 @@
 package com.example.passedpath.feature.calendar.presentation.screen
 
 import android.app.DatePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +17,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,12 +43,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passedpath.R
+import com.example.passedpath.app.appContainer
 import com.example.passedpath.feature.calendar.presentation.model.CalendarDayStatus
 import com.example.passedpath.feature.calendar.presentation.model.CalendarMonthCell
 import com.example.passedpath.feature.calendar.presentation.model.buildCalendarMonthCells
 import com.example.passedpath.feature.calendar.presentation.model.toCalendarDateKey
+import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModel
+import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
+import com.example.passedpath.ui.theme.Gray100
+import com.example.passedpath.ui.theme.Gray200
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
@@ -54,6 +65,7 @@ import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.min
@@ -65,7 +77,10 @@ fun CalendarRoute(
     onDateConfirmed: (String) -> Unit,
     onFavoriteListClick: () -> Unit = {},
     onMoreClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: CalendarViewModel = viewModel(
+        factory = CalendarViewModelFactory(LocalContext.current.appContainer)
+    )
 ) {
     val initialDate = remember(initialDateKey) { parseDateOrToday(initialDateKey) }
     var anchorDateKey by rememberSaveable(initialDateKey) {
@@ -79,12 +94,19 @@ fun CalendarRoute(
         selectedDateKey?.let(::parseDateOrToday)
     }
     val visibleMonth = remember(anchorDate) { YearMonth.from(anchorDate) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(visibleMonth) {
+        viewModel.loadMonth(visibleMonth = visibleMonth)
+    }
 
     CalendarScreen(
         anchorDate = anchorDate,
         visibleMonth = visibleMonth,
         selectedDate = selectedDate,
-        dayStatuses = emptyMap(),
+        dayStatuses = uiState.dayStatuses,
+        isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
+        errorMessage = uiState.errorMessage,
         onBackClick = onBackClick,
         onDatePickedFromSystem = { pickedDate ->
             anchorDateKey = pickedDate.toCalendarDateKey()
@@ -104,6 +126,12 @@ fun CalendarRoute(
         },
         onFavoriteListClick = onFavoriteListClick,
         onMoreClick = onMoreClick,
+        onRetryClick = {
+            viewModel.loadMonth(
+                visibleMonth = visibleMonth,
+                forceRefresh = true
+            )
+        },
         onConfirmClick = {
             selectedDateKey?.let(onDateConfirmed)
         },
@@ -117,6 +145,8 @@ private fun CalendarScreen(
     visibleMonth: YearMonth,
     selectedDate: LocalDate?,
     dayStatuses: Map<LocalDate, CalendarDayStatus>,
+    isLoading: Boolean,
+    errorMessage: String?,
     onBackClick: () -> Unit,
     onDatePickedFromSystem: (LocalDate) -> Unit,
     onPreviousMonthClick: () -> Unit,
@@ -124,6 +154,7 @@ private fun CalendarScreen(
     onDateClick: (LocalDate) -> Unit,
     onFavoriteListClick: () -> Unit,
     onMoreClick: () -> Unit,
+    onRetryClick: () -> Unit,
     onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -189,16 +220,95 @@ private fun CalendarScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
+        if (isLoading) {
+            CalendarLoadingNotice(
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .padding(bottom = 10.dp)
+            )
+        }
+
+        if (errorMessage != null) {
+            CalendarErrorNotice(
+                message = errorMessage,
+                onRetryClick = onRetryClick,
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .padding(bottom = 12.dp)
+            )
+        }
+
         BaseButton(
             text = ctaText,
             onClick = onConfirmClick,
             enabled = selectedDate != null,
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
                 .padding(bottom = 20.dp),
             textFontSize = 15.sp,
             textFontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+private fun CalendarLoadingNotice(
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = Gray100
+    ) {
+        Text(
+            text = stringResource(R.string.calendar_monthly_loading),
+            color = Gray500,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+    }
+}
+
+@Composable
+private fun CalendarErrorNotice(
+    message: String,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = Gray100,
+        border = BorderStroke(1.dp, Gray200)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.calendar_monthly_error_title),
+                color = Gray900,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = message,
+                color = Gray500,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = stringResource(R.string.route_retry),
+                color = Green500,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable(onClick = onRetryClick)
+                    .padding(vertical = 4.dp)
+            )
+        }
     }
 }
 
@@ -216,7 +326,7 @@ private fun CalendarTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
     ) {
         IconButton(
             onClick = onBackClick,
@@ -525,6 +635,7 @@ private fun showCalendarDatePicker(
     initialDate: LocalDate,
     onDatePicked: (LocalDate) -> Unit
 ) {
+    val zoneId = ZoneId.systemDefault()
     DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
@@ -533,17 +644,38 @@ private fun showCalendarDatePicker(
         initialDate.year,
         initialDate.monthValue - 1,
         initialDate.dayOfMonth
-    ).show()
+    ).apply {
+        datePicker.minDate = LocalDate.of(MinSelectableYear, 1, 1)
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli()
+        datePicker.maxDate = LocalDate.of(MaxSelectableYear, 12, 31)
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli()
+    }.show()
 }
 
 private fun parseDateOrToday(dateKey: String): LocalDate {
-    return runCatching { LocalDate.parse(dateKey) }.getOrDefault(LocalDate.now())
+    return runCatching { LocalDate.parse(dateKey) }
+        .getOrDefault(LocalDate.now())
+        .coerceToSelectableDateRange()
 }
 
 private fun LocalDate.shiftMonth(monthDelta: Long): LocalDate {
     val nextMonth = YearMonth.from(this).plusMonths(monthDelta)
     val nextDayOfMonth = min(dayOfMonth, nextMonth.lengthOfMonth())
-    return nextMonth.atDay(nextDayOfMonth)
+    return nextMonth.atDay(nextDayOfMonth).coerceToSelectableDateRange()
+}
+
+private fun LocalDate.coerceToSelectableDateRange(): LocalDate {
+    val minDate = LocalDate.of(MinSelectableYear, 1, 1)
+    val maxDate = LocalDate.of(MaxSelectableYear, 12, 31)
+    return when {
+        isBefore(minDate) -> minDate
+        isAfter(maxDate) -> maxDate
+        else -> this
+    }
 }
 
 private val CalendarHeaderFormatter: DateTimeFormatter =
@@ -554,6 +686,9 @@ private val SaturdayColor = Color(0xFF0057FF)
 private val ManualDataColor = Color(0xFF147B82)
 private val LocationDataColor = Color(0xFF94D8DE)
 private val FavoriteColor = Color(0xFFFFC95C)
+
+private const val MinSelectableYear = 2000
+private const val MaxSelectableYear = 3000
 
 @Preview(showBackground = true, widthDp = 393, heightDp = 760)
 @Composable
@@ -580,6 +715,8 @@ private fun CalendarScreenPreview() {
             visibleMonth = previewMonth,
             selectedDate = null,
             dayStatuses = previewStatuses,
+            isLoading = false,
+            errorMessage = null,
             onBackClick = {},
             onDatePickedFromSystem = {},
             onPreviousMonthClick = {},
@@ -587,6 +724,7 @@ private fun CalendarScreenPreview() {
             onDateClick = {},
             onFavoriteListClick = {},
             onMoreClick = {},
+            onRetryClick = {},
             onConfirmClick = {},
             modifier = Modifier.fillMaxSize()
         )
