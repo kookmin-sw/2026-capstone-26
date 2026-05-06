@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -480,33 +481,39 @@ private fun SkeletonPlaceCard(
     shimmerBrush: Brush,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Row(
         modifier = modifier
             .height(PlaceTimelineCardHeight)
             .background(
                 color = Gray50,
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(20.dp)
             )
-            .padding(start = 16.dp, top = 15.dp, end = 16.dp, bottom = 15.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(start = 20.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.58f)
+                    .height(16.dp)
+            )
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.82f)
+                    .height(13.dp)
+            )
+        }
+
         BaseSkeletonBlock(
             brush = shimmerBrush,
-            modifier = Modifier
-                .fillMaxWidth(0.46f)
-                .height(14.dp)
-        )
-        BaseSkeletonBlock(
-            brush = shimmerBrush,
-            modifier = Modifier
-                .fillMaxWidth(0.78f)
-                .height(12.dp)
-        )
-        BaseSkeletonBlock(
-            brush = shimmerBrush,
-            modifier = Modifier
-                .width(96.dp)
-                .height(10.dp)
+            modifier = Modifier.size(36.dp),
+            shape = CircleShape
         )
     }
 }
@@ -557,10 +564,6 @@ private fun SkeletonTimelineDecoration(
             modifier = Modifier
                 .padding(top = PlaceTimelinePointCenterY - 8.dp)
                 .size(16.dp)
-                .background(
-                    color = Gray50,
-                    shape = RoundedCornerShape(8.dp)
-                )
         ) {
             BaseSkeletonBlock(
                 brush = shimmerBrush,

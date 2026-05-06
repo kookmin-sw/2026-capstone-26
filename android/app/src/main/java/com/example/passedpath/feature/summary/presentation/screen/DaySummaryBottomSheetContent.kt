@@ -26,8 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCard
+import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCardSkeleton
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray900
@@ -72,42 +74,63 @@ fun DaySummaryBottomSheetContent(
             Spacer(modifier = Modifier.height(2.dp))
         }
 
-        if (uiState.errorMessage != null) {
-            item {
-                DaySummaryErrorNotice(
-                    message = uiState.errorMessage,
-                    onRetryClick = onRetryClick
-                )
+        when {
+            uiState.errorMessage != null -> {
+                item {
+                    DaySummaryErrorNotice(
+                        message = uiState.errorMessage,
+                        onRetryClick = onRetryClick
+                    )
+                }
             }
-        } else {
-            item {
-                DaySummaryMetricCard(
-                    label = stringResource(R.string.day_summary_outing_time),
-                    value = uiState.summary.outingTimeText
-                )
+
+            !uiState.hasLoaded -> {
+                item(key = "summary_skeleton") {
+                    DaySummarySkeletonList()
+                }
             }
-            item {
-                DaySummaryMetricCard(
-                    label = stringResource(R.string.day_summary_enter_home_time),
-                    value = uiState.summary.enterHomeTimeText
-                )
-            }
-            item {
-                DaySummaryMetricCard(
-                    label = stringResource(R.string.day_summary_total_outing_duration),
-                    value = uiState.summary.totalOutingDurationText
-                )
-            }
-            item {
-                DaySummaryMetricCard(
-                    label = stringResource(R.string.day_summary_total_outing_count),
-                    value = uiState.summary.totalOutingCountText
-                )
+
+            else -> {
+                item {
+                    DaySummaryMetricCard(
+                        label = stringResource(R.string.day_summary_outing_time),
+                        value = uiState.summary.outingTimeText
+                    )
+                }
+                item {
+                    DaySummaryMetricCard(
+                        label = stringResource(R.string.day_summary_enter_home_time),
+                        value = uiState.summary.enterHomeTimeText
+                    )
+                }
+                item {
+                    DaySummaryMetricCard(
+                        label = stringResource(R.string.day_summary_total_outing_duration),
+                        value = uiState.summary.totalOutingDurationText
+                    )
+                }
+                item {
+                    DaySummaryMetricCard(
+                        label = stringResource(R.string.day_summary_total_outing_count),
+                        value = uiState.summary.totalOutingCountText
+                    )
+                }
             }
         }
 
         item {
             Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+private fun DaySummarySkeletonList() {
+    val skeletonBrush = rememberBaseSkeletonBrush()
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        repeat(4) {
+            DaySummaryMetricCardSkeleton(shimmerBrush = skeletonBrush)
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,6 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
+import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray900
@@ -78,6 +81,47 @@ fun DaySummaryMetricCard(
     }
 }
 
+@Composable
+fun DaySummaryMetricCardSkeleton(
+    shimmerBrush: Brush,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(98.dp)
+            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.34f)
+                    .height(16.dp)
+            )
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.48f)
+                    .height(24.dp),
+                shape = RoundedCornerShape(10.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
+            modifier = Modifier.size(width = 7.dp, height = 12.dp),
+            shape = RoundedCornerShape(4.dp)
+        )
+    }
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun DaySummaryMetricCardPreview() {
@@ -90,6 +134,23 @@ private fun DaySummaryMetricCardPreview() {
             DaySummaryMetricCard(label = "Enter home time", value = "21:03")
             DaySummaryMetricCard(label = "Total outing time", value = "11h 51m")
             DaySummaryMetricCard(label = "Outing count", value = "3")
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+private fun DaySummaryMetricCardSkeletonPreview() {
+    PassedPathTheme {
+        val skeletonBrush = rememberBaseSkeletonBrush()
+
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            repeat(4) {
+                DaySummaryMetricCardSkeleton(shimmerBrush = skeletonBrush)
+            }
         }
     }
 }
