@@ -12,15 +12,15 @@ class DaySummaryUiMapperTest {
             outingTime = "2026-04-29T08:10:00+09:00",
             enterHomeTime = "2026-04-29T21:03:00+09:00",
             totalOutingCount = 3,
-            totalOutingDurationText = "11시간 51분"
+            totalOutingDurationText = "11\uC2DC\uAC04 51\uBD84"
         )
 
         val result = summary.toDaySummaryContentUiState()
 
         assertEquals("08:10", result.outingTimeText)
         assertEquals("21:03", result.enterHomeTimeText)
-        assertEquals("11시간 51분", result.totalOutingDurationText)
-        assertEquals("3회", result.totalOutingCountText)
+        assertEquals("11\uC2DC\uAC04 51\uBD84", result.totalOutingDurationText)
+        assertEquals("3\uD68C", result.totalOutingCountText)
     }
 
     @Test
@@ -40,7 +40,7 @@ class DaySummaryUiMapperTest {
         outingTime: String? = null,
         enterHomeTime: String? = null,
         totalOutingCount: Int = 0,
-        totalOutingDurationText: String = "0분"
+        totalOutingDurationText: String = "0\uBD84"
     ): DayRouteSummary {
         return DayRouteSummary(
             dateKey = "2026-04-29",

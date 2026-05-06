@@ -11,7 +11,7 @@ internal fun DayRouteSummary.toDaySummaryContentUiState(): DaySummaryContentUiSt
         outingTimeText = outingTime.toSummaryTimeText(),
         enterHomeTimeText = enterHomeTime.toSummaryTimeText(),
         totalOutingDurationText = totalOutingDurationText,
-        totalOutingCountText = "${totalOutingCount}회"
+        totalOutingCountText = "${totalOutingCount}${KoreanCount}"
     )
 }
 
@@ -26,3 +26,4 @@ private val SummaryTimeFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("HH:mm", Locale.KOREA)
 
 private const val EmptySummaryValue = "-"
+private const val KoreanCount = "\uD68C"

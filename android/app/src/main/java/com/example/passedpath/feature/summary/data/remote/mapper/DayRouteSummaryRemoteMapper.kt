@@ -26,12 +26,14 @@ private fun Long.toDurationText(): String {
     val minutes = (safeSeconds % SecondsPerHour) / SecondsPerMinute
 
     return when {
-        hours > 0L && minutes > 0L -> "${hours}시간 ${minutes}분"
-        hours > 0L -> "${hours}시간"
-        minutes > 0L -> "${minutes}분"
-        else -> "0분"
+        hours > 0L && minutes > 0L -> "${hours}${KoreanHour} ${minutes}${KoreanMinute}"
+        hours > 0L -> "${hours}${KoreanHour}"
+        minutes > 0L -> "${minutes}${KoreanMinute}"
+        else -> "0${KoreanMinute}"
     }
 }
 
 private const val SecondsPerHour = 3_600L
 private const val SecondsPerMinute = 60L
+private const val KoreanHour = "\uC2DC\uAC04"
+private const val KoreanMinute = "\uBD84"

@@ -14,7 +14,7 @@ class DayRouteSummaryRemoteMapperTest {
             enterHomeTime = "2026-04-29T18:40:00+09:00",
             totalOutingCount = 2,
             totalOutingSeconds = 36_120L,
-            totalOutingDurationText = "10시간 2분"
+            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84"
         )
 
         val result = response.toDayRouteSummary(dateKey = "2026-04-29")
@@ -24,7 +24,7 @@ class DayRouteSummaryRemoteMapperTest {
         assertEquals("2026-04-29T18:40:00+09:00", result.enterHomeTime)
         assertEquals(2, result.totalOutingCount)
         assertEquals(36_120L, result.totalOutingSeconds)
-        assertEquals("10시간 2분", result.totalOutingDurationText)
+        assertEquals("10\uC2DC\uAC04 2\uBD84", result.totalOutingDurationText)
     }
 
     @Test
@@ -43,7 +43,7 @@ class DayRouteSummaryRemoteMapperTest {
         assertNull(result.enterHomeTime)
         assertEquals(0, result.totalOutingCount)
         assertEquals(0L, result.totalOutingSeconds)
-        assertEquals("0분", result.totalOutingDurationText)
+        assertEquals("0\uBD84", result.totalOutingDurationText)
     }
 
     @Test
@@ -58,6 +58,6 @@ class DayRouteSummaryRemoteMapperTest {
 
         val result = response.toDayRouteSummary(dateKey = "2026-05-01")
 
-        assertEquals("1시간 1분", result.totalOutingDurationText)
+        assertEquals("1\uC2DC\uAC04 1\uBD84", result.totalOutingDurationText)
     }
 }

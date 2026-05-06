@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
 import com.example.passedpath.feature.summary.presentation.mapper.toDaySummaryContentUiState
+import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.state.ApiFailureMessage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class DaySummaryViewModel(
                 val isSameDate = state.dateKey == normalizedDateKey
                 state.copy(
                     dateKey = normalizedDateKey,
-                    summary = if (isSameDate) state.summary else null,
+                    summary = if (isSameDate) state.summary else DaySummaryContentUiState.Empty,
                     hasLoaded = if (isSameDate) state.hasLoaded else false,
                     isLoading = true,
                     errorMessage = null

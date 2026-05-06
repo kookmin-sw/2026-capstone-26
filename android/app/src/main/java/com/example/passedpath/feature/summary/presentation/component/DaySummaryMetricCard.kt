@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
-import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray900
@@ -87,11 +86,10 @@ private fun DaySummaryMetricCardPreview() {
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            DaySummaryMetricCard(label = "외출 시간", value = "09:12")
-            DaySummaryMetricCard(label = "귀가 시간", value = "21:03")
-            DaySummaryMetricCard(label = "총 외출 시간", value = "11시간 51분")
-            DaySummaryMetricCard(label = "외출 횟수", value = "3회")
-            DaySummaryMetricCard(label = "방문한 동네 리스트", value = "성북구 · 강북구 · 종로구")
+            DaySummaryMetricCard(label = "Outing time", value = "09:12")
+            DaySummaryMetricCard(label = "Enter home time", value = "21:03")
+            DaySummaryMetricCard(label = "Total outing time", value = "11h 51m")
+            DaySummaryMetricCard(label = "Outing count", value = "3")
         }
     }
 }

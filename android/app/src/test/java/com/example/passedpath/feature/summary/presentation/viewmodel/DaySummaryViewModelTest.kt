@@ -33,12 +33,12 @@ class DaySummaryViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(true, state.hasLoaded)
         assertNull(state.errorMessage)
-        assertEquals("08:10", state.summary?.outingTimeText)
-        assertEquals("18:40", state.summary?.enterHomeTimeText)
+        assertEquals("08:10", state.summary.outingTimeText)
+        assertEquals("18:40", state.summary.enterHomeTimeText)
     }
 
     @Test
-    fun `loadSummary exposes error and keeps unloaded state on failure`() = runTest {
+    fun `loadSummary keeps default summary state and exposes error on failure`() = runTest {
         val repository = FakeDayRouteSummaryRepository(
             failure = RuntimeException("boom")
         )
@@ -51,7 +51,10 @@ class DaySummaryViewModelTest {
         assertEquals("2026-04-29", state.dateKey)
         assertFalse(state.isLoading)
         assertEquals(false, state.hasLoaded)
-        assertNull(state.summary)
+        assertEquals("-", state.summary.outingTimeText)
+        assertEquals("-", state.summary.enterHomeTimeText)
+        assertEquals("0\uBD84", state.summary.totalOutingDurationText)
+        assertEquals("0\uD68C", state.summary.totalOutingCountText)
         assertNotNull(state.errorMessage)
     }
 
@@ -105,7 +108,7 @@ private class FakeDayRouteSummaryRepository(
             enterHomeTime = "2026-04-29T18:40:00+09:00",
             totalOutingCount = 2,
             totalOutingSeconds = 36_120L,
-            totalOutingDurationText = "10시간 2분"
+            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84"
         )
     }
 }
