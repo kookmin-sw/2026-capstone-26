@@ -87,6 +87,7 @@ internal fun MainMapSection(
     onBookmarkClick: () -> Unit,
     onRouteAction: (RouteUiAction) -> Unit,
     onStatsClick: () -> Unit,
+    onCalendarClick: () -> Unit,
     onMoreClick: () -> Unit,
     onMorePlaceBookmarkClick: () -> Unit = {},
     onMoreDeleteRecordClick: () -> Unit = {},
@@ -252,6 +253,10 @@ internal fun MainMapSection(
             topStartControls = {
                 StatsButton(
                     onClick = onStatsClick,
+                    modifier = Modifier
+                )
+                CalendarButton(
+                    onClick = onCalendarClick,
                     modifier = Modifier
                 )
                 if (BuildConfig.DEBUG) {
@@ -543,6 +548,19 @@ private fun StatsButton(
         onClick = onClick,
         iconResId = R.drawable.ic_stats,
         contentDescriptionResId = R.string.main_stats,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun CalendarButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingCircleIconButton(
+        onClick = onClick,
+        iconResId = R.drawable.ic_calendar,
+        contentDescriptionResId = R.string.main_calendar,
         modifier = modifier
     )
 }

@@ -383,6 +383,7 @@ fun MainScreen(
                     onBookmarkClick = onBookmarkClick,
                     onRouteAction = onRouteAction,
                     onStatsClick = {},
+                    onCalendarClick = {},
                     onMoreClick = {},
                     onMorePlaceBookmarkClick = onNavigateToPlaceBookmarks,
                     onMapClick = {

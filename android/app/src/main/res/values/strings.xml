@@ -50,6 +50,7 @@
     <string name="main_total_distance_value">총 이동 거리 %1$s</string>
     <string name="main_path_points_value">%1$d 포인트</string>
     <string name="main_stats">통계</string>
+    <string name="main_calendar">기록 캘린더</string>
     <string name="main_more">더보기</string>
     <string name="main_more_place_bookmark">즐겨찾는 장소</string>
     <string name="main_more_delete_record">1일 위치 기록 삭제</string>
