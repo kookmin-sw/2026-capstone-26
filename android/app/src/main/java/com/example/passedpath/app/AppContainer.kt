@@ -72,6 +72,10 @@ import com.example.passedpath.feature.placebookmark.domain.usecase.CreatePlaceBo
 import com.example.passedpath.feature.placebookmark.domain.usecase.DeletePlaceBookmarkUseCase
 import com.example.passedpath.feature.placebookmark.domain.usecase.GetPlaceBookmarksUseCase
 import com.example.passedpath.feature.placebookmark.domain.usecase.UpdatePlaceBookmarkUseCase
+import com.example.passedpath.feature.summary.data.remote.api.DayRouteSummaryApi
+import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRepositoryImpl
+import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
+import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
 import java.time.LocalTime
 
@@ -179,6 +183,10 @@ class AppContainer(
         retrofit.create(DayRouteApi::class.java)
     }
 
+    private val dayRouteSummaryApi by lazy {
+        retrofit.create(DayRouteSummaryApi::class.java)
+    }
+
     private val dayRouteBookmarkApi by lazy {
         retrofit.create(DayRouteBookmarkApi::class.java)
     }
@@ -241,6 +249,10 @@ class AppContainer(
             gpsPointDao = trackingDatabase.gpsPointDao(),
             dayRouteApi = dayRouteApi
         )
+    }
+
+    val dayRouteSummaryRepository: DayRouteSummaryRepository by lazy {
+        DayRouteSummaryRepositoryImpl(dayRouteSummaryApi = dayRouteSummaryApi)
     }
 
     val startLocationTrackingUseCase: StartLocationTrackingUseCase by lazy {
@@ -315,6 +327,10 @@ class AppContainer(
 
     val toggleDayRouteBookmarkUseCase: ToggleDayRouteBookmarkUseCase by lazy {
         ToggleDayRouteBookmarkUseCase(dayRouteBookmarkRepository = dayRouteBookmarkRepository)
+    }
+
+    val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {
+        GetDayRouteSummaryUseCase(dayRouteSummaryRepository = dayRouteSummaryRepository)
     }
 
     val patchDayRouteTitleUseCase: PatchDayRouteTitleUseCase by lazy {

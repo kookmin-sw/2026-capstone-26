@@ -48,6 +48,8 @@ import com.example.passedpath.feature.daynote.presentation.screen.DayNoteBottomS
 import com.example.passedpath.feature.daynote.presentation.state.DayNoteUiState
 import com.example.passedpath.feature.place.presentation.screen.PlaceBottomSheetContent
 import com.example.passedpath.feature.place.presentation.state.PlaceUiState
+import com.example.passedpath.feature.summary.presentation.screen.DaySummaryBottomSheetContent
+import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray200
 import com.example.passedpath.ui.theme.Gray400
@@ -64,11 +66,14 @@ internal fun MainBottomSheet(
     selectedDateKey: String,
     placeUiState: PlaceUiState,
     dayNoteUiState: DayNoteUiState,
+    daySummaryUiState: DaySummaryUiState,
     selectedPlaceId: Long?,
     onSelectedPlaceHandled: () -> Unit,
     onDayNoteTitleChanged: (String) -> Unit,
     onDayNoteMemoChanged: (String) -> Unit,
     onDayNoteSaveClick: () -> Unit,
+    onDaySummaryLoadRequest: (String) -> Unit,
+    onDaySummaryRetryClick: () -> Unit,
     selectedTab: MainBottomSheetTab,
     onTabSelected: (MainBottomSheetTab) -> Unit,
     onPlaceRetryClick: () -> Unit,
@@ -149,6 +154,16 @@ internal fun MainBottomSheet(
                             .fillMaxSize()
                             .padding(horizontal = 20.dp)
                     )
+                    MainBottomSheetTab.SUMMARY -> DaySummaryBottomSheetContent(
+                        selectedDateKey = selectedDateKey,
+                        uiState = daySummaryUiState,
+                        onLoadSummary = onDaySummaryLoadRequest,
+                        onRetryClick = onDaySummaryRetryClick,
+                        onScrollStateChanged = { isContentScrolled = it },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp)
+                    )
                 }
             }
         }
@@ -195,7 +210,9 @@ private fun BottomSheetTabRow(
             .fillMaxWidth()
             .height(58.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Gray100),
+            .background(Gray100)
+            .padding(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         MainBottomSheetTab.entries.forEach { tab ->
@@ -204,7 +221,6 @@ private fun BottomSheetTabRow(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .padding(horizontal = 6.dp, vertical = 6.dp)
                     .clip(RoundedCornerShape(18.dp))
                     .clickable { onTabSelected(tab) },
                 shape = RoundedCornerShape(18.dp),
@@ -227,7 +243,7 @@ private fun BottomSheetTabRow(
                         text = stringResource(tab.titleResId()),
                         color = if (selected) Gray900 else Gray400,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-                        fontSize = 17.sp,
+                        fontSize = 16.sp,
                         style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -248,13 +264,15 @@ private fun BottomSheetContentDivider(visible: Boolean) {
 
 internal enum class MainBottomSheetTab {
     PLACE,
-    DAYNOTE
+    DAYNOTE,
+    SUMMARY
 }
 
 private fun MainBottomSheetTab.titleResId(): Int {
     return when (this) {
         MainBottomSheetTab.PLACE -> R.string.record_sheet_tab_place
         MainBottomSheetTab.DAYNOTE -> R.string.record_sheet_tab_daynote
+        MainBottomSheetTab.SUMMARY -> R.string.record_sheet_tab_summary
     }
 }
 
@@ -262,6 +280,7 @@ private fun MainBottomSheetTab.iconResId(): Int {
     return when (this) {
         MainBottomSheetTab.PLACE -> R.drawable.ic_bottom_sheet_place
         MainBottomSheetTab.DAYNOTE -> R.drawable.ic_bottom_sheet_memo
+        MainBottomSheetTab.SUMMARY -> R.drawable.ic_summary_day
     }
 }
 
@@ -284,11 +303,14 @@ private fun MainBottomSheetPreview() {
                 selectedDateKey = "2026-04-20",
                 placeUiState = PlaceUiState(),
                 dayNoteUiState = DayNoteUiState(dateKey = "2026-04-20"),
+                daySummaryUiState = DaySummaryUiState(),
                 selectedPlaceId = null,
                 onSelectedPlaceHandled = {},
                 onDayNoteTitleChanged = {},
                 onDayNoteMemoChanged = {},
                 onDayNoteSaveClick = {},
+                onDaySummaryLoadRequest = {},
+                onDaySummaryRetryClick = {},
                 selectedTab = MainBottomSheetTab.PLACE,
                 onTabSelected = {},
                 onPlaceRetryClick = {},

@@ -49,6 +49,7 @@ import com.example.passedpath.feature.placebookmark.domain.model.PlaceBookmarkSu
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
+import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.PermissionSettingDialog
 import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
@@ -69,6 +70,7 @@ data class PlaceBookmarkChangedEvent(
 fun MainScreen(
     uiState: MainUiState,
     dayNoteUiState: DayNoteUiState,
+    daySummaryUiState: DaySummaryUiState,
     placeUiState: PlaceUiState,
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
@@ -80,6 +82,8 @@ fun MainScreen(
     onDayNoteTitleChanged: (String) -> Unit,
     onDayNoteMemoChanged: (String) -> Unit,
     onDayNoteSaveClick: () -> Unit,
+    onDaySummaryLoadRequest: (String) -> Unit,
+    onDaySummaryRetryClick: () -> Unit,
     onDayNoteFeedbackDismissed: (Long) -> Unit,
     onPlaceListRefreshRequested: (String) -> Unit,
     onNavigateToAddPlace: (String) -> Unit,
@@ -400,6 +404,7 @@ fun MainScreen(
                     selectedDateKey = uiState.selectedDateKey,
                     placeUiState = placeUiState,
                     dayNoteUiState = dayNoteUiState,
+                    daySummaryUiState = daySummaryUiState,
                     selectedPlaceId = localUiState.selectedPlaceId,
                     onSelectedPlaceHandled = {
                         dispatchInteraction(reduceForSelectedPlaceHandled(localUiState))
@@ -407,6 +412,8 @@ fun MainScreen(
                     onDayNoteTitleChanged = onDayNoteTitleChanged,
                     onDayNoteMemoChanged = onDayNoteMemoChanged,
                     onDayNoteSaveClick = onDayNoteSaveClick,
+                    onDaySummaryLoadRequest = onDaySummaryLoadRequest,
+                    onDaySummaryRetryClick = onDaySummaryRetryClick,
                     selectedTab = localUiState.selectedBottomSheetTab,
                     onTabSelected = ::handleBottomSheetTabSelected,
                     onPlaceRetryClick = {

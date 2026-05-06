@@ -62,6 +62,10 @@ internal fun MainDebugPanel(
             style = MaterialTheme.typography.bodySmall
         )
         Text(
+            text = stringResource(R.string.debug_panel_point_count, debugUiState.pathPointCount),
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
             text = stringResource(
                 R.string.debug_panel_permission,
                 debugUiState.permissionState.name,

@@ -1,6 +1,7 @@
 ﻿package com.example.passedpath.feature.place.presentation.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -8,23 +9,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -39,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -64,8 +72,11 @@ import com.example.passedpath.feature.place.presentation.viewmodel.AddPlaceViewM
 import com.example.passedpath.feature.place.presentation.viewmodel.AddPlaceViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.loading.BaseLoadingIndicator
+import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray200
+import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.PassedPathTheme
@@ -281,14 +292,9 @@ private fun AddPlaceScreenContent(
                     }
 
                     uiState.isLoading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            BaseLoadingIndicator()
-                        }
+                        PlaceSearchLoadingSkeletonList(
+                            modifier = Modifier.weight(1f)
+                        )
                     }
 
                     uiState.shouldShowResults -> {
@@ -327,6 +333,96 @@ private fun AddPlaceScreenContent(
         }
     }
 }
+
+@Composable
+private fun PlaceSearchLoadingSkeletonList(
+    modifier: Modifier = Modifier
+) {
+    val skeletonBrush = rememberBaseSkeletonBrush(
+        edgeColor = Gray50,
+        baseColor = Gray50
+    )
+
+    Column(modifier = modifier) {
+        Spacer(modifier = Modifier.height(4.dp))
+        SearchResultDivider(visible = false)
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(
+                items = PlaceSearchSkeletonItems,
+                key = { index -> "place_search_skeleton_$index" }
+            ) {
+                PlaceSearchResultCardSkeleton(shimmerBrush = skeletonBrush)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaceSearchResultCardSkeleton(
+    shimmerBrush: Brush,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 80.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = White,
+        border = BorderStroke(width = 0.7.dp, color = Gray200)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier.size(24.dp),
+                shape = CircleShape
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    BaseSkeletonBlock(
+                        brush = shimmerBrush,
+                        modifier = Modifier
+                            .fillMaxWidth(0.64f)
+                            .height(18.dp)
+                    )
+                    BaseSkeletonBlock(
+                        brush = shimmerBrush,
+                        modifier = Modifier
+                            .fillMaxWidth(0.86f)
+                            .height(18.dp)
+                    )
+                }
+
+                BaseSkeletonBlock(
+                    brush = shimmerBrush,
+                    modifier = Modifier
+                        .width(112.dp)
+                        .height(12.dp)
+                )
+            }
+        }
+    }
+}
+
+private val PlaceSearchSkeletonItems = List(5) { it }
 
 @Composable
 private fun SearchResultList(
@@ -470,6 +566,24 @@ private fun AddPlaceScreenInitialPreview() {
     PassedPathTheme {
         AddPlaceScreenContent(
             uiState = AddPlaceUiState(),
+            onBackClick = {},
+            onQueryChanged = {},
+            onPlaceSelected = {},
+            onConfirmPlaceClick = {},
+            onLoadNextPage = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AddPlaceScreenLoadingPreview() {
+    PassedPathTheme {
+        AddPlaceScreenContent(
+            uiState = AddPlaceUiState(
+                query = "국민대학교",
+                isLoading = true
+            ),
             onBackClick = {},
             onQueryChanged = {},
             onPlaceSelected = {},
