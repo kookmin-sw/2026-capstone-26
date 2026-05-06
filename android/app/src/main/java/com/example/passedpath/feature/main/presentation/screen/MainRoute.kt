@@ -31,10 +31,13 @@ fun MainRoute(
     mainTabReselectionEvent: Int = 0,
     placeCreatedEvent: PlaceCreatedEvent? = null,
     placeBookmarkChangedEvent: PlaceBookmarkChangedEvent? = null,
+    calendarDateSelectedEvent: CalendarDateSelectedEvent? = null,
     onPlaceCreatedEventConsumed: (Int) -> Unit = {},
     onPlaceBookmarkChangedEventConsumed: (Int) -> Unit = {},
+    onCalendarDateSelectedEventConsumed: (Int) -> Unit = {},
     onNavigateToAddPlace: (String) -> Unit = {},
     onNavigateToPlaceBookmarks: () -> Unit = {},
+    onNavigateToCalendar: (String) -> Unit = {},
     viewModel: MainViewModel = viewModel(
         factory = MainViewModelFactory(LocalContext.current.appContainer)
     )
@@ -142,6 +145,12 @@ fun MainRoute(
         }
     }
 
+    LaunchedEffect(calendarDateSelectedEvent?.id) {
+        val event = calendarDateSelectedEvent ?: return@LaunchedEffect
+        requestDateSelection(event.dateKey)
+        onCalendarDateSelectedEventConsumed(event.id)
+    }
+
     MainRouteEffects(
         permissionState = uiState.permissionState,
         isLocationServiceEnabled = uiState.isLocationServiceEnabled,
@@ -188,6 +197,7 @@ fun MainRoute(
         onPlaceListRefreshRequested = placeViewModel::fetchVisitedPlaces,
         onNavigateToAddPlace = onNavigateToAddPlace,
         onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
+        onNavigateToCalendar = onNavigateToCalendar,
         onReorderPlaces = placeViewModel::reorderPlaces,
         onCloseReorderGuideBanner = placeViewModel::dismissReorderGuideBanner,
         onUpdatePlace = placeViewModel::updatePlace,

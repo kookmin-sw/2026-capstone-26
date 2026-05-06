@@ -66,6 +66,11 @@ data class PlaceBookmarkChangedEvent(
     val bookmarkPlaceId: Long
 )
 
+data class CalendarDateSelectedEvent(
+    val id: Int,
+    val dateKey: String
+)
+
 @Composable
 fun MainScreen(
     uiState: MainUiState,
@@ -88,6 +93,7 @@ fun MainScreen(
     onPlaceListRefreshRequested: (String) -> Unit,
     onNavigateToAddPlace: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
+    onNavigateToCalendar: (String) -> Unit,
     onReorderPlaces: (List<Long>) -> Unit,
     onCloseReorderGuideBanner: () -> Unit,
     onUpdatePlace: (Long, String, String, Double, Double) -> Unit,
@@ -383,7 +389,9 @@ fun MainScreen(
                     onBookmarkClick = onBookmarkClick,
                     onRouteAction = onRouteAction,
                     onStatsClick = {},
-                    onCalendarClick = {},
+                    onCalendarClick = {
+                        onNavigateToCalendar(uiState.selectedDateKey)
+                    },
                     onMoreClick = {},
                     onMorePlaceBookmarkClick = onNavigateToPlaceBookmarks,
                     onMapClick = {

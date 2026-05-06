@@ -58,6 +58,15 @@
     <string name="main_more_delete_record_description">현재 날짜의 위치 기록을 삭제해요</string>
     <string name="main_toggle_place_bookmark_markers">즐겨찾는 장소 마커 표시 토글</string>
     <string name="main_move_to_current_location">현재 위치로 이동</string>
+    <string name="calendar_back">뒤로가기</string>
+    <string name="calendar_previous_month">이전 달</string>
+    <string name="calendar_next_month">다음 달</string>
+    <string name="calendar_favorite_list">즐겨찾기 목록</string>
+    <string name="calendar_manual_data">수기 데이터</string>
+    <string name="calendar_location_data">위치 데이터</string>
+    <string name="calendar_favorite">즐겨찾기</string>
+    <string name="calendar_no_date_selected_cta">날짜를 선택해 지나온 길을 확인해 보세요</string>
+    <string name="calendar_record_view_cta">%1$s 기록 보기</string>
     <string name="main_permission_off_title">위치 권한이 꺼져 있습니다</string>
     <string name="main_permission_off_message">정확한 위치 권한을 허용하면 현재 위치를 지도에서 볼 수 있습니다.</string>
     <string name="main_permission_enabled_background">백그라운드 위치 권한이 허용됨</string>
