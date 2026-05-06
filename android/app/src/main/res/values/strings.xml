@@ -51,8 +51,10 @@
     <string name="main_path_points_value">%1$d 포인트</string>
     <string name="main_stats">통계</string>
     <string name="main_more">더보기</string>
-    <string name="main_more_place_bookmark">장소 즐겨찾기</string>
-    <string name="main_more_delete_record">기록 삭제</string>
+    <string name="main_more_place_bookmark">즐겨찾는 장소</string>
+    <string name="main_more_delete_record">1일 위치 기록 삭제</string>
+    <string name="main_more_place_bookmark_description">장소를 저장하고 관리해요</string>
+    <string name="main_more_delete_record_description">현재 날짜의 위치 기록을 삭제해요</string>
     <string name="main_toggle_place_bookmark_markers">즐겨찾는 장소 마커 표시 토글</string>
     <string name="main_move_to_current_location">현재 위치로 이동</string>
     <string name="main_permission_off_title">위치 권한이 꺼져 있습니다</string>

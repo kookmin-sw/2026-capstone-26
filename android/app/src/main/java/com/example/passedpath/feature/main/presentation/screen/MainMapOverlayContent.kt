@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,14 +13,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.BuildConfig
+import com.example.passedpath.feature.main.presentation.component.MainMoreActionSheet
 import com.example.passedpath.feature.main.presentation.state.MainUiState
 import com.example.passedpath.feature.permission.presentation.mapper.createPermissionOverlayUiModel
 import com.example.passedpath.feature.route.presentation.screen.RouteStatusOverlay
 import com.example.passedpath.feature.route.presentation.screen.RouteTopCenterControls
 import com.example.passedpath.feature.route.presentation.screen.RouteTopEndControls
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
+import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
 import com.example.passedpath.ui.component.banner.ActionBottomBanner
+import com.example.passedpath.ui.theme.Black
 
 @Composable
 internal fun BoxScope.MainMapOverlayContent(
@@ -56,11 +60,7 @@ internal fun BoxScope.MainMapOverlayContent(
         isBookmarkUpdating = uiState.bookmarkToggleUiState.isUpdating(uiState.selectedDateKey),
         onDateSelected = onDateSelected,
         onBookmarkClick = onBookmarkClick,
-        isMoreMenuVisible = isMoreMenuVisible,
         onMoreClick = onMoreClick,
-        onMoreDismissRequest = onMoreDismissRequest,
-        onMorePlaceBookmarkClick = onMorePlaceBookmarkClick,
-        onMoreDeleteRecordClick = onMoreDeleteRecordClick,
         modifier = Modifier
             .align(Alignment.TopCenter)
             .fillMaxWidth()
@@ -128,5 +128,18 @@ internal fun BoxScope.MainMapOverlayContent(
             actionText = stringResource(overlayUiModel.actionTextResId),
             onClickAction = onPermissionActionClick
         )
+    }
+
+    if (isMoreMenuVisible) {
+        PassedPathBottomModal(
+            onDimClick = onMoreDismissRequest,
+            modifier = Modifier.background(Black.copy(alpha = 0.22f)),
+            onBackPress = onMoreDismissRequest
+        ) {
+            MainMoreActionSheet(
+                onPlaceBookmarkClick = onMorePlaceBookmarkClick,
+                onDeleteRecordClick = onMoreDeleteRecordClick
+            )
+        }
     }
 }

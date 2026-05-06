@@ -510,7 +510,7 @@ private fun BookmarkMarkerToggleButton(
                 id = if (isVisible) {
                     R.drawable.ic_bookmark_pin_filled
                 } else {
-                    R.drawable.ic_bookmark_other
+                    R.drawable.ic_bookmark_pin_outline
                 }
             ),
             contentDescription = stringResource(R.string.main_toggle_place_bookmark_markers),

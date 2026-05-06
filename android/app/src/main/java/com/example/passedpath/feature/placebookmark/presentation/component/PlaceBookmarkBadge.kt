@@ -64,7 +64,7 @@ private val BookmarkPlaceType.badgeIconResId: Int
         BookmarkPlaceType.HOME -> R.drawable.ic_bookmark_home
         BookmarkPlaceType.COMPANY -> R.drawable.ic_bookmark_company
         BookmarkPlaceType.SCHOOL -> R.drawable.ic_bookmark_school
-        BookmarkPlaceType.ETC -> R.drawable.ic_bookmark_other
+        BookmarkPlaceType.ETC -> R.drawable.ic_bookmark_pin_outline
     }
 
 @Preview(showBackground = true, name = "Place Bookmark Badge")
