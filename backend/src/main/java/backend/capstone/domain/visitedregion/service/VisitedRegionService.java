@@ -7,6 +7,7 @@ import backend.capstone.domain.place.entity.Place;
 import backend.capstone.domain.region.entity.Region;
 import backend.capstone.domain.region.repository.RegionRepository;
 import backend.capstone.domain.visitedregion.entity.VisitedRegion;
+import backend.capstone.domain.visitedregion.mapper.VisitedRegionMapper;
 import backend.capstone.domain.visitedregion.repository.VisitedRegionRepository;
 import java.time.Duration;
 import java.time.Instant;
@@ -58,14 +59,8 @@ public class VisitedRegionService {
 
         VisitedRegion visitedRegion = visitedRegionRepository.findByDayRouteAndRegion(dayRoute,
                 region.get())
-            .orElseGet(() -> VisitedRegion.builder()
-                .dayRoute(dayRoute)
-                .region(region.get())
-                .firstVisitedAt(place.getStartTime())
-                .totalStaySeconds(0)
-                .build());
+            .orElseGet(() -> VisitedRegionMapper.toEntity(dayRoute, region.get()));
 
-        visitedRegion.updateFirstVisitedAt(place.getStartTime());
         visitedRegion.addStaySeconds(staySeconds);
         visitedRegionRepository.save(visitedRegion);
     }
