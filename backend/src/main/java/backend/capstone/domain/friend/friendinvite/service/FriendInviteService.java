@@ -1,7 +1,6 @@
 package backend.capstone.domain.friend.friendinvite.service;
 
-import backend.capstone.domain.friend.friendinvite.dto.FriendInviteCreateResponse;
-import backend.capstone.domain.friend.friendinvite.entity.FriendInvite;
+import backend.capstone.domain.friend.friendinvite.dto.FriendInviteLinkResponse;
 import backend.capstone.domain.friend.friendinvite.exception.FriendInviteErrorCode;
 import backend.capstone.domain.friend.friendinvite.mapper.FriendInviteMapper;
 import backend.capstone.domain.friend.friendinvite.repository.FriendInviteRepository;
@@ -18,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FriendInviteService {
 
+    private static final String FRIEND_INVITE_LINK_FORMAT =
+        "https://passedpath.site/friend/invite?inviteCode=%s";
     private static final int EXPIRE_DAYS = 7;
     private static final int MAX_GENERATE_ATTEMPTS = 10;
 
@@ -26,15 +27,22 @@ public class FriendInviteService {
     private final FriendInviteCodeGenerator friendInviteCodeGenerator;
 
     @Transactional
-    public FriendInviteCreateResponse createInvite(Long inviterUserId) {
+    public FriendInviteLinkResponse createInviteLink(Long inviterUserId) {
+        String inviteCode = createInvite(inviterUserId);
+        String inviteLink = FRIEND_INVITE_LINK_FORMAT.formatted(inviteCode);
+        return FriendInviteMapper.toLinkResponse(inviteLink);
+    }
+
+    @Transactional
+    public String createInvite(Long inviterUserId) {
         User inviterUser = userService.findById(inviterUserId);
         String inviteCode = generateUniqueInviteCode();
         Instant expiresAt = Instant.now().plus(EXPIRE_DAYS, ChronoUnit.DAYS);
 
-        FriendInvite friendInvite = friendInviteRepository.save(
+        friendInviteRepository.save(
             FriendInviteMapper.toEntity(inviterUser, inviteCode, expiresAt));
 
-        return FriendInviteMapper.toCreateResponse(friendInvite);
+        return inviteCode;
     }
 
     //중복되지 않는 초대 코드를 만드는 시도를 최대 10번까지 함

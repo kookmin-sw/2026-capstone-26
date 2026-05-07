@@ -1,6 +1,6 @@
 package backend.capstone.domain.friend.friendinvite.mapper;
 
-import backend.capstone.domain.friend.friendinvite.dto.FriendInviteCreateResponse;
+import backend.capstone.domain.friend.friendinvite.dto.FriendInviteLinkResponse;
 import backend.capstone.domain.friend.friendinvite.entity.FriendInvite;
 import backend.capstone.domain.user.entity.User;
 import java.time.Instant;
@@ -18,11 +18,9 @@ public class FriendInviteMapper {
             .build();
     }
 
-    public static FriendInviteCreateResponse toCreateResponse(FriendInvite friendInvite) {
-        return FriendInviteCreateResponse.builder()
-            .friendInviteId(friendInvite.getId())
-            .inviteCode(friendInvite.getInviteCode())
-            .expiresAt(friendInvite.getExpiresAt())
+    public static FriendInviteLinkResponse toLinkResponse(String inviteLink) {
+        return FriendInviteLinkResponse.builder()
+            .inviteLink(inviteLink)
             .build();
     }
 
