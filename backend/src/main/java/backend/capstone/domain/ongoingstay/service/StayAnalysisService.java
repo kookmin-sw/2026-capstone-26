@@ -8,7 +8,9 @@ import backend.capstone.domain.kakaoplace.dto.SearchResultByCategoryAndCoord;
 import backend.capstone.domain.kakaoplace.service.KakaoSearchByCategoryService;
 import backend.capstone.domain.ongoingstay.entity.OngoingStay;
 import backend.capstone.domain.ongoingstay.repository.OngoingStayRepository;
+import backend.capstone.domain.place.entity.Place;
 import backend.capstone.domain.place.service.PlaceService;
+import backend.capstone.domain.visitedregion.service.VisitedRegionService;
 import backend.capstone.global.util.GeoUtils;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,6 +35,7 @@ public class StayAnalysisService {
     private final DayRouteService dayRouteService;
     private final PlaceService placeService;
     private final KakaoSearchByCategoryService kakaoSearchByCategoryService;
+    private final VisitedRegionService visitedRegionService;
 
     @Transactional
     public void analyzeStay(Long dayRouteId) {
@@ -92,7 +95,8 @@ public class StayAnalysisService {
                 dayRoute.getId(), stay.getCenterLatitude(), stay.getCenterLongitude(), e);
         }
 
-        placeService.saveAutoPlace(dayRoute, stay, searchResult);
+        Place promotedPlace = placeService.saveAutoPlace(dayRoute, stay, searchResult);
+        visitedRegionService.recordAutoVisit(dayRoute, promotedPlace);
     }
 
     @Transactional

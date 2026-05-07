@@ -2,7 +2,9 @@ package backend.capstone.domain.kakaoplace.service;
 
 import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByCoordResult;
 import backend.capstone.domain.kakaoplace.dto.SearchResultByCategoryAndCoord;
+import backend.capstone.domain.kakaoplace.dto.LegalDongRegion;
 import backend.capstone.domain.kakaoplace.service.client.KakaoLocalApiClient;
+import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByRegionCodeResult;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,20 @@ public class KakaoSearchByCoordService {
                 .longitude(resolvedLongitude != null ? resolvedLongitude : longitude)
                 .build()
         );
+    }
+
+    public Optional<LegalDongRegion> searchLegalDongRegion(double latitude, double longitude) {
+        KakaoSearchByRegionCodeResult response = kakaoLocalApiClient.searchRegionCodeByCoord(
+            latitude, longitude);
+
+        if (response == null || response.documents() == null || response.documents().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return response.documents().stream()
+            .filter(this::isLegalDongDocument)
+            .findFirst()
+            .map(this::toLegalDongRegion);
     }
 
     private String extractPlaceName(KakaoSearchByCoordResult.Document document) {
@@ -135,6 +151,27 @@ public class KakaoSearchByCoordService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private boolean isLegalDongDocument(KakaoSearchByRegionCodeResult.Document document) {
+        return document != null
+            && "B".equals(document.region_type())
+            && document.code() != null
+            && document.code().length() == 10;
+    }
+
+    private LegalDongRegion toLegalDongRegion(KakaoSearchByRegionCodeResult.Document document) {
+        return LegalDongRegion.builder()
+            .legalDongCode(document.code())
+            .sidoName(blankToNull(document.region_1depth_name()))
+            .sigunguName(blankToNull(document.region_2depth_name()))
+            .eupMyeonDongName(blankToNull(document.region_3depth_name()))
+            .dongRiName(blankToNull(document.region_4depth_name()))
+            .build();
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
 }
