@@ -3,8 +3,8 @@ package backend.capstone.polyline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 
-import backend.capstone.domain.gpspoint.entity.GpsPoint;
-import backend.capstone.domain.gpspoint.util.PolylineUtil;
+import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
+import backend.capstone.domain.mobility.gpspoint.util.PolylineUtil;
 import backend.capstone.polyline.util.PolylineDecoder;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

@@ -1,13 +1,15 @@
-package backend.capstone.domain.dayroute.event;
+package backend.capstone.domain.mobility.dayroute.event;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
-import backend.capstone.domain.dayroute.service.DayRouteAnalysisLockService;
-import backend.capstone.domain.ongoinghomestatus.service.HomeStatusAnalysisService;
-import backend.capstone.domain.ongoingstay.service.StayAnalysisService;
+import backend.capstone.domain.mobility.analysis.ongoinghomestatus.service.HomeStatusAnalysisService;
+import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
+import backend.capstone.domain.mobility.dayroute.event.DayRouteAnalysisEventListener;
+import backend.capstone.domain.mobility.dayroute.event.GpsPointsUploadedEvent;
+import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -39,7 +41,8 @@ class DayRouteAnalysisEventListenerTest {
             Runnable task = invocation.getArgument(1);
             task.run();
             return null;
-        }).when(dayRouteAnalysisLockService).withLock(eq(dayRouteId), org.mockito.ArgumentMatchers.any(Runnable.class));
+        }).when(dayRouteAnalysisLockService)
+            .withLock(eq(dayRouteId), org.mockito.ArgumentMatchers.any(Runnable.class));
 
         dayRouteAnalysisEventListener.handle(event);
 

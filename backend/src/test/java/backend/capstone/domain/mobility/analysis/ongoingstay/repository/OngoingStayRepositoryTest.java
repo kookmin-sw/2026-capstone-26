@@ -1,12 +1,13 @@
-package backend.capstone.domain.ongoingstay.repository;
+package backend.capstone.domain.mobility.analysis.ongoingstay.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import backend.capstone.domain.dayroute.entity.DayRoute;
-import backend.capstone.domain.dayroute.repository.DayRouteRepository;
-import backend.capstone.domain.gpspoint.entity.GpsPoint;
-import backend.capstone.domain.gpspoint.repository.GpsPointRepository;
-import backend.capstone.domain.ongoingstay.entity.OngoingStay;
+import backend.capstone.domain.mobility.analysis.ongoingstay.entity.OngoingStay;
+import backend.capstone.domain.mobility.analysis.ongoingstay.repository.OngoingStayRepository;
+import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
+import backend.capstone.domain.mobility.dayroute.repository.DayRouteRepository;
+import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
+import backend.capstone.domain.mobility.gpspoint.repository.GpsPointRepository;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.repository.UserRepository;
@@ -81,7 +82,8 @@ class OngoingStayRepositoryTest {
             recordedAt
         );
 
-        GpsPoint gpsPoint = gpsPointRepository.findByDayRouteIdOrderByRecordedAt(dayRoute).getFirst();
+        GpsPoint gpsPoint = gpsPointRepository.findByDayRouteIdOrderByRecordedAt(dayRoute)
+            .getFirst();
         OngoingStay ongoingStay = OngoingStay.start(dayRoute, gpsPoint);
         ongoingStayRepository.save(ongoingStay);
     }

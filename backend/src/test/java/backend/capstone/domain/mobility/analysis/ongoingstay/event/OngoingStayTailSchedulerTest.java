@@ -1,4 +1,4 @@
-package backend.capstone.domain.ongoingstay.event;
+package backend.capstone.domain.mobility.analysis.ongoingstay.event;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -6,9 +6,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.capstone.domain.dayroute.service.DayRouteAnalysisLockService;
-import backend.capstone.domain.ongoingstay.repository.OngoingStayRepository;
-import backend.capstone.domain.ongoingstay.service.StayAnalysisService;
+import backend.capstone.domain.mobility.analysis.ongoingstay.event.OngoingStayTailScheduler;
+import backend.capstone.domain.mobility.analysis.ongoingstay.repository.OngoingStayRepository;
+import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
+import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;

@@ -1,16 +1,17 @@
-package backend.capstone.domain.ongoinghomestatus.service;
+package backend.capstone.domain.mobility.analysis.ongoinghomestatus.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import backend.capstone.domain.bookmarkplace.entity.BookmarkPlace;
 import backend.capstone.domain.bookmarkplace.entity.BookmarkPlaceType;
 import backend.capstone.domain.bookmarkplace.repository.BookmarkPlaceRepository;
-import backend.capstone.domain.dayroute.entity.DayRoute;
-import backend.capstone.domain.dayroute.entity.DayRouteHomeStatus;
-import backend.capstone.domain.dayroute.repository.DayRouteRepository;
-import backend.capstone.domain.ongoinghomestatus.entity.HomeZoneStatus;
-import backend.capstone.domain.ongoinghomestatus.entity.OngoingHomeStatus;
-import backend.capstone.domain.ongoinghomestatus.repository.OngoingHomeStatusRepository;
+import backend.capstone.domain.mobility.analysis.ongoinghomestatus.entity.HomeZoneStatus;
+import backend.capstone.domain.mobility.analysis.ongoinghomestatus.entity.OngoingHomeStatus;
+import backend.capstone.domain.mobility.analysis.ongoinghomestatus.repository.OngoingHomeStatusRepository;
+import backend.capstone.domain.mobility.analysis.ongoinghomestatus.service.HomeStatusAnalysisService;
+import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
+import backend.capstone.domain.mobility.dayroute.entity.DayRouteHomeStatus;
+import backend.capstone.domain.mobility.dayroute.repository.DayRouteRepository;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.repository.UserRepository;

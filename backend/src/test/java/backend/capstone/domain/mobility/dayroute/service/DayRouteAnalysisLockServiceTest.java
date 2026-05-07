@@ -1,7 +1,8 @@
-package backend.capstone.domain.dayroute.service;
+package backend.capstone.domain.mobility.dayroute.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
