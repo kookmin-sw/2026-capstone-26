@@ -1,9 +1,13 @@
 package backend.capstone.domain.friend.friendinvite.service;
 
 import backend.capstone.domain.friend.friendinvite.dto.FriendInviteLinkResponse;
+import backend.capstone.domain.friend.friendinvite.entity.FriendInvite;
+import backend.capstone.domain.friend.friendinvite.entity.FriendInviteStatus;
 import backend.capstone.domain.friend.friendinvite.exception.FriendInviteErrorCode;
 import backend.capstone.domain.friend.friendinvite.mapper.FriendInviteMapper;
 import backend.capstone.domain.friend.friendinvite.repository.FriendInviteRepository;
+import backend.capstone.domain.friend.friendship.entity.Friendship;
+import backend.capstone.domain.friend.friendship.repository.FriendshipRepository;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.service.UserService;
 import backend.capstone.global.exception.BusinessException;
@@ -23,6 +27,7 @@ public class FriendInviteService {
     private static final int MAX_GENERATE_ATTEMPTS = 10;
 
     private final FriendInviteRepository friendInviteRepository;
+    private final FriendshipRepository friendshipRepository;
     private final UserService userService;
     private final FriendInviteCodeGenerator friendInviteCodeGenerator;
 
@@ -43,6 +48,42 @@ public class FriendInviteService {
             FriendInviteMapper.toEntity(inviterUser, inviteCode, expiresAt));
 
         return inviteCode;
+    }
+
+    @Transactional
+    public void acceptInvite(String inviteCode, Long acceptedUserId) {
+        FriendInvite friendInvite = friendInviteRepository.findByInviteCode(inviteCode)
+            .orElseThrow(
+                () -> new BusinessException(FriendInviteErrorCode.FRIEND_INVITE_NOT_FOUND));
+
+        validateInvitable(friendInvite, acceptedUserId);
+
+        User acceptedUser = userService.findById(acceptedUserId);
+        Friendship friendship = Friendship.of(friendInvite.getInviterUser(), acceptedUser);
+
+        if (friendshipRepository.existsByUserAndFriend(friendship.getUser(),
+            friendship.getFriend())) {
+            throw new BusinessException(FriendInviteErrorCode.FRIEND_ALREADY_EXISTS);
+        }
+
+        friendInvite.accept(acceptedUser, Instant.now());
+        friendshipRepository.save(friendship);
+    }
+
+    private void validateInvitable(FriendInvite friendInvite, Long acceptedUserId) {
+        if (friendInvite.getStatus() != FriendInviteStatus.PENDING) {
+            throw new BusinessException(FriendInviteErrorCode.FRIEND_INVITE_ALREADY_PROCESSED);
+        }
+
+        if (friendInvite.getExpiresAt().isBefore(Instant.now())) {
+            friendInvite.expire();
+            throw new BusinessException(FriendInviteErrorCode.FRIEND_INVITE_EXPIRED);
+        }
+
+        if (friendInvite.getInviterUser().getId().equals(acceptedUserId)) {
+            throw new BusinessException(
+                FriendInviteErrorCode.FRIEND_INVITE_SELF_ACCEPT_NOT_ALLOWED);
+        }
     }
 
     //중복되지 않는 초대 코드를 만드는 시도를 최대 10번까지 함
