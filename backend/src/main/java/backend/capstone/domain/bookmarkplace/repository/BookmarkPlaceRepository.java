@@ -29,11 +29,10 @@ public interface BookmarkPlaceRepository extends JpaRepository<BookmarkPlace, Lo
     @Query("""
         select bp
         from BookmarkPlace bp
-        where bp.user.id = :userId and bp.type = :type
+        where bp.user.id = :userId
+            and bp.type = :type
+            and bp.isDefault = true
         """)
-    Optional<BookmarkPlace> findByUserIdAndType(@Param("userId") Long userId,
+    Optional<BookmarkPlace> findDefaultByUserIdAndType(@Param("userId") Long userId,
         @Param("type") BookmarkPlaceType type);
-
-    //TODO: JPQL로 변경
-    boolean existsByUserIdAndType(Long userId, BookmarkPlaceType type);
 }

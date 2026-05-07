@@ -3,6 +3,7 @@ package backend.capstone.domain.kakaoplace.service.client;
 import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByCategoryResult;
 import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByCoordResult;
 import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByKeywordResult;
+import backend.capstone.domain.kakaoplace.service.dto.KakaoSearchByRegionCodeResult;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -41,6 +42,20 @@ public class KakaoLocalApiClient {
                 .build())
             .retrieve()
             .bodyToMono(KakaoSearchByCoordResult.class)
+            .block();
+    }
+
+    public KakaoSearchByRegionCodeResult searchRegionCodeByCoord(double latitude,
+        double longitude) {
+        return kakaoLocalWebClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/v2/local/geo/coord2regioncode.json")
+                .queryParam("x", longitude)
+                .queryParam("y", latitude)
+                .queryParam("input_coord", "WGS84")
+                .build())
+            .retrieve()
+            .bodyToMono(KakaoSearchByRegionCodeResult.class)
             .block();
     }
 

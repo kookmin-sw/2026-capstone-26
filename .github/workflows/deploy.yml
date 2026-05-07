@@ -62,6 +62,7 @@ jobs:
           REDIS_HOST=${{ secrets.REDIS_HOST }}
           REDIS_PORT=${{ secrets.REDIS_PORT }}
           KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}
+          DDL_AUTO=${{ secrets.DDL_AUTO }}
           EOF
 
       # EC2로 .env 업로드

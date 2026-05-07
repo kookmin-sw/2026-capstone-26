@@ -66,3 +66,6 @@ backend/node_modules/
 # env files
 .env
 .env.*
+
+# test data
+/backend/src/test/resources/backend/capstone/domain/dayroute/fixtures/

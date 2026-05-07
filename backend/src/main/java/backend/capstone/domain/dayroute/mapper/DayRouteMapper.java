@@ -47,13 +47,15 @@ public class DayRouteMapper {
             .build();
     }
 
-    public static DayRouteSummaryResponse toDayRouteSummaryResponse(DayRoute dayRoute) {
+    public static DayRouteSummaryResponse toDayRouteSummaryResponse(DayRoute dayRoute,
+        List<String> visitedDongName) {
         return new DayRouteSummaryResponse(
             KstDateTimeUtils.toKstOffsetDateTime(dayRoute.getOutingTime()),
             KstDateTimeUtils.toKstOffsetDateTime(dayRoute.getEnterHomeTime()),
             dayRoute.getTotalOutingCount(),
             dayRoute.getTotalOutingSeconds(),
-            DurationFormatUtils.formatOutingDurationText(dayRoute.getTotalOutingSeconds())
+            DurationFormatUtils.formatOutingDurationText(dayRoute.getTotalOutingSeconds()),
+            visitedDongName
         );
     }
 
