@@ -33,7 +33,7 @@ public class HomeStatusAnalysisService {
     public void analyzeHomeStatus(Long dayRouteId) {
         DayRoute dayRoute = dayRouteService.getDayRouteById(dayRouteId);
 
-        Optional<BookmarkPlace> optionalHome = bookmarkPlaceRepository.findByUserIdAndType(
+        Optional<BookmarkPlace> optionalHome = bookmarkPlaceRepository.findDefaultByUserIdAndType(
             dayRoute.getUser().getId(), BookmarkPlaceType.HOME);
 
         if (optionalHome.isEmpty()) {

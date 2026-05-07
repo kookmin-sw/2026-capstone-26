@@ -29,7 +29,8 @@ public class BookmarkPlaceService {
     public BookmarkPlaceCreateResponse createBookmarkPlace(Long userId,
         BookmarkPlaceCreateRequest request) {
         validateDefaultBookmarkPlace(request.type(), request.isDefault());
-        validateHomeBookmarkPlaceCreation(userId, request.type());
+        updateExistingDefaultHomeBookmarkPlace(userId, null, request.type(), request.isDefault());
+
         User user = userService.findById(userId);
         BookmarkPlace bookmarkPlace = BookmarkPlaceMapper.toEntity(user, request);
         BookmarkPlace savedBookmarkPlace = bookmarkPlaceRepository.save(bookmarkPlace);
@@ -46,7 +47,8 @@ public class BookmarkPlaceService {
                 () -> new BusinessException(BookmarkPlaceErrorCode.BOOKMARK_PLACE_NOT_FOUND));
 
         validateDefaultBookmarkPlace(request.type(), request.isDefault());
-        validateHomeBookmarkPlaceUpdate(userId, bookmarkPlace, request.type());
+        updateExistingDefaultHomeBookmarkPlace(userId, bookmarkPlace.getId(), request.type(),
+            request.isDefault());
 
         bookmarkPlace.update(request.type(), request.placeName(), request.roadAddress(),
             request.latitude(), request.longitude(), request.isDefault()
@@ -79,25 +81,22 @@ public class BookmarkPlaceService {
     }
 
     private void validateDefaultBookmarkPlace(BookmarkPlaceType type, boolean isDefault) {
-        //isDefault가 true인 경우는 home 타입만 가능
         if (isDefault && type != BookmarkPlaceType.HOME) {
             throw new BusinessException(BookmarkPlaceErrorCode.INVALID_DEFAULT_BOOKMARK_PLACE);
         }
     }
 
-    private void validateHomeBookmarkPlaceCreation(Long userId, BookmarkPlaceType type) {
-        if (type == BookmarkPlaceType.HOME
-            && bookmarkPlaceRepository.existsByUserIdAndType(userId, BookmarkPlaceType.HOME)) {
-            throw new BusinessException(BookmarkPlaceErrorCode.HOME_BOOKMARK_PLACE_ALREADY_EXISTS);
+    private void updateExistingDefaultHomeBookmarkPlace(Long userId, Long bookmarkPlaceId,
+        BookmarkPlaceType type, boolean isDefault) {
+        if (type != BookmarkPlaceType.HOME || !isDefault) {
+            return;
         }
-    }
 
-    private void validateHomeBookmarkPlaceUpdate(Long userId, BookmarkPlace bookmarkPlace,
-        BookmarkPlaceType requestedType) {
-        if (requestedType == BookmarkPlaceType.HOME
-            && bookmarkPlace.getType() != BookmarkPlaceType.HOME
-            && bookmarkPlaceRepository.existsByUserIdAndType(userId, BookmarkPlaceType.HOME)) {
-            throw new BusinessException(BookmarkPlaceErrorCode.HOME_BOOKMARK_PLACE_ALREADY_EXISTS);
-        }
+        //- 새 기본 HOME 생성: 기존 기본 HOME이 있으면 해제
+        //- 다른 HOME을 기본 HOME으로 수정: 기존 기본 HOME이 있으면 해제
+        //- 이미 기본 HOME인 같은 북마크를 다시 기본으로 수정: 아무 것도 안 함
+        bookmarkPlaceRepository.findDefaultByUserIdAndType(userId, BookmarkPlaceType.HOME)
+            .filter(bookmarkPlace -> !bookmarkPlace.getId().equals(bookmarkPlaceId))
+            .ifPresent(bookmarkPlace -> bookmarkPlace.changeDefault(false));
     }
 }

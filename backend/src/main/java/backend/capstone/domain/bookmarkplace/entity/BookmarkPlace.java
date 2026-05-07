@@ -66,4 +66,7 @@ public class BookmarkPlace extends BaseTimeEntity {
         this.isDefault = isDefault;
     }
 
+    public void changeDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 }
