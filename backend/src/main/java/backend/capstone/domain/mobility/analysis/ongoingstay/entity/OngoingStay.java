@@ -1,0 +1,96 @@
+package backend.capstone.domain.mobility.analysis.ongoingstay.entity;
+
+import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
+import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
+import backend.capstone.global.entity.BaseTimeEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import java.time.Duration;
+import java.time.Instant;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@Getter
+public class OngoingStay extends BaseTimeEntity {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @Column(name = "ongoing_stay_id")
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "day_route_id")
+    private DayRoute dayRoute;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "start_point_id")
+    private GpsPoint startPoint;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "end_point_id")
+    private GpsPoint lastPoint;
+
+    private Instant startTime;
+
+    private Instant lastTime;
+
+    private double centerLatitude;
+
+    private double centerLongitude;
+
+    private int pointCount;
+
+    public static OngoingStay start(DayRoute dayRoute, GpsPoint point) {
+        OngoingStay stay = new OngoingStay();
+        stay.dayRoute = dayRoute;
+        stay.centerLatitude = point.getLatitude();
+        stay.centerLongitude = point.getLongitude();
+        stay.startPoint = point;
+        stay.lastPoint = point;
+        stay.startTime = point.getRecordedAt();
+        stay.lastTime = point.getRecordedAt();
+        stay.pointCount = 1;
+        return stay;
+    }
+
+    public void addPoint(GpsPoint point) {
+        this.centerLatitude =
+            ((this.centerLatitude * this.pointCount) + point.getLatitude())
+                / (this.pointCount + 1);
+
+        this.centerLongitude =
+            ((this.centerLongitude * this.pointCount) + point.getLongitude())
+                / (this.pointCount + 1);
+
+        this.pointCount++;
+        this.lastPoint = point;
+        this.lastTime = point.getRecordedAt();
+    }
+
+    public void restart(GpsPoint point) {
+        this.centerLatitude = point.getLatitude();
+        this.centerLongitude = point.getLongitude();
+        this.startPoint = point;
+        this.lastPoint = point;
+        this.startTime = point.getRecordedAt();
+        this.lastTime = point.getRecordedAt();
+        this.pointCount = 1;
+    }
+
+    public long getDurationMinutes() {
+        return Duration.between(startTime, lastTime).toMinutes();
+    }
+
+    public void updateLastTime(Instant lastTime) {
+        this.lastTime = lastTime;
+    }
+}

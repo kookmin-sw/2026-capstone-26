@@ -1,12 +1,12 @@
 package backend.capstone.domain.user.service;
 
-import backend.capstone.auth.service.dto.KakaoUserInfoResponse;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.exception.UserErrorCode;
 import backend.capstone.domain.user.mapper.UserMapper;
 import backend.capstone.domain.user.repository.UserRepository;
 import backend.capstone.global.exception.BusinessException;
+import backend.capstone.integration.kakao.auth.dto.KakaoUserInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
