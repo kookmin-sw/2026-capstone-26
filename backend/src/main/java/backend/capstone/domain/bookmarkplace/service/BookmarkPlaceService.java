@@ -47,7 +47,7 @@ public class BookmarkPlaceService {
         validateHomeBookmarkPlaceUpdate(userId, bookmarkPlace, request.type());
 
         bookmarkPlace.update(request.type(), request.placeName(), request.roadAddress(),
-            request.latitude(), request.longitude()
+            request.latitude(), request.longitude(), request.isDefault()
         );
 
         return BookmarkPlaceMapper.toUpdateResponse(bookmarkPlace);
