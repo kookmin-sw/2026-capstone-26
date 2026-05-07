@@ -16,9 +16,10 @@ public interface VisitedRegionRepository extends JpaRepository<VisitedRegion, Lo
         select vr
         from VisitedRegion vr
         where vr.dayRoute = :dayRoute
-        order by vr.id asc
+        order by vr.totalStaySeconds desc
         """)
-    List<VisitedRegion> findByDayRouteOrderByIdAsc(@Param("dayRoute") DayRoute dayRoute);
+    List<VisitedRegion> findByDayRouteOrderByTotalStaySecondsDesc(
+        @Param("dayRoute") DayRoute dayRoute);
 
     Optional<VisitedRegion> findByDayRouteAndRegion(DayRoute dayRoute, Region region);
 

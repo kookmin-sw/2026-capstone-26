@@ -11,6 +11,7 @@ import backend.capstone.domain.visitedregion.mapper.VisitedRegionMapper;
 import backend.capstone.domain.visitedregion.repository.VisitedRegionRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,13 @@ public class VisitedRegionService {
 
         visitedRegion.addStaySeconds(staySeconds);
         visitedRegionRepository.save(visitedRegion);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getVisitedRegionDongNames(DayRoute dayRoute) {
+        return visitedRegionRepository.findByDayRouteOrderByTotalStaySecondsDesc(dayRoute).stream()
+            .map(visitedRegion -> visitedRegion.getRegion().getDongName())
+            .toList();
     }
 
     private long calculateStaySeconds(Instant startTime, Instant endTime) {

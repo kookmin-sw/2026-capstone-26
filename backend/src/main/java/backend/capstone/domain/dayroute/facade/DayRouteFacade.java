@@ -17,6 +17,7 @@ import backend.capstone.domain.dayroute.mapper.DayRouteMapper;
 import backend.capstone.domain.dayroute.service.DayRouteService;
 import backend.capstone.domain.gpspoint.entity.GpsPoint;
 import backend.capstone.domain.gpspoint.service.GpsPointService;
+import backend.capstone.domain.visitedregion.service.VisitedRegionService;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,6 +36,7 @@ public class DayRouteFacade {
 
     private final DayRouteService dayRouteService;
     private final GpsPointService gpsPointService;
+    private final VisitedRegionService visitedRegionService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Retryable(
@@ -81,7 +83,8 @@ public class DayRouteFacade {
     @Transactional(readOnly = true)
     public DayRouteSummaryResponse getDayRouteSummary(LocalDate date, Long userId) {
         DayRoute dayRoute = dayRouteService.getDayRouteByDateAndUserId(date, userId);
-        return DayRouteMapper.toDayRouteSummaryResponse(dayRoute);
+        List<String> visitedDongName = visitedRegionService.getVisitedRegionDongNames(dayRoute);
+        return DayRouteMapper.toDayRouteSummaryResponse(dayRoute, visitedDongName);
     }
 
     @Transactional(readOnly = true)

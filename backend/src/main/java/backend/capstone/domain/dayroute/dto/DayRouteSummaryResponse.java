@@ -2,6 +2,7 @@ package backend.capstone.domain.dayroute.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public record DayRouteSummaryResponse(
     @Schema(example = "2026-04-29T08:10:00+09:00", description = "해당 날짜의 첫 외출 시간")
@@ -17,7 +18,9 @@ public record DayRouteSummaryResponse(
     long totalOutingSeconds,
 
     @Schema(example = "10시간 2분", description = "해당 날짜의 총 외출 시간 표시 문자열")
-    String totalOutingDurationText
+    String totalOutingDurationText,
+
+    List<String> visitedDongName
 ) {
 
 }
