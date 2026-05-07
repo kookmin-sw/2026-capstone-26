@@ -5,6 +5,7 @@ import backend.capstone.domain.friend.friendinvite.dto.FriendInviteAcceptRequest
 import backend.capstone.domain.friend.friendinvite.dto.FriendInviteLinkResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "친구 초대 API")
 public interface FriendInviteControllerSpec {
@@ -26,5 +27,5 @@ public interface FriendInviteControllerSpec {
             친구 추가가 정상적으로 완료되면 204 응답이 반환됩니다.
             """
     )
-    void acceptInvite(UserPrincipal principal, FriendInviteAcceptRequest request);
+    void acceptInvite(UserPrincipal principal, @Valid FriendInviteAcceptRequest request);
 }
