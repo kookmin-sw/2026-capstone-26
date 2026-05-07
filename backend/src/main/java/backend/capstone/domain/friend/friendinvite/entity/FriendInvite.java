@@ -13,7 +13,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,23 +47,23 @@ public class FriendInvite {
     private FriendInviteStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_user_id")
     private User acceptedUser;
 
-    private LocalDateTime acceptedAt;
+    private Instant acceptedAt;
 
     @Builder
-    public FriendInvite(User inviterUser, String inviteCode, LocalDateTime expiresAt) {
+    public FriendInvite(User inviterUser, String inviteCode, Instant expiresAt) {
         this.inviterUser = inviterUser;
         this.inviteCode = inviteCode;
         this.expiresAt = expiresAt;
         this.status = FriendInviteStatus.PENDING;
     }
 
-    public void accept(User acceptedUser, LocalDateTime acceptedAt) {
+    public void accept(User acceptedUser, Instant acceptedAt) {
         this.acceptedUser = acceptedUser;
         this.acceptedAt = acceptedAt;
         this.status = FriendInviteStatus.ACCEPTED;

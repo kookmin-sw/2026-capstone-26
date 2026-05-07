@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FriendInviteRepository extends JpaRepository<FriendInvite, Long> {
 
+    boolean existsByInviteCode(String inviteCode);
+
     Optional<FriendInvite> findByInviteCode(String inviteCode);
 }
