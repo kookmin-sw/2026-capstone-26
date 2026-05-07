@@ -75,9 +75,7 @@ public class StayAnalysisService {
                 promoteStayToPlace(dayRoute, stay);
             }
 
-            ongoingStayRepository.delete(stay);
-            stay = OngoingStay.start(dayRoute, point);
-            ongoingStayRepository.save(stay);
+            stay.restart(point); //stay 상태 재갱신
         }
 
         dayRoute.completeAnalysis(newPoints.getLast().getRecordedAt());
