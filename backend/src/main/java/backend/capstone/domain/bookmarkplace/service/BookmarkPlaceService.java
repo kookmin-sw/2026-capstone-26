@@ -28,6 +28,7 @@ public class BookmarkPlaceService {
     @Transactional
     public BookmarkPlaceCreateResponse createBookmarkPlace(Long userId,
         BookmarkPlaceCreateRequest request) {
+        validateDefaultBookmarkPlace(request.type(), request.isDefault());
         validateHomeBookmarkPlaceCreation(userId, request.type());
         User user = userService.findById(userId);
         BookmarkPlace bookmarkPlace = BookmarkPlaceMapper.toEntity(user, request);
@@ -44,6 +45,7 @@ public class BookmarkPlaceService {
             .orElseThrow(
                 () -> new BusinessException(BookmarkPlaceErrorCode.BOOKMARK_PLACE_NOT_FOUND));
 
+        validateDefaultBookmarkPlace(request.type(), request.isDefault());
         validateHomeBookmarkPlaceUpdate(userId, bookmarkPlace, request.type());
 
         bookmarkPlace.update(request.type(), request.placeName(), request.roadAddress(),
@@ -74,6 +76,13 @@ public class BookmarkPlaceService {
     @Transactional(readOnly = true)
     public List<BookmarkPlace> getBookmarkPlaceByUserId(Long userId) {
         return bookmarkPlaceRepository.findByUserIdOrderByIdAsc(userId);
+    }
+
+    private void validateDefaultBookmarkPlace(BookmarkPlaceType type, boolean isDefault) {
+        //isDefault가 true인 경우는 home 타입만 가능
+        if (isDefault && type != BookmarkPlaceType.HOME) {
+            throw new BusinessException(BookmarkPlaceErrorCode.INVALID_DEFAULT_BOOKMARK_PLACE);
+        }
     }
 
     private void validateHomeBookmarkPlaceCreation(Long userId, BookmarkPlaceType type) {
