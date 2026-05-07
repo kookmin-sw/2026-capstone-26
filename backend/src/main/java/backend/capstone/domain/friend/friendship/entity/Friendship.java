@@ -49,23 +49,9 @@ public class Friendship {
     }
 
     public static Friendship of(User userA, User userB) {
-        validateUsers(userA, userB);
-
         if (userA.getId() < userB.getId()) {
             return new Friendship(userA, userB);
         }
         return new Friendship(userB, userA);
-    }
-
-    private static void validateUsers(User userA, User userB) {
-        if (userA == null || userB == null) {
-            throw new IllegalArgumentException("친구 관계 사용자 정보는 null일 수 없습니다.");
-        }
-        if (userA.getId() == null || userB.getId() == null) {
-            throw new IllegalArgumentException("친구 관계를 생성하려면 사용자 ID가 필요합니다.");
-        }
-        if (userA.getId().equals(userB.getId())) {
-            throw new IllegalArgumentException("자기 자신과 친구 관계를 생성할 수 없습니다.");
-        }
     }
 }
