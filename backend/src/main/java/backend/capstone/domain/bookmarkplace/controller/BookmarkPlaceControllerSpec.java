@@ -27,7 +27,8 @@ public interface BookmarkPlaceControllerSpec {
         description = """
             type 필드의 값은 HOME/COMPANY/SCHOOL/ETC 중 하나를 선택해 주세요.<br>
             카카오 장소 검색 api에서 받은 longitude와 latitude 값을 요청값에 넣어주세요.<br>
-            isDefault가 true인 경우는 home 타입만 가능하며 isDefault가 true인 home 타입이 2개 이상 등록 시 예외가 발생합니다.
+            isDefault가 true인 경우는 home 타입만 가능하고<br>
+            새 isDefault가 true인 HOME을 생성 시 자동으로 기존 HOME의 isDefault는 false가 됩니다.
             """
     )
     BookmarkPlaceCreateResponse createBookmarkPlace(
@@ -40,7 +41,8 @@ public interface BookmarkPlaceControllerSpec {
         description = """
             type 필드의 값은 HOME/COMPANY/SCHOOL/ETC 중 하나를 선택해 주세요.<br>
             해당 api는 put 메서드로 해당 BookmarkPlace의 모든 필드들을 덮어씌워서 저장합니다. 변경되지 않은 필드도 원래값들을 넣어주세요.<br>
-            isDefault가 true인 경우는 home 타입만 가능하며 isDefault가 true인 home 타입이 2개 이상 등록 시 예외가 발생합니다.<br>
+            isDefault가 true인 경우는 home 타입만 가능하며<br>
+            isDefault가 true인 HOME으로 변경 시 자동으로 기존 HOME의 isDefault는 false가 됩니다.
             """
     )
     BookmarkPlaceUpdateResponse updateBookmarkPlace(
