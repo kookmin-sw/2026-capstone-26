@@ -11,7 +11,7 @@ spring:
       port: ${REDIS_PORT}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO}
     properties:
       hibernate:
         format_sql: true
@@ -35,3 +35,7 @@ kakao:
   local:
     base-url: https://dapi.kakao.com
     rest-api-key: ${KAKAO_REST_API_KEY}
+
+seed:
+  region:
+    enabled: true #region initializer 실행 여부

@@ -42,24 +42,31 @@ public class BookmarkPlace extends BaseTimeEntity {
 
     private double longitude;
 
+    private boolean isDefault;
+
     @Builder
     public BookmarkPlace(User user, BookmarkPlaceType type, String name, String roadAddress,
-        double latitude, double longitude) {
+        double latitude, double longitude, boolean isDefault) {
         this.user = user;
         this.type = type;
         this.name = name;
         this.roadAddress = roadAddress;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.isDefault = isDefault;
     }
 
     public void update(BookmarkPlaceType type, String name, String roadAddress, double latitude,
-        double longitude) {
+        double longitude, boolean isDefault) {
         this.type = type;
         this.name = name;
         this.roadAddress = roadAddress;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.isDefault = isDefault;
     }
 
+    public void changeDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 }

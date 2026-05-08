@@ -10,7 +10,8 @@ public record BookmarkPlaceCreateResponse(
     String placeName,
     String roadAddress,
     double latitude,
-    double longitude
+    double longitude,
+    boolean isDefault
 ) {
 
 }
