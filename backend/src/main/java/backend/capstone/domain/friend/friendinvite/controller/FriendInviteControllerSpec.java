@@ -22,6 +22,7 @@ public interface FriendInviteControllerSpec {
     @Operation(
         summary = "친구 초대 수락 API",
         description = """
+            초대 링크를 클릭하여 앱으로 이동하면 링크 url의 inviteCode를 추출하여 이 api를 호출해주세요<br>
             초대 코드를 사용해 친구 초대를 수락합니다.<br>
             본인 초대 수락, 만료된 초대, 이미 친구인 경우에는 에러 메시지가 반환됩니다.<br>
             친구 추가가 정상적으로 완료되면 204 응답이 반환됩니다.
