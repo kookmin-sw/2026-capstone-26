@@ -3,6 +3,7 @@ package com.example.passedpath.feature.route.presentation.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,16 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
-import com.example.passedpath.feature.main.presentation.state.MainCoordinateUiState
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
+import com.example.passedpath.ui.state.CoordinateUiState
 import com.example.passedpath.ui.theme.Green50
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
@@ -47,7 +51,7 @@ fun RouteMapContent(
 ) {
     val selectedRoute = routeModeUiState.route
     if (selectedRoute.polylinePoints.size >= 2) {
-        val routePoints = selectedRoute.polylinePoints.map(MainCoordinateUiState::toLatLng)
+        val routePoints = selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
 
         Polyline(
             points = routePoints,
@@ -96,16 +100,48 @@ private fun PlaceOrderMarker(
 ) {
     Box(
         modifier = Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(Color.White),
+            .size(42.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = place.orderIndex.toString(),
-            color = routeAccentColor,
-            fontWeight = FontWeight.Bold
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .offset(y = 2.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.36f))
         )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color.White, CircleShape)
+                .padding(3.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White, CircleShape)
+                    .drawBehind {
+                        drawCircle(
+                            color = routeAccentColor.copy(alpha = 0.1f),
+                            radius = size.minDimension / 2f
+                        )
+                        drawCircle(
+                            color = routeAccentColor,
+                            radius = size.minDimension / 2f - 1.dp.toPx(),
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = place.orderIndex.toString(),
+                    color = routeAccentColor,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
@@ -157,6 +193,6 @@ fun RouteStatusOverlay(
     }
 }
 
-private fun MainCoordinateUiState.toLatLng(): LatLng {
+private fun CoordinateUiState.toLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }

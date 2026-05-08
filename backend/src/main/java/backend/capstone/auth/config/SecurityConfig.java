@@ -30,6 +30,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
 
                 .requestMatchers(
+                    "/.well-known/**",
+                    "/friend/**",
+                    "/images/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**", "/webjars/**", "/swagger-resources/**", "/favicon.ico",

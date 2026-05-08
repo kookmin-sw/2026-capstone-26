@@ -51,8 +51,10 @@ import com.example.passedpath.feature.permission.data.manager.LocationPermission
 import com.example.passedpath.feature.permission.data.manager.LocationServiceStatusReader
 import com.example.passedpath.feature.place.data.remote.api.PlaceApi
 import com.example.passedpath.feature.place.data.remote.api.PlaceSearchApi
+import com.example.passedpath.feature.place.data.repository.PlaceGuideRepositoryImpl
 import com.example.passedpath.feature.place.data.repository.PlaceRepositoryImpl
 import com.example.passedpath.feature.place.data.repository.PlaceSearchRepositoryImpl
+import com.example.passedpath.feature.place.domain.repository.PlaceGuideRepository
 import com.example.passedpath.feature.place.domain.repository.PlaceRepository
 import com.example.passedpath.feature.place.domain.repository.PlaceSearchRepository
 import com.example.passedpath.feature.place.domain.usecase.AddPlaceUseCase
@@ -63,6 +65,17 @@ import com.example.passedpath.feature.place.domain.usecase.ReorderPlacesUseCase
 import com.example.passedpath.feature.place.domain.usecase.SearchPlacesUseCase
 import com.example.passedpath.feature.place.domain.usecase.UpdateBookmarkPlaceUseCase
 import com.example.passedpath.feature.place.domain.usecase.UpdatePlaceUseCase
+import com.example.passedpath.feature.placebookmark.data.remote.api.PlaceBookmarkApi
+import com.example.passedpath.feature.placebookmark.data.repository.PlaceBookmarkRepositoryImpl
+import com.example.passedpath.feature.placebookmark.domain.repository.PlaceBookmarkRepository
+import com.example.passedpath.feature.placebookmark.domain.usecase.CreatePlaceBookmarkUseCase
+import com.example.passedpath.feature.placebookmark.domain.usecase.DeletePlaceBookmarkUseCase
+import com.example.passedpath.feature.placebookmark.domain.usecase.GetPlaceBookmarksUseCase
+import com.example.passedpath.feature.placebookmark.domain.usecase.UpdatePlaceBookmarkUseCase
+import com.example.passedpath.feature.summary.data.remote.api.DayRouteSummaryApi
+import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRepositoryImpl
+import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
+import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
 import java.time.LocalTime
 
@@ -170,6 +183,10 @@ class AppContainer(
         retrofit.create(DayRouteApi::class.java)
     }
 
+    private val dayRouteSummaryApi by lazy {
+        retrofit.create(DayRouteSummaryApi::class.java)
+    }
+
     private val dayRouteBookmarkApi by lazy {
         retrofit.create(DayRouteBookmarkApi::class.java)
     }
@@ -188,6 +205,10 @@ class AppContainer(
 
     private val placeSearchApi by lazy {
         retrofit.create(PlaceSearchApi::class.java)
+    }
+
+    private val placeBookmarkApi by lazy {
+        retrofit.create(PlaceBookmarkApi::class.java)
     }
 
     val trackingDebugLogRepository: TrackingDebugLogRepository by lazy {
@@ -228,6 +249,10 @@ class AppContainer(
             gpsPointDao = trackingDatabase.gpsPointDao(),
             dayRouteApi = dayRouteApi
         )
+    }
+
+    val dayRouteSummaryRepository: DayRouteSummaryRepository by lazy {
+        DayRouteSummaryRepositoryImpl(dayRouteSummaryApi = dayRouteSummaryApi)
     }
 
     val startLocationTrackingUseCase: StartLocationTrackingUseCase by lazy {
@@ -276,6 +301,14 @@ class AppContainer(
         PlaceSearchRepositoryImpl(placeSearchApi)
     }
 
+    val placeGuideRepository: PlaceGuideRepository by lazy {
+        PlaceGuideRepositoryImpl(appContext)
+    }
+
+    val placeBookmarkRepository: PlaceBookmarkRepository by lazy {
+        PlaceBookmarkRepositoryImpl(placeBookmarkApi)
+    }
+
     val uploadGpsPointsBatchUseCase: UploadGpsPointsBatchUseCase by lazy {
         UploadGpsPointsBatchUseCase(
             dayRouteApi = dayRouteApi,
@@ -294,6 +327,10 @@ class AppContainer(
 
     val toggleDayRouteBookmarkUseCase: ToggleDayRouteBookmarkUseCase by lazy {
         ToggleDayRouteBookmarkUseCase(dayRouteBookmarkRepository = dayRouteBookmarkRepository)
+    }
+
+    val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {
+        GetDayRouteSummaryUseCase(dayRouteSummaryRepository = dayRouteSummaryRepository)
     }
 
     val patchDayRouteTitleUseCase: PatchDayRouteTitleUseCase by lazy {
@@ -330,6 +367,22 @@ class AppContainer(
 
     val updateBookmarkPlaceUseCase: UpdateBookmarkPlaceUseCase by lazy {
         UpdateBookmarkPlaceUseCase(placeRepository = placeRepository)
+    }
+
+    val updatePlaceBookmarkUseCase: UpdatePlaceBookmarkUseCase by lazy {
+        UpdatePlaceBookmarkUseCase(placeBookmarkRepository = placeBookmarkRepository)
+    }
+
+    val deletePlaceBookmarkUseCase: DeletePlaceBookmarkUseCase by lazy {
+        DeletePlaceBookmarkUseCase(placeBookmarkRepository = placeBookmarkRepository)
+    }
+
+    val getPlaceBookmarksUseCase: GetPlaceBookmarksUseCase by lazy {
+        GetPlaceBookmarksUseCase(placeBookmarkRepository = placeBookmarkRepository)
+    }
+
+    val createPlaceBookmarkUseCase: CreatePlaceBookmarkUseCase by lazy {
+        CreatePlaceBookmarkUseCase(placeBookmarkRepository = placeBookmarkRepository)
     }
 
     val reorderPlacesUseCase: ReorderPlacesUseCase by lazy {

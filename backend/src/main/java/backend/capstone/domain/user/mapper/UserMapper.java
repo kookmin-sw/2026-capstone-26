@@ -1,8 +1,8 @@
 package backend.capstone.domain.user.mapper;
 
-import backend.capstone.auth.service.dto.KakaoUserInfoResponse;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
+import backend.capstone.integration.kakao.auth.dto.KakaoUserInfoResponse;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)

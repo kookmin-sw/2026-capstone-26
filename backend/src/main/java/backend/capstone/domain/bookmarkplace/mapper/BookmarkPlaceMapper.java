@@ -25,6 +25,7 @@ public class BookmarkPlaceMapper {
             .roadAddress(request.roadAddress())
             .latitude(request.latitude())
             .longitude(request.longitude())
+            .isDefault(request.isDefault())
             .build();
     }
 
@@ -36,6 +37,7 @@ public class BookmarkPlaceMapper {
             .roadAddress(bookmarkPlace.getRoadAddress())
             .latitude(bookmarkPlace.getLatitude())
             .longitude(bookmarkPlace.getLongitude())
+            .isDefault(bookmarkPlace.isDefault())
             .build();
     }
 
@@ -46,6 +48,7 @@ public class BookmarkPlaceMapper {
             .roadAddress(bookmarkPlace.getRoadAddress())
             .latitude(bookmarkPlace.getLatitude())
             .longitude(bookmarkPlace.getLongitude())
+            .isDefault(bookmarkPlace.isDefault())
             .build();
     }
 
@@ -66,6 +69,7 @@ public class BookmarkPlaceMapper {
             .roadAddress(bookmarkPlace.getRoadAddress())
             .latitude(bookmarkPlace.getLatitude())
             .longitude(bookmarkPlace.getLongitude())
+            .isDefault(bookmarkPlace.isDefault())
             .build();
     }
 }
