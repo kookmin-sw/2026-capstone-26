@@ -28,9 +28,9 @@ public interface VisitedRegionRepository extends JpaRepository<VisitedRegion, Lo
         from VisitedRegion vr
         join fetch vr.region r
         where vr.dayRoute in :dayRoutes
-        order by vr.dayRoute.date desc, vr.totalStaySeconds desc
+        order by vr.totalStaySeconds desc
         """)
-    List<VisitedRegion> findByDayRouteInOrderByDayRouteDateDesc(
+    List<VisitedRegion> findByDayRouteInOrderByTotalStaySecondsDesc(
         @Param("dayRoutes") List<DayRoute> dayRoutes);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

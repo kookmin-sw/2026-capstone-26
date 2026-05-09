@@ -79,6 +79,7 @@ public class VisitedRegionService {
     @Transactional(readOnly = true)
     public Map<Long, List<String>> getVisitedRegionDongNames(List<DayRoute> dayRoutes) {
         Map<Long, List<String>> visitedRegionMap = new LinkedHashMap<>();
+        // LinkedHashMap을 써서 map의 key 순서는 입력 dayRoutes 순서(date 내림차순)를 그대로 유지한다.
         for (DayRoute dayRoute : dayRoutes) {
             visitedRegionMap.put(dayRoute.getId(), new ArrayList<>());
         }
@@ -87,7 +88,8 @@ public class VisitedRegionService {
             return visitedRegionMap;
         }
 
-        visitedRegionRepository.findByDayRouteInOrderByDayRouteDateDesc(dayRoutes)
+        // 각 dayRoute 내부의 dong 순서는 totalStaySeconds 내림차순이다.
+        visitedRegionRepository.findByDayRouteInOrderByTotalStaySecondsDesc(dayRoutes)
             .forEach(visitedRegion -> visitedRegionMap.get(visitedRegion.getDayRoute().getId())
                 .add(visitedRegion.getRegion().getDongName()));
 
