@@ -64,7 +64,7 @@ internal fun RouteTopBars(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Transparent)
+            .background(Color.White)
     ) {
         Column(
             modifier = Modifier
