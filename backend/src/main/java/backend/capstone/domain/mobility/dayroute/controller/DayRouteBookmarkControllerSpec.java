@@ -1,6 +1,7 @@
 package backend.capstone.domain.mobility.dayroute.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,4 +18,9 @@ public interface DayRouteBookmarkControllerSpec {
         @Parameter(name = "date", example = "2026-01-01") LocalDate date,
         UserPrincipal principal
     );
+
+    @Operation(
+        summary = "북마크한 dayRoute 목록 조회 API"
+    )
+    DayRouteBookmarkListResponse getBookmarkedDayRoutes(UserPrincipal principal);
 }

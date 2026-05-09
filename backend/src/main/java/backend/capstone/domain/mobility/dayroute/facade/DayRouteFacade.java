@@ -1,6 +1,7 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteMemoRequest;
@@ -91,6 +92,14 @@ public class DayRouteFacade {
     public DayRouteMonthlyResponse getDayRoutesByMonth(int year, int month, Long userId) {
         List<DayRoute> dayRoutes = dayRouteService.getDayRoutesByMonth(userId, year, month);
         return DayRouteMapper.toDayRouteMonthlyResponse(year, month, dayRoutes);
+    }
+
+    @Transactional(readOnly = true)
+    public DayRouteBookmarkListResponse getBookmarkedDayRoutes(Long userId) {
+        //date 내림차순으로 dayRoute를 갖고옴
+        List<DayRoute> dayRoutes = dayRouteService.getBookmarkedDayRoutes(userId);
+        return DayRouteMapper.toDayRouteBookmarkListResponse(dayRoutes,
+            visitedRegionService.getVisitedRegionDongNames(dayRoutes));
     }
 
     @Transactional

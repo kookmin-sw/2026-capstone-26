@@ -28,4 +28,13 @@ public interface DayRouteRepository extends JpaRepository<DayRoute, Long> {
         """)
     List<DayRoute> findByUserIdAndDateBetweenOrderByDate(@Param("userId") Long userId,
         @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+            select dr
+            from DayRoute dr
+            where dr.user.id = :userId
+              and dr.isBookmarked = true
+            order by dr.date desc
+        """)
+    List<DayRoute> findBookmarkedByUserIdOrderByDateDesc(@Param("userId") Long userId);
 }

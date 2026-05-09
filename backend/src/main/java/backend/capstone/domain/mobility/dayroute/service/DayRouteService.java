@@ -58,6 +58,11 @@ public class DayRouteService {
             yearMonth.atDay(1), yearMonth.atEndOfMonth());
     }
 
+    @Transactional(readOnly = true)
+    public List<DayRoute> getBookmarkedDayRoutes(Long userId) {
+        return dayRouteRepository.findBookmarkedByUserIdOrderByDateDesc(userId);
+    }
+
     @Transactional
     public void replaceTitle(DayRoute dayRoute, String title) {
         dayRoute.updateTitle(normalizeNullableText(title));

@@ -11,7 +11,10 @@ import backend.capstone.integration.kakao.local.dto.LegalDongRegion;
 import backend.capstone.integration.kakao.local.service.KakaoSearchByCoordService;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +74,24 @@ public class VisitedRegionService {
         return visitedRegionRepository.findByDayRouteOrderByTotalStaySecondsDesc(dayRoute).stream()
             .map(visitedRegion -> visitedRegion.getRegion().getDongName())
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<String>> getVisitedRegionDongNames(List<DayRoute> dayRoutes) {
+        Map<Long, List<String>> visitedRegionMap = new LinkedHashMap<>();
+        for (DayRoute dayRoute : dayRoutes) {
+            visitedRegionMap.put(dayRoute.getId(), new ArrayList<>());
+        }
+
+        if (dayRoutes.isEmpty()) {
+            return visitedRegionMap;
+        }
+
+        visitedRegionRepository.findByDayRouteInOrderByDayRouteDateDesc(dayRoutes)
+            .forEach(visitedRegion -> visitedRegionMap.get(visitedRegion.getDayRoute().getId())
+                .add(visitedRegion.getRegion().getDongName()));
+
+        return visitedRegionMap;
     }
 
     private long calculateStaySeconds(Instant startTime, Instant endTime) {

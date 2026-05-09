@@ -1,12 +1,14 @@
 package backend.capstone.domain.mobility.dayroute.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import backend.capstone.domain.mobility.dayroute.facade.DayRouteFacade;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class DayRouteBookmarkController implements DayRouteBookmarkControllerSpec {
 
     private final DayRouteFacade dayRouteFacade;
+
+    @Override
+    @GetMapping("/bookmarks")
+    public DayRouteBookmarkListResponse getBookmarkedDayRoutes(
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return dayRouteFacade.getBookmarkedDayRoutes(principal.userId());
+    }
 
     @Override
     @PatchMapping("/{date}/bookmark")
