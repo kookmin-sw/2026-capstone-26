@@ -1,6 +1,7 @@
 package backend.capstone.domain.mobility.currentlocation.service;
 
 import backend.capstone.domain.mobility.currentlocation.dto.CurrentLocationCacheValue;
+import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.GpsPointRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ public class CurrentLocationCacheService {
             return;
         }
 
+        //최신 좌표 선택
         GpsPointRequest latestPoint = gpsPoints.stream()
             .max(Comparator.comparing(GpsPointRequest::recordedAt))
             .orElseThrow();
@@ -32,18 +34,26 @@ public class CurrentLocationCacheService {
             latestPoint.recordedAt()
         );
 
-        redisTemplate.opsForValue().set(redisKey(userId), serialize(cacheValue));
+        try {
+            redisTemplate.opsForValue().set(redisKey(userId), serialize(cacheValue));
+        } catch (CurrentLocationCacheException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new CurrentLocationCacheException("Failed to save current location cache.", e);
+        }
     }
 
     private String redisKey(Long userId) {
         return "current:location:user:" + userId;
     }
 
+    //gpsPoint 객체를 json 문자열로 직렬화
     private String serialize(CurrentLocationCacheValue cacheValue) {
         try {
             return objectMapper.writeValueAsString(cacheValue);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize current location cache value.", e);
+            throw new CurrentLocationCacheException(
+                "최신 좌표 json 직렬화 실패", e);
         }
     }
 }

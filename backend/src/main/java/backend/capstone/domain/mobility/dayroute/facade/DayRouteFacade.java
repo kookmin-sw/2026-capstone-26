@@ -1,6 +1,7 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
+import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
 import backend.capstone.domain.mobility.currentlocation.service.CurrentLocationCacheService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
@@ -25,6 +26,7 @@ import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.retry.annotation.Backoff;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DayRouteFacade {
 
@@ -57,7 +60,7 @@ public class DayRouteFacade {
 
         if (!request.gpsPoints().isEmpty()) {
             gpsPointService.batchInsert(dayRoute.getId(), request);
-            currentLocationCacheService.saveLatestLocation(userId, request.gpsPoints());
+            saveCurrentLocationCache(userId, request);
             dayRouteService.markHasGpsPoints(dayRoute);
         }
 
@@ -69,6 +72,14 @@ public class DayRouteFacade {
         }
 
         return new GpsPointBatchUploadResponse("좌표 업로드에 성공했습니다.");
+    }
+
+    private void saveCurrentLocationCache(Long userId, GpsPointBatchUploadRequest request) {
+        try {
+            currentLocationCacheService.saveLatestLocation(userId, request.gpsPoints());
+        } catch (CurrentLocationCacheException e) {
+            log.warn("최신 좌표 redis 적재 실패. userId={}", userId, e);
+        }
     }
 
     @Transactional
@@ -101,7 +112,6 @@ public class DayRouteFacade {
     @Transactional(readOnly = true)
     public DayRouteBookmarkListResponse getBookmarkedDayRoutes(Long userId, LocalDate cursorDate,
         int size) {
-        //date 내림차순으로 dayRoute를 갖고옴
         List<DayRoute> fetchedDayRoutes = dayRouteService.getBookmarkedDayRoutes(
             userId, cursorDate, size + 1);
         boolean hasNext = fetchedDayRoutes.size() > size;
