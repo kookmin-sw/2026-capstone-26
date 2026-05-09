@@ -1,10 +1,10 @@
-package backend.capstone.domain.friend.friendinvite.service;
+package backend.capstone.domain.friend.carerelationshipinvite.service;
 
 import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FriendInviteCodeGenerator {
+public class CareRelationshipInviteCodeGenerator {
 
     private static final String BASE62 =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

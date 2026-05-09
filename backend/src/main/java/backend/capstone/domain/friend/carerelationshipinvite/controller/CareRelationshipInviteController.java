@@ -1,9 +1,9 @@
-package backend.capstone.domain.friend.friendinvite.controller;
+package backend.capstone.domain.friend.carerelationshipinvite.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
-import backend.capstone.domain.friend.friendinvite.dto.FriendInviteAcceptRequest;
-import backend.capstone.domain.friend.friendinvite.dto.FriendInviteLinkResponse;
-import backend.capstone.domain.friend.friendinvite.service.FriendInviteService;
+import backend.capstone.domain.friend.carerelationshipinvite.dto.CareRelationshipInviteAcceptRequest;
+import backend.capstone.domain.friend.carerelationshipinvite.dto.CareRelationshipInviteLinkResponse;
+import backend.capstone.domain.friend.carerelationshipinvite.service.CareRelationshipInviteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,18 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 @RequiredArgsConstructor
-@RequestMapping("/api/friend-invites")
-public class FriendInviteController implements FriendInviteControllerSpec {
+@RequestMapping("/api/care-relationship-invites")
+public class CareRelationshipInviteController implements CareRelationshipInviteControllerSpec {
 
-    private final FriendInviteService friendInviteService;
+    private final CareRelationshipInviteService careRelationshipInviteService;
 
     @Override
     @PostMapping("/link")
     @ResponseStatus(HttpStatus.CREATED)
-    public FriendInviteLinkResponse createInviteLink(
+    public CareRelationshipInviteLinkResponse createInviteLink(
         @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return friendInviteService.createInviteLink(principal.userId());
+        return careRelationshipInviteService.createInviteLink(principal.userId());
     }
 
     @Override
@@ -37,8 +37,8 @@ public class FriendInviteController implements FriendInviteControllerSpec {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void acceptInvite(
         @AuthenticationPrincipal UserPrincipal principal,
-        @Valid @RequestBody FriendInviteAcceptRequest request
+        @Valid @RequestBody CareRelationshipInviteAcceptRequest request
     ) {
-        friendInviteService.acceptInvite(request.inviteCode(), principal.userId());
+        careRelationshipInviteService.acceptInvite(request.inviteCode(), principal.userId());
     }
 }
