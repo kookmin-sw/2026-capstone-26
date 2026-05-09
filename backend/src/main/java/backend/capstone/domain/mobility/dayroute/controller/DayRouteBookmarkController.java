@@ -34,7 +34,7 @@ public class DayRouteBookmarkController implements DayRouteBookmarkControllerSpe
     @GetMapping("/bookmarks")
     public DayRouteBookmarkListResponse getBookmarkedDayRoutes(
         @RequestParam(value = "cursorDate", required = false) LocalDate cursorDate,
-        @RequestParam(value = "size", defaultValue = "20") @Min(1) @Max(100) int size,
+        @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(100) int size,
         @AuthenticationPrincipal UserPrincipal principal
     ) {
         return dayRouteFacade.getBookmarkedDayRoutes(principal.userId(), cursorDate, size);

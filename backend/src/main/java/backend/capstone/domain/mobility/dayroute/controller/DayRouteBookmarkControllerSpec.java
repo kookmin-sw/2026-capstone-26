@@ -32,8 +32,8 @@ public interface DayRouteBookmarkControllerSpec {
             """
     )
     DayRouteBookmarkListResponse getBookmarkedDayRoutes(
-        @Parameter(name = "cursorDate", example = "2026-05-07") LocalDate cursorDate,
-        @Parameter(name = "size", example = "20") @Min(1) @Max(100) int size,
+        @Parameter(name = "cursorDate") LocalDate cursorDate,
+        @Parameter(name = "size", example = "10") @Min(1) @Max(100) int size,
         UserPrincipal principal
     );
 
