@@ -86,6 +86,7 @@ import com.example.passedpath.feature.placebookmark.presentation.viewmodel.Place
 import com.example.passedpath.feature.placebookmark.presentation.viewmodel.PlaceBookmarkViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
+import com.example.passedpath.ui.component.feedback.WifiFailurePanel
 import com.example.passedpath.ui.component.input.BaseInputButton
 import com.example.passedpath.ui.component.input.BaseInputField
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
@@ -753,22 +754,11 @@ private fun PlaceBookmarkErrorContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = stringResource(R.string.place_bookmark_error_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = Gray900,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Gray500
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        BaseButton(
-            text = stringResource(R.string.route_retry),
-            onClick = onRetryClick
+        WifiFailurePanel(
+            title = stringResource(R.string.place_bookmark_error_title),
+            message = message,
+            retryText = stringResource(R.string.route_retry),
+            onRetryClick = onRetryClick
         )
     }
 }

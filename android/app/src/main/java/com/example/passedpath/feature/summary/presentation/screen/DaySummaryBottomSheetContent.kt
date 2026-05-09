@@ -1,19 +1,13 @@
 package com.example.passedpath.feature.summary.presentation.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -29,11 +23,8 @@ import com.example.passedpath.feature.summary.presentation.component.DaySummaryM
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCardSkeleton
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
+import com.example.passedpath.ui.component.feedback.WifiFailurePanel
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
-import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Gray400
-import com.example.passedpath.ui.theme.Gray900
-import com.example.passedpath.ui.theme.Green500
 import com.example.passedpath.ui.theme.PassedPathTheme
 
 @Composable
@@ -140,35 +131,12 @@ private fun DaySummaryErrorNotice(
     message: String,
     onRetryClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Gray100, shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.day_summary_error_title),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Gray900,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodySmall,
-            color = Gray400
-        )
-        TextButton(
-            onClick = onRetryClick,
-            modifier = Modifier.height(32.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.route_retry),
-                color = Green500,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
+    WifiFailurePanel(
+        title = stringResource(R.string.day_summary_error_title),
+        message = message,
+        retryText = stringResource(R.string.route_retry),
+        onRetryClick = onRetryClick
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
