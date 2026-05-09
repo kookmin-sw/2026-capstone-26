@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.passedpath.R
 import com.example.passedpath.feature.daynote.presentation.state.DayNoteUiState
+import com.example.passedpath.feature.main.presentation.policy.MainScreenInteractionResult
 import com.example.passedpath.feature.main.presentation.policy.reduceForBottomSheetTabSelection
 import com.example.passedpath.feature.main.presentation.policy.reduceForDateChange
 import com.example.passedpath.feature.main.presentation.policy.reduceForMapFocusHandled
@@ -135,9 +137,13 @@ fun MainScreen(
     }
     val focusManager = LocalFocusManager.current
 
+    fun clearFocus() {
+        focusManager.clearFocus(force = true)
+    }
+
     fun hideEditKeyboard() {
         isPlaceNameFocused = false
-        focusManager.clearFocus(force = true)
+        clearFocus()
     }
 
     fun dismissPlaceEdit() {
@@ -191,7 +197,43 @@ fun MainScreen(
         )
     }
 
-    fun dispatchInteraction(result: com.example.passedpath.feature.main.presentation.policy.MainScreenInteractionResult) {
+    fun clearSubmittedPlaceEdit() {
+        submittedEditPlaceId = null
+        submittedEditStartedFeedbackEventId = null
+    }
+
+    fun handleEditPlaceRequested(placeId: Long) {
+        placeUiState.placeList.places.firstOrNull { place ->
+            place.placeId == placeId
+        }?.let { place ->
+            pendingEditPlaceId = place.placeId
+            editPlaceName = place.placeName
+            editRoadAddress = place.roadAddress
+            editLatitude = place.latitude
+            editLongitude = place.longitude
+            isPlaceEditSheetVisible = true
+            isPlaceEditSearchVisible = false
+            shouldRenderPlaceEditSearch = false
+            isPlaceNameFocused = false
+        }
+    }
+
+    fun handleDeletePlaceRequested(placeId: Long) {
+        pendingDeletePlace = placeUiState.placeList.places.firstOrNull { place ->
+            place.placeId == placeId
+        }
+    }
+
+    fun handlePlaceSelectedForEdit(place: PlaceSearchResult) {
+        editPlaceName = place.name
+        editRoadAddress = place.displayAddress
+        editLatitude = place.latitude
+        editLongitude = place.longitude
+        hideEditKeyboard()
+        hidePlaceEditSearch()
+    }
+
+    fun dispatchInteraction(result: MainScreenInteractionResult) {
         localUiState = result.state
         if (result.shouldRefreshPlaces) {
             onPlaceListRefreshRequested(uiState.selectedDateKey)
@@ -246,6 +288,358 @@ fun MainScreen(
         )
     }
 
+    MainScreenEffects(
+        selectedDateKey = uiState.selectedDateKey,
+        observedDateKey = observedDateKey,
+        placeUiState = placeUiState,
+        submittedEditPlaceId = submittedEditPlaceId,
+        submittedEditStartedFeedbackEventId = submittedEditStartedFeedbackEventId,
+        pendingEditPlaceId = pendingEditPlaceId,
+        isPlaceEditSheetVisible = isPlaceEditSheetVisible,
+        shouldRenderPlaceEditSearch = shouldRenderPlaceEditSearch,
+        isPlaceNameFocused = isPlaceNameFocused,
+        mainTabReselectionEvent = mainTabReselectionEvent,
+        placeCreatedEvent = placeCreatedEvent,
+        onPlaceCreatedEventHandled = onPlaceCreatedEventHandled,
+        onDismissPlaceEdit = ::dismissPlaceEdit,
+        onClearSubmittedPlaceEdit = ::clearSubmittedPlaceEdit,
+        onSelectedDateObserved = { observedDateKey = it },
+        onClearPendingDeletePlace = { pendingDeletePlace = null },
+        onDateChanged = {
+            dispatchInteraction(reduceForDateChange(localUiState))
+        },
+        onClearFocus = ::clearFocus,
+        onHideBottomSheet = ::hideBottomSheet,
+        onHideEditKeyboard = ::hideEditKeyboard,
+        onPlaceCreated = { placeId ->
+            dispatchInteraction(
+                reduceForPlaceCreated(
+                    state = localUiState,
+                    placeId = placeId
+                )
+            )
+        }
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        MainScreenScaffoldContent(
+            uiState = uiState,
+            dayNoteUiState = dayNoteUiState,
+            daySummaryUiState = daySummaryUiState,
+            placeUiState = placeUiState,
+            markerPlaces = markerPlaces,
+            bookmarkMarkers = bookmarkMarkers,
+            localUiState = localUiState,
+            onSheetValueChanged = ::handleSheetValueChanged,
+            onSheetCommandConsumed = ::handleSheetCommandConsumed,
+            onFocusedPlaceHandled = {
+                dispatchInteraction(reduceForMapFocusHandled(localUiState))
+            },
+            onCameraIntentConsumed = onCameraIntentConsumed,
+            onDateSelectionRequested = onDateSelectionRequested,
+            onBookmarkClick = onBookmarkClick,
+            onRouteAction = onRouteAction,
+            onNavigateToCalendar = onNavigateToCalendar,
+            onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
+            onMapClick = {
+                clearFocus()
+                hideBottomSheet()
+            },
+            onPlaceMarkerClick = ::handlePlaceMarkerClick,
+            onPermissionActionClick = onPermissionActionClick,
+            debugActions = debugActions,
+            onSelectedPlaceHandled = {
+                dispatchInteraction(reduceForSelectedPlaceHandled(localUiState))
+            },
+            onDayNoteTitleChanged = onDayNoteTitleChanged,
+            onDayNoteMemoChanged = onDayNoteMemoChanged,
+            onDayNoteSaveClick = onDayNoteSaveClick,
+            onDaySummaryLoadRequest = onDaySummaryLoadRequest,
+            onDaySummaryRetryClick = onDaySummaryRetryClick,
+            onTabSelected = ::handleBottomSheetTabSelected,
+            onPlaceRetryClick = {
+                onPlaceListRefreshRequested(uiState.selectedDateKey)
+            },
+            onAddPlaceClick = {
+                onNavigateToAddPlace(uiState.selectedDateKey)
+            },
+            onReorderPlaces = onReorderPlaces,
+            onCloseReorderGuideBanner = onCloseReorderGuideBanner,
+            onEditPlaceRequested = ::handleEditPlaceRequested,
+            onPlaceClick = ::handlePlaceCardClick,
+            onDeletePlaceRequested = ::handleDeletePlaceRequested
+        )
+
+        MainScreenOverlays(
+            uiState = uiState,
+            dayNoteUiState = dayNoteUiState,
+            placeUiState = placeUiState,
+            pendingEditPlace = pendingEditPlace,
+            isPlaceEditSheetVisible = isPlaceEditSheetVisible,
+            shouldRenderPlaceEditSearch = shouldRenderPlaceEditSearch,
+            isPlaceEditSearchVisible = isPlaceEditSearchVisible,
+            placeEditSearchSessionId = placeEditSearchSessionId,
+            editPlaceName = editPlaceName,
+            editRoadAddress = editRoadAddress,
+            editLatitude = editLatitude,
+            editLongitude = editLongitude,
+            isPlaceNameFocused = isPlaceNameFocused,
+            onDayNoteFeedbackDismissed = onDayNoteFeedbackDismissed,
+            onPlaceFeedbackDismissed = onPlaceFeedbackDismissed,
+            onBookmarkFeedbackDismissed = onBookmarkFeedbackDismissed,
+            onPlaceNameChange = { editPlaceName = it },
+            onNameFocusChanged = { isPlaceNameFocused = it },
+            onClearInputFocus = ::hideEditKeyboard,
+            onAddressClick = {
+                hideEditKeyboard()
+                showPlaceEditSearch()
+            },
+            onDismissPlaceEdit = ::dismissPlaceEdit,
+            onSubmitPlaceEdit = ::submitPlaceEdit,
+            onBackPlaceEditSearch = ::hidePlaceEditSearch,
+            onPlaceSelectedForEdit = ::handlePlaceSelectedForEdit,
+            onSearchDismissed = ::removePlaceEditSearch
+        )
+    }
+
+    MainScreenDialogs(
+        showTrackingPermissionDialog = uiState.showTrackingPermissionDialog,
+        showUnsavedDayNoteDialog = showUnsavedDayNoteDialog,
+        pendingDeletePlace = pendingDeletePlace,
+        onTrackingPermissionDialogConfirm = onTrackingPermissionDialogConfirm,
+        onTrackingPermissionDialogDismiss = onTrackingPermissionDialogDismiss,
+        onDismissUnsavedDayNoteDialog = onDismissUnsavedDayNoteDialog,
+        onConfirmUnsavedDayNoteDialog = onConfirmUnsavedDayNoteDialog,
+        onDismissDeletePlace = { pendingDeletePlace = null },
+        onConfirmDeletePlace = { placeId ->
+            pendingDeletePlace = null
+            onConfirmDeletePlace(placeId)
+        }
+    )
+
+}
+
+@Composable
+private fun MainScreenEffects(
+    selectedDateKey: String,
+    observedDateKey: String,
+    placeUiState: PlaceUiState,
+    submittedEditPlaceId: Long?,
+    submittedEditStartedFeedbackEventId: Long?,
+    pendingEditPlaceId: Long?,
+    isPlaceEditSheetVisible: Boolean,
+    shouldRenderPlaceEditSearch: Boolean,
+    isPlaceNameFocused: Boolean,
+    mainTabReselectionEvent: Int,
+    placeCreatedEvent: PlaceCreatedEvent?,
+    onPlaceCreatedEventHandled: (Int) -> Unit,
+    onDismissPlaceEdit: () -> Unit,
+    onClearSubmittedPlaceEdit: () -> Unit,
+    onSelectedDateObserved: (String) -> Unit,
+    onClearPendingDeletePlace: () -> Unit,
+    onDateChanged: () -> Unit,
+    onClearFocus: () -> Unit,
+    onHideBottomSheet: () -> Unit,
+    onHideEditKeyboard: () -> Unit,
+    onPlaceCreated: (Long) -> Unit
+) {
+    val placeToastMessage = placeUiState.errorMessage ?: placeUiState.successMessage
+
+    LaunchedEffect(placeUiState.feedbackEventId, placeToastMessage) {
+        if (placeToastMessage == null) return@LaunchedEffect
+        Log.d(
+            "PlaceFlow",
+            "place toast eventId=${placeUiState.feedbackEventId} isError=${placeUiState.errorMessage != null} message=$placeToastMessage"
+        )
+    }
+
+    LaunchedEffect(
+        submittedEditPlaceId,
+        submittedEditStartedFeedbackEventId,
+        placeUiState.isSubmitting,
+        placeUiState.feedbackEventId,
+        placeUiState.successMessage,
+        placeUiState.errorMessage
+    ) {
+        val submittedPlaceId = submittedEditPlaceId ?: return@LaunchedEffect
+        if (placeUiState.isSubmitting) return@LaunchedEffect
+        if (placeUiState.feedbackEventId == submittedEditStartedFeedbackEventId) return@LaunchedEffect
+
+        when {
+            placeUiState.successMessage != null -> onDismissPlaceEdit()
+            placeUiState.errorMessage != null -> {
+                if (pendingEditPlaceId == submittedPlaceId) {
+                    onClearSubmittedPlaceEdit()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(selectedDateKey) {
+        if (observedDateKey != selectedDateKey) {
+            onSelectedDateObserved(selectedDateKey)
+            onClearPendingDeletePlace()
+            onDismissPlaceEdit()
+            onDateChanged()
+        }
+    }
+
+    LaunchedEffect(mainTabReselectionEvent) {
+        if (mainTabReselectionEvent == 0) return@LaunchedEffect
+        onClearFocus()
+        onHideBottomSheet()
+    }
+
+    LaunchedEffect(placeCreatedEvent?.id) {
+        val event = placeCreatedEvent ?: return@LaunchedEffect
+        onPlaceCreated(event.placeId)
+        onPlaceCreatedEventHandled(event.id)
+    }
+
+    LaunchedEffect(pendingEditPlaceId, placeUiState.placeList.places) {
+        val placeId = pendingEditPlaceId ?: return@LaunchedEffect
+        if (placeUiState.placeList.hasLoaded &&
+            placeUiState.placeList.places.none { place -> place.placeId == placeId }
+        ) {
+            onDismissPlaceEdit()
+        }
+    }
+
+    BackHandler(enabled = pendingEditPlaceId != null && isPlaceEditSheetVisible && !shouldRenderPlaceEditSearch) {
+        if (isPlaceNameFocused) {
+            onHideEditKeyboard()
+        } else {
+            onDismissPlaceEdit()
+        }
+    }
+}
+
+@Composable
+private fun MainScreenScaffoldContent(
+    uiState: MainUiState,
+    dayNoteUiState: DayNoteUiState,
+    daySummaryUiState: DaySummaryUiState,
+    placeUiState: PlaceUiState,
+    markerPlaces: List<PlaceMarkerUiState>,
+    bookmarkMarkers: List<PlaceBookmarkSummary>,
+    localUiState: MainScreenLocalUiState,
+    onSheetValueChanged: (MainBottomSheetValue) -> Unit,
+    onSheetCommandConsumed: (MainBottomSheetValue) -> Unit,
+    onFocusedPlaceHandled: () -> Unit,
+    onCameraIntentConsumed: () -> Unit,
+    onDateSelectionRequested: (String) -> Unit,
+    onBookmarkClick: () -> Unit,
+    onRouteAction: (RouteUiAction) -> Unit,
+    onNavigateToCalendar: (String) -> Unit,
+    onNavigateToPlaceBookmarks: () -> Unit,
+    onMapClick: () -> Unit,
+    onPlaceMarkerClick: (Long) -> Unit,
+    onPermissionActionClick: () -> Unit,
+    debugActions: MainDebugActions,
+    onSelectedPlaceHandled: () -> Unit,
+    onDayNoteTitleChanged: (String) -> Unit,
+    onDayNoteMemoChanged: (String) -> Unit,
+    onDayNoteSaveClick: () -> Unit,
+    onDaySummaryLoadRequest: (String) -> Unit,
+    onDaySummaryRetryClick: () -> Unit,
+    onTabSelected: (MainBottomSheetTab) -> Unit,
+    onPlaceRetryClick: () -> Unit,
+    onAddPlaceClick: () -> Unit,
+    onReorderPlaces: (List<Long>) -> Unit,
+    onCloseReorderGuideBanner: () -> Unit,
+    onEditPlaceRequested: (Long) -> Unit,
+    onPlaceClick: (Long) -> Unit,
+    onDeletePlaceRequested: (Long) -> Unit
+) {
+    MainBottomSheetScaffold(
+        modifier = Modifier.fillMaxSize(),
+        initialSheetValue = localUiState.bottomSheetValue,
+        requestedSheetValue = localUiState.requestedSheetValue,
+        onSheetValueChanged = onSheetValueChanged,
+        onSheetCommandConsumed = onSheetCommandConsumed,
+        content = { floatingBottomPadding ->
+            MainMapSection(
+                uiState = uiState,
+                markerPlaces = markerPlaces,
+                bookmarkMarkers = bookmarkMarkers,
+                focusedPlaceId = localUiState.focusedPlaceId,
+                onFocusedPlaceHandled = onFocusedPlaceHandled,
+                onCameraIntentConsumed = onCameraIntentConsumed,
+                onDateSelected = onDateSelectionRequested,
+                onBookmarkClick = onBookmarkClick,
+                onRouteAction = onRouteAction,
+                onStatsClick = {},
+                onCalendarClick = {
+                    onNavigateToCalendar(uiState.selectedDateKey)
+                },
+                onMoreClick = {},
+                onMorePlaceBookmarkClick = onNavigateToPlaceBookmarks,
+                onMapClick = onMapClick,
+                onPlaceMarkerClick = onPlaceMarkerClick,
+                onPermissionActionClick = onPermissionActionClick,
+                debugActions = debugActions,
+                floatingBottomPadding = floatingBottomPadding,
+                showCurrentLocationButton = shouldShowCurrentLocationButton(
+                    bottomSheetValue = localUiState.bottomSheetValue
+                )
+            )
+        },
+        sheet = { sheetModifier ->
+            MainBottomSheet(
+                modifier = sheetModifier,
+                selectedDateKey = uiState.selectedDateKey,
+                placeUiState = placeUiState,
+                dayNoteUiState = dayNoteUiState,
+                daySummaryUiState = daySummaryUiState,
+                selectedPlaceId = localUiState.selectedPlaceId,
+                onSelectedPlaceHandled = onSelectedPlaceHandled,
+                onDayNoteTitleChanged = onDayNoteTitleChanged,
+                onDayNoteMemoChanged = onDayNoteMemoChanged,
+                onDayNoteSaveClick = onDayNoteSaveClick,
+                onDaySummaryLoadRequest = onDaySummaryLoadRequest,
+                onDaySummaryRetryClick = onDaySummaryRetryClick,
+                selectedTab = localUiState.selectedBottomSheetTab,
+                onTabSelected = onTabSelected,
+                onPlaceRetryClick = onPlaceRetryClick,
+                onAddPlaceClick = onAddPlaceClick,
+                onReorderPlaces = onReorderPlaces,
+                onCloseReorderGuideBanner = onCloseReorderGuideBanner,
+                onEditPlaceClick = onEditPlaceRequested,
+                onPlaceClick = onPlaceClick,
+                onDeletePlaceRequested = onDeletePlaceRequested
+            )
+        }
+    )
+}
+
+@Composable
+private fun BoxScope.MainScreenOverlays(
+    uiState: MainUiState,
+    dayNoteUiState: DayNoteUiState,
+    placeUiState: PlaceUiState,
+    pendingEditPlace: VisitedPlace?,
+    isPlaceEditSheetVisible: Boolean,
+    shouldRenderPlaceEditSearch: Boolean,
+    isPlaceEditSearchVisible: Boolean,
+    placeEditSearchSessionId: Int,
+    editPlaceName: String,
+    editRoadAddress: String,
+    editLatitude: Double,
+    editLongitude: Double,
+    isPlaceNameFocused: Boolean,
+    onDayNoteFeedbackDismissed: (Long) -> Unit,
+    onPlaceFeedbackDismissed: (Long) -> Unit,
+    onBookmarkFeedbackDismissed: (Long) -> Unit,
+    onPlaceNameChange: (String) -> Unit,
+    onNameFocusChanged: (Boolean) -> Unit,
+    onClearInputFocus: () -> Unit,
+    onAddressClick: () -> Unit,
+    onDismissPlaceEdit: () -> Unit,
+    onSubmitPlaceEdit: () -> Unit,
+    onBackPlaceEditSearch: () -> Unit,
+    onPlaceSelectedForEdit: (PlaceSearchResult) -> Unit,
+    onSearchDismissed: () -> Unit
+) {
     val dayNoteToastMessage = dayNoteUiState.errorMessage ?: dayNoteUiState.successMessage
     val placeToastMessage = placeUiState.errorMessage ?: placeUiState.successMessage
     val bookmarkToastMessage = uiState.bookmarkToggleUiState.feedbackMessage
@@ -294,221 +688,58 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(placeUiState.feedbackEventId, placeToastMessage) {
-        if (placeToastMessage == null) return@LaunchedEffect
-        Log.d(
-            "PlaceFlow",
-            "place toast eventId=${placeUiState.feedbackEventId} isError=${placeUiState.errorMessage != null} message=$placeToastMessage"
+    ToastOverlayHost(
+        toasts = overlayToasts,
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .zIndex(MainScreenOverlayZIndex.Toast)
+    )
+
+    if (pendingEditPlace != null && isPlaceEditSheetVisible) {
+        PlaceEditNameOverlay(
+            place = pendingEditPlace,
+            placeName = editPlaceName,
+            roadAddress = editRoadAddress,
+            latitude = editLatitude,
+            longitude = editLongitude,
+            isSubmitting = placeUiState.isSubmitting,
+            isNameFocused = isPlaceNameFocused,
+            onPlaceNameChange = onPlaceNameChange,
+            onNameFocusChanged = onNameFocusChanged,
+            onClearInputFocus = onClearInputFocus,
+            onAddressClick = onAddressClick,
+            onDismiss = onDismissPlaceEdit,
+            onSubmit = onSubmitPlaceEdit,
+            modifier = Modifier.zIndex(MainScreenOverlayZIndex.PlaceEdit)
         )
     }
 
-    LaunchedEffect(
-        submittedEditPlaceId,
-        submittedEditStartedFeedbackEventId,
-        placeUiState.isSubmitting,
-        placeUiState.feedbackEventId,
-        placeUiState.successMessage,
-        placeUiState.errorMessage
-    ) {
-        val submittedPlaceId = submittedEditPlaceId ?: return@LaunchedEffect
-        if (placeUiState.isSubmitting) return@LaunchedEffect
-        if (placeUiState.feedbackEventId == submittedEditStartedFeedbackEventId) return@LaunchedEffect
-
-        when {
-            placeUiState.successMessage != null -> dismissPlaceEdit()
-            placeUiState.errorMessage != null -> {
-                if (pendingEditPlaceId == submittedPlaceId) {
-                    submittedEditPlaceId = null
-                    submittedEditStartedFeedbackEventId = null
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(uiState.selectedDateKey) {
-        if (observedDateKey != uiState.selectedDateKey) {
-            observedDateKey = uiState.selectedDateKey
-            pendingDeletePlace = null
-            dismissPlaceEdit()
-            dispatchInteraction(reduceForDateChange(localUiState))
-        }
-    }
-
-    LaunchedEffect(mainTabReselectionEvent) {
-        if (mainTabReselectionEvent == 0) return@LaunchedEffect
-        focusManager.clearFocus(force = true)
-        hideBottomSheet()
-    }
-
-    LaunchedEffect(placeCreatedEvent?.id) {
-        val event = placeCreatedEvent ?: return@LaunchedEffect
-        dispatchInteraction(
-            reduceForPlaceCreated(
-                state = localUiState,
-                placeId = event.placeId
-            )
+    if (pendingEditPlace != null && shouldRenderPlaceEditSearch) {
+        PlaceEditSearchOverlay(
+            visible = isPlaceEditSearchVisible,
+            dateKey = uiState.selectedDateKey,
+            viewModelKey = "place-edit-search:${uiState.selectedDateKey}:$placeEditSearchSessionId",
+            onBackClick = onBackPlaceEditSearch,
+            onPlaceSelected = onPlaceSelectedForEdit,
+            onDismissed = onSearchDismissed,
+            modifier = Modifier.zIndex(MainScreenOverlayZIndex.PlaceEditSearch)
         )
-        onPlaceCreatedEventHandled(event.id)
     }
+}
 
-    LaunchedEffect(pendingEditPlaceId, placeUiState.placeList.places) {
-        val placeId = pendingEditPlaceId ?: return@LaunchedEffect
-        if (placeUiState.placeList.hasLoaded &&
-            placeUiState.placeList.places.none { place -> place.placeId == placeId }
-        ) {
-            dismissPlaceEdit()
-        }
-    }
-
-    BackHandler(enabled = pendingEditPlaceId != null && isPlaceEditSheetVisible && !shouldRenderPlaceEditSearch) {
-        if (isPlaceNameFocused) {
-            hideEditKeyboard()
-        } else {
-            dismissPlaceEdit()
-        }
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        MainBottomSheetScaffold(
-            modifier = Modifier.fillMaxSize(),
-            initialSheetValue = localUiState.bottomSheetValue,
-            requestedSheetValue = localUiState.requestedSheetValue,
-            onSheetValueChanged = ::handleSheetValueChanged,
-            onSheetCommandConsumed = ::handleSheetCommandConsumed,
-            content = { floatingBottomPadding ->
-                MainMapSection(
-                    uiState = uiState,
-                    markerPlaces = markerPlaces,
-                    bookmarkMarkers = bookmarkMarkers,
-                    focusedPlaceId = localUiState.focusedPlaceId,
-                    onFocusedPlaceHandled = {
-                        dispatchInteraction(reduceForMapFocusHandled(localUiState))
-                    },
-                    onCameraIntentConsumed = onCameraIntentConsumed,
-                    onDateSelected = onDateSelectionRequested,
-                    onBookmarkClick = onBookmarkClick,
-                    onRouteAction = onRouteAction,
-                    onStatsClick = {},
-                    onCalendarClick = {
-                        onNavigateToCalendar(uiState.selectedDateKey)
-                    },
-                    onMoreClick = {},
-                    onMorePlaceBookmarkClick = onNavigateToPlaceBookmarks,
-                    onMapClick = {
-                        focusManager.clearFocus(force = true)
-                        hideBottomSheet()
-                    },
-                    onPlaceMarkerClick = ::handlePlaceMarkerClick,
-                    onPermissionActionClick = onPermissionActionClick,
-                    debugActions = debugActions,
-                    floatingBottomPadding = floatingBottomPadding,
-                    showCurrentLocationButton = shouldShowCurrentLocationButton(
-                        bottomSheetValue = localUiState.bottomSheetValue
-                    )
-                )
-            },
-            sheet = { sheetModifier ->
-                MainBottomSheet(
-                    modifier = sheetModifier,
-                    selectedDateKey = uiState.selectedDateKey,
-                    placeUiState = placeUiState,
-                    dayNoteUiState = dayNoteUiState,
-                    daySummaryUiState = daySummaryUiState,
-                    selectedPlaceId = localUiState.selectedPlaceId,
-                    onSelectedPlaceHandled = {
-                        dispatchInteraction(reduceForSelectedPlaceHandled(localUiState))
-                    },
-                    onDayNoteTitleChanged = onDayNoteTitleChanged,
-                    onDayNoteMemoChanged = onDayNoteMemoChanged,
-                    onDayNoteSaveClick = onDayNoteSaveClick,
-                    onDaySummaryLoadRequest = onDaySummaryLoadRequest,
-                    onDaySummaryRetryClick = onDaySummaryRetryClick,
-                    selectedTab = localUiState.selectedBottomSheetTab,
-                    onTabSelected = ::handleBottomSheetTabSelected,
-                    onPlaceRetryClick = {
-                        onPlaceListRefreshRequested(uiState.selectedDateKey)
-                    },
-                    onAddPlaceClick = {
-                        onNavigateToAddPlace(uiState.selectedDateKey)
-                    },
-                    onReorderPlaces = onReorderPlaces,
-                    onCloseReorderGuideBanner = onCloseReorderGuideBanner,
-                    onEditPlaceClick = { placeId ->
-                        placeUiState.placeList.places.firstOrNull { place ->
-                            place.placeId == placeId
-                        }?.let { place ->
-                            pendingEditPlaceId = place.placeId
-                            editPlaceName = place.placeName
-                            editRoadAddress = place.roadAddress
-                            editLatitude = place.latitude
-                            editLongitude = place.longitude
-                            isPlaceEditSheetVisible = true
-                            isPlaceEditSearchVisible = false
-                            shouldRenderPlaceEditSearch = false
-                            isPlaceNameFocused = false
-                        }
-                    },
-                    onPlaceClick = ::handlePlaceCardClick,
-                    onDeletePlaceRequested = { placeId ->
-                        pendingDeletePlace = placeUiState.placeList.places.firstOrNull { place ->
-                            place.placeId == placeId
-                        }
-                    }
-                )
-            }
-        )
-
-        ToastOverlayHost(
-            toasts = overlayToasts,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .zIndex(MainScreenOverlayZIndex.Toast)
-        )
-
-        if (pendingEditPlace != null && isPlaceEditSheetVisible) {
-            val place = pendingEditPlace
-            PlaceEditNameOverlay(
-                place = place,
-                placeName = editPlaceName,
-                roadAddress = editRoadAddress,
-                latitude = editLatitude,
-                longitude = editLongitude,
-                isSubmitting = placeUiState.isSubmitting,
-                isNameFocused = isPlaceNameFocused,
-                onPlaceNameChange = { editPlaceName = it },
-                onNameFocusChanged = { isPlaceNameFocused = it },
-                onClearInputFocus = ::hideEditKeyboard,
-                onAddressClick = {
-                    hideEditKeyboard()
-                    showPlaceEditSearch()
-                },
-                onDismiss = ::dismissPlaceEdit,
-                onSubmit = ::submitPlaceEdit,
-                modifier = Modifier.zIndex(MainScreenOverlayZIndex.PlaceEdit)
-            )
-        }
-
-        if (pendingEditPlace != null && shouldRenderPlaceEditSearch) {
-            PlaceEditSearchOverlay(
-                visible = isPlaceEditSearchVisible,
-                dateKey = uiState.selectedDateKey,
-                viewModelKey = "place-edit-search:${uiState.selectedDateKey}:$placeEditSearchSessionId",
-                onBackClick = ::hidePlaceEditSearch,
-                onPlaceSelected = { place ->
-                    editPlaceName = place.name
-                    editRoadAddress = place.displayAddress
-                    editLatitude = place.latitude
-                    editLongitude = place.longitude
-                    hideEditKeyboard()
-                    hidePlaceEditSearch()
-                },
-                onDismissed = ::removePlaceEditSearch,
-                modifier = Modifier.zIndex(MainScreenOverlayZIndex.PlaceEditSearch)
-            )
-        }
-    }
-
-    if (uiState.showTrackingPermissionDialog) {
+@Composable
+private fun MainScreenDialogs(
+    showTrackingPermissionDialog: Boolean,
+    showUnsavedDayNoteDialog: Boolean,
+    pendingDeletePlace: VisitedPlace?,
+    onTrackingPermissionDialogConfirm: () -> Unit,
+    onTrackingPermissionDialogDismiss: () -> Unit,
+    onDismissUnsavedDayNoteDialog: () -> Unit,
+    onConfirmUnsavedDayNoteDialog: () -> Unit,
+    onDismissDeletePlace: () -> Unit,
+    onConfirmDeletePlace: (Long) -> Unit
+) {
+    if (showTrackingPermissionDialog) {
         PermissionSettingDialog(
             onConfirm = onTrackingPermissionDialogConfirm,
             onDismiss = onTrackingPermissionDialogDismiss
@@ -529,11 +760,8 @@ fun MainScreen(
     pendingDeletePlace?.let { place ->
         PlaceDeleteConfirmDialog(
             placeName = place.placeName.ifBlank { "이 장소" },
-            onDismiss = {
-                pendingDeletePlace = null
-            },
+            onDismiss = onDismissDeletePlace,
             onConfirm = {
-                pendingDeletePlace = null
                 onConfirmDeletePlace(place.placeId)
             }
         )
