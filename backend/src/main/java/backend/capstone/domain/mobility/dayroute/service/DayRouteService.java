@@ -81,6 +81,11 @@ public class DayRouteService {
     }
 
     @Transactional
+    public void bookmarkDayRoute(DayRoute dayRoute) {
+        dayRoute.markBookmarked();
+    }
+
+    @Transactional
     public void updateDistance(DayRoute dayRoute, double distance) {
         dayRoute.updateDistance(distance);
     }

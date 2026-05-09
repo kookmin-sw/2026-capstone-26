@@ -2,6 +2,7 @@ package backend.capstone.domain.mobility.dayroute.facade;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteMemoRequest;
@@ -126,6 +127,14 @@ public class DayRouteFacade {
         boolean isBookmarked = dayRouteService.toggleBookmark(dayRoute);
 
         return new DayRouteBookmarkResponse(isBookmarked);
+    }
+
+    @Transactional
+    public void bookmarkDayRoutes(Long userId, DayRouteBookmarkBatchRequest request) {
+        request.dates().stream()
+            .distinct()
+            .map(date -> dayRouteService.getOrCreate(userId, date))
+            .forEach(dayRouteService::bookmarkDayRoute);
     }
 
     @Recover
