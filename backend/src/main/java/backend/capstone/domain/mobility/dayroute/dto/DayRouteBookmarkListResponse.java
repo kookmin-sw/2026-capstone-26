@@ -10,6 +10,12 @@ public record DayRouteBookmarkListResponse(
     @Schema(example = "2", description = "북마크한 dayRoute 개수")
     int dayRouteCount,
 
+    @Schema(example = "true", description = "다음 페이지 존재 여부")
+    boolean hasNext,
+
+    @Schema(example = "2026-05-07", description = "다음 페이지 조회용 커서 날짜")
+    LocalDate nextCursorDate,
+
     @Schema(description = "북마크한 dayRoute 목록")
     List<DayRouteBookmarkItem> dayRoutes
 ) {

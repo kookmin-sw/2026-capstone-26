@@ -1,7 +1,7 @@
 package backend.capstone.domain.mobility.dayroute.mapper;
 
-import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteMonthlyResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteSummaryResponse;
 import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
@@ -89,11 +89,13 @@ public class DayRouteMapper {
     }
 
     public static DayRouteBookmarkListResponse toDayRouteBookmarkListResponse(
-        List<DayRoute> dayRoutes,
-        Map<Long, List<String>> visitedRegionMap
+        List<DayRoute> dayRoutes, boolean hasNext,
+        LocalDate nextCursorDate, Map<Long, List<String>> visitedRegionMap
     ) {
         return DayRouteBookmarkListResponse.builder()
             .dayRouteCount(dayRoutes.size())
+            .hasNext(hasNext)
+            .nextCursorDate(nextCursorDate)
             .dayRoutes(dayRoutes.stream()
                 .map(dayRoute -> DayRouteBookmarkListResponse.DayRouteBookmarkItem.builder()
                     .date(dayRoute.getDate())

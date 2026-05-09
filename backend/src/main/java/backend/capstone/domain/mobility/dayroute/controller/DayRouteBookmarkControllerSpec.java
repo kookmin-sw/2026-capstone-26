@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 
 @Tag(name = "나의 지나온길 즐겨찾기 API")
@@ -29,7 +31,11 @@ public interface DayRouteBookmarkControllerSpec {
             제목이 없으면 null, 방문 동네가 없으면 빈 배열이 반환됩니다.
             """
     )
-    DayRouteBookmarkListResponse getBookmarkedDayRoutes(UserPrincipal principal);
+    DayRouteBookmarkListResponse getBookmarkedDayRoutes(
+        @Parameter(name = "cursorDate", example = "2026-05-07") LocalDate cursorDate,
+        @Parameter(name = "size", example = "20") @Min(1) @Max(100) int size,
+        UserPrincipal principal
+    );
 
     @Operation(
         summary = "복수 즐찾 API",
