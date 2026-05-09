@@ -1,6 +1,7 @@
 package backend.capstone.domain.mobility.dayroute.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,11 +9,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 
-@Tag(name = "나의 지나온길 즐겨찾기 API")
+@Tag(name = "하루 경로 즐겨찾기 API")
 public interface DayRouteBookmarkControllerSpec {
 
     @Operation(
-        summary = "즐겨찾기 토글 API"
+        summary = "dayRoute 북마크 토글 API"
     )
     DayRouteBookmarkResponse toggleBookmark(
         @Parameter(name = "date", example = "2026-01-01") LocalDate date,
@@ -23,4 +24,10 @@ public interface DayRouteBookmarkControllerSpec {
         summary = "북마크한 dayRoute 목록 조회 API"
     )
     DayRouteBookmarkListResponse getBookmarkedDayRoutes(UserPrincipal principal);
+
+    @Operation(
+        summary = "여러 dayRoute 북마크 API",
+        description = "요청된 날짜들의 dayRoute를 생성 또는 조회한 뒤 isBookmarked를 모두 true로 설정합니다."
+    )
+    void bookmarkDayRoutes(UserPrincipal principal, DayRouteBookmarkBatchRequest request);
 }
