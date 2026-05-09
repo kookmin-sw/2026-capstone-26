@@ -769,6 +769,7 @@ class MainViewModelTest {
         private val toggleGate: CompletableDeferred<Unit>? = null
     ) : DayRouteBookmarkRepository {
         val toggledDates = mutableListOf<String>()
+        val markedDateBatches = mutableListOf<List<String>>()
 
         override suspend fun toggleBookmark(dateKey: String): DayRouteBookmark {
             toggleGate?.await()
@@ -777,6 +778,10 @@ class MainViewModelTest {
             val nextValue = resultByDate[dateKey] ?: true
             resultByDate[dateKey] = nextValue
             return DayRouteBookmark(isBookmarked = nextValue)
+        }
+
+        override suspend fun markBookmarks(dateKeys: List<String>) {
+            markedDateBatches += dateKeys
         }
     }
 
