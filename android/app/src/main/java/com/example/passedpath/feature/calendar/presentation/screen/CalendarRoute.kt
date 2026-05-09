@@ -1,7 +1,6 @@
 package com.example.passedpath.feature.calendar.presentation.screen
 
 import android.app.DatePickerDialog
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -56,8 +56,8 @@ import com.example.passedpath.feature.calendar.presentation.model.toggleCalendar
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModel
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
+import com.example.passedpath.ui.component.feedback.WifiFailurePanel
 import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Gray200
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
@@ -287,40 +287,13 @@ private fun CalendarErrorNotice(
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        color = Gray100,
-        border = BorderStroke(1.dp, Gray200)
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.calendar_monthly_error_title),
-                color = Gray900,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = message,
-                color = Gray500,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = stringResource(R.string.route_retry),
-                color = Green500,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable(onClick = onRetryClick)
-                    .padding(vertical = 4.dp)
-            )
-        }
-    }
+    WifiFailurePanel(
+        title = stringResource(R.string.calendar_monthly_error_title),
+        message = message,
+        retryText = stringResource(R.string.route_retry),
+        onRetryClick = onRetryClick,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -543,6 +516,14 @@ private fun CalendarDayCell(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
+
+            if (cell.status.isBookmarked) {
+                CalendarFavoriteIndicator(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-4).dp, y = 5.dp)
+                )
+            }
         }
 
         CalendarDayIndicators(
@@ -562,7 +543,6 @@ private fun CalendarDayIndicators(
     val colors = buildList {
         if (status.hasManualData) add(ManualDataColor)
         if (status.hasLocationData) add(LocationDataColor)
-        if (status.isBookmarked) add(FavoriteColor)
     }
     if (colors.isEmpty()) return
 
@@ -573,12 +553,24 @@ private fun CalendarDayIndicators(
         colors.forEach { color ->
             Box(
                 modifier = Modifier
-                    .size(4.dp)
+                    .size(5.dp)
                     .clip(CircleShape)
                     .background(color)
             )
         }
     }
+}
+
+@Composable
+private fun CalendarFavoriteIndicator(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(6.dp)
+            .clip(CircleShape)
+            .background(FavoriteColor)
+    )
 }
 
 @Composable
