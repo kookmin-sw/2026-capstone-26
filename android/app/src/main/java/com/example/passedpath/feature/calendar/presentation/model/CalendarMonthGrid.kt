@@ -42,6 +42,18 @@ internal fun LocalDate.toCalendarDateKey(): String {
     return format(CalendarDateKeyFormatter)
 }
 
+internal fun toggleCalendarSelectedDateKey(
+    currentSelectedDateKey: String?,
+    clickedDate: LocalDate
+): String? {
+    val clickedDateKey = clickedDate.toCalendarDateKey()
+    return if (currentSelectedDateKey == clickedDateKey) {
+        null
+    } else {
+        clickedDateKey
+    }
+}
+
 internal val CalendarDateKeyFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy-MM-dd")
 

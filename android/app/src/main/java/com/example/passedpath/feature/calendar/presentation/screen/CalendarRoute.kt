@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -51,6 +52,7 @@ import com.example.passedpath.feature.calendar.presentation.model.CalendarDaySta
 import com.example.passedpath.feature.calendar.presentation.model.CalendarMonthCell
 import com.example.passedpath.feature.calendar.presentation.model.buildCalendarMonthCells
 import com.example.passedpath.feature.calendar.presentation.model.toCalendarDateKey
+import com.example.passedpath.feature.calendar.presentation.model.toggleCalendarSelectedDateKey
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModel
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
@@ -60,9 +62,12 @@ import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green100
+import com.example.passedpath.ui.theme.Green300
 import com.example.passedpath.ui.theme.Green500
+import com.example.passedpath.ui.theme.Green700
 import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
+import com.example.passedpath.ui.theme.DateBookmarkColor
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -104,6 +109,7 @@ fun CalendarRoute(
         anchorDate = anchorDate,
         visibleMonth = visibleMonth,
         selectedDate = selectedDate,
+        today = LocalDate.now(),
         dayStatuses = uiState.dayStatuses,
         isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
         errorMessage = uiState.errorMessage,
@@ -122,7 +128,10 @@ fun CalendarRoute(
         },
         onDateClick = { date ->
             anchorDateKey = date.toCalendarDateKey()
-            selectedDateKey = date.toCalendarDateKey()
+            selectedDateKey = toggleCalendarSelectedDateKey(
+                currentSelectedDateKey = selectedDateKey,
+                clickedDate = date
+            )
         },
         onFavoriteListClick = onFavoriteListClick,
         onMoreClick = onMoreClick,
@@ -144,6 +153,7 @@ private fun CalendarScreen(
     anchorDate: LocalDate,
     visibleMonth: YearMonth,
     selectedDate: LocalDate?,
+    today: LocalDate,
     dayStatuses: Map<LocalDate, CalendarDayStatus>,
     isLoading: Boolean,
     errorMessage: String?,
@@ -197,25 +207,25 @@ private fun CalendarScreen(
         WeekdayHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 40.dp)
+                .padding(horizontal = 16.dp)
         )
 
         Spacer(modifier = Modifier.height(18.dp))
 
         CalendarMonthGrid(
             cells = cells,
-            today = LocalDate.now(),
+            today = today,
             selectedDate = selectedDate,
             onDateClick = onDateClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 40.dp)
+                .padding(horizontal = 16.dp)
         )
 
         CalendarLegend(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 18.dp, end = 40.dp)
+                .padding(top = 18.dp, end = 16.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -244,6 +254,7 @@ private fun CalendarScreen(
             enabled = selectedDate != null,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
+                .navigationBarsPadding()
                 .padding(bottom = 20.dp),
             textFontSize = 15.sp,
             textFontWeight = FontWeight.Bold
@@ -343,10 +354,7 @@ private fun CalendarTopBar(
         }
 
         Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(start = 46.dp, end = 88.dp),
+            modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -357,8 +365,7 @@ private fun CalendarTopBar(
             )
             CalendarDateTitle(
                 anchorDate = anchorDate,
-                onClick = onDateClick,
-                modifier = Modifier.weight(1f)
+                onClick = onDateClick
             )
             MonthArrowButton(
                 iconResId = R.drawable.ic_arrow_right,
@@ -369,23 +376,22 @@ private fun CalendarTopBar(
 
         Row(
             modifier = Modifier.align(Alignment.CenterEnd),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onFavoriteListClick,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_star_list),
                     contentDescription = stringResource(R.string.calendar_favorite_list),
-                    tint = Color.Unspecified,
+                    tint = Gray400,
                     modifier = Modifier.size(width = 27.dp, height = 17.dp)
                 )
             }
             IconButton(
                 onClick = onMoreClick,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_more_vert),
@@ -412,7 +418,7 @@ private fun CalendarDateTitle(
         Text(
             text = anchorDate.format(CalendarHeaderFormatter),
             style = MaterialTheme.typography.titleMedium,
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Gray900,
             maxLines = 1,
@@ -441,7 +447,7 @@ private fun MonthArrowButton(
             painter = painterResource(id = iconResId),
             contentDescription = contentDescription,
             tint = Gray400,
-            modifier = Modifier.size(width = 7.dp, height = 12.dp)
+            modifier = Modifier.size(width = 10.dp, height = 12.dp)
         )
     }
 }
@@ -681,40 +687,31 @@ private fun LocalDate.coerceToSelectableDateRange(): LocalDate {
 private val CalendarHeaderFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy.MM.dd. EEE", Locale.KOREAN)
 
-private val SundayColor = Color(0xFFFF0000)
-private val SaturdayColor = Color(0xFF0057FF)
-private val ManualDataColor = Color(0xFF147B82)
-private val LocationDataColor = Color(0xFF94D8DE)
-private val FavoriteColor = Color(0xFFFFC95C)
+private val SundayColor = Color(0xFFDF0000)
+private val SaturdayColor = Color(0xFF0049E5)
+private val ManualDataColor = Green700
+private val LocationDataColor = Green300
+private val FavoriteColor = DateBookmarkColor
 
 private const val MinSelectableYear = 2000
 private const val MaxSelectableYear = 3000
 
-@Preview(showBackground = true, widthDp = 393, heightDp = 760)
+@Preview(
+    name = "Calendar Content",
+    group = "Calendar",
+    showBackground = true,
+    widthDp = 393,
+    heightDp = 760
+)
 @Composable
-private fun CalendarScreenPreview() {
-    val previewMonth = YearMonth.of(2026, 1)
-    val previewStatuses = mapOf(
-        LocalDate.of(2026, 1, 3) to CalendarDayStatus(isBookmarked = true),
-        LocalDate.of(2026, 1, 6) to CalendarDayStatus(hasManualData = true),
-        LocalDate.of(2026, 1, 13) to CalendarDayStatus(
-            hasManualData = true,
-            hasLocationData = true,
-            isBookmarked = true
-        ),
-        LocalDate.of(2026, 1, 14) to CalendarDayStatus(isBookmarked = true),
-        LocalDate.of(2026, 1, 20) to CalendarDayStatus(
-            hasManualData = true,
-            hasLocationData = true
-        )
-    )
-
+private fun CalendarContentPreview() {
     PassedPathTheme {
         CalendarScreen(
-            anchorDate = LocalDate.of(2026, 1, 20),
-            visibleMonth = previewMonth,
+            anchorDate = CalendarPreviewAnchorDate,
+            visibleMonth = CalendarPreviewMonth,
             selectedDate = null,
-            dayStatuses = previewStatuses,
+            today = CalendarPreviewToday,
+            dayStatuses = CalendarPreviewStatuses,
             isLoading = false,
             errorMessage = null,
             onBackClick = {},
@@ -730,3 +727,21 @@ private fun CalendarScreenPreview() {
         )
     }
 }
+
+private val CalendarPreviewMonth = YearMonth.of(2026, 1)
+private val CalendarPreviewAnchorDate = LocalDate.of(2026, 1, 20)
+private val CalendarPreviewToday = LocalDate.of(2026, 1, 22)
+private val CalendarPreviewStatuses = mapOf(
+    LocalDate.of(2026, 1, 3) to CalendarDayStatus(isBookmarked = true),
+    LocalDate.of(2026, 1, 6) to CalendarDayStatus(hasManualData = true),
+    LocalDate.of(2026, 1, 13) to CalendarDayStatus(
+        hasManualData = true,
+        hasLocationData = true,
+        isBookmarked = true
+    ),
+    LocalDate.of(2026, 1, 14) to CalendarDayStatus(isBookmarked = true),
+    LocalDate.of(2026, 1, 20) to CalendarDayStatus(
+        hasManualData = true,
+        hasLocationData = true
+    )
+)

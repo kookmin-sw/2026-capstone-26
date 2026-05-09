@@ -559,7 +559,7 @@ private fun CalendarButton(
 ) {
     FloatingCircleIconButton(
         onClick = onClick,
-        iconResId = R.drawable.ic_calendar,
+        iconResId = R.drawable.ic_calender,
         contentDescriptionResId = R.string.main_calendar,
         modifier = modifier
     )

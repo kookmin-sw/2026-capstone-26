@@ -43,4 +43,24 @@ class CalendarMonthGridTest {
 
         assertEquals("2026-01-19", dateKey)
     }
+
+    @Test
+    fun `toggleCalendarSelectedDateKey selects date when another date is selected`() {
+        val result = toggleCalendarSelectedDateKey(
+            currentSelectedDateKey = "2026-01-19",
+            clickedDate = LocalDate.of(2026, 1, 20)
+        )
+
+        assertEquals("2026-01-20", result)
+    }
+
+    @Test
+    fun `toggleCalendarSelectedDateKey clears selection when same date is clicked`() {
+        val result = toggleCalendarSelectedDateKey(
+            currentSelectedDateKey = "2026-01-20",
+            clickedDate = LocalDate.of(2026, 1, 20)
+        )
+
+        assertNull(result)
+    }
 }

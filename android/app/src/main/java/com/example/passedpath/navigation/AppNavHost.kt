@@ -277,29 +277,16 @@ private fun AppNavigationGraph(
                 ?.getString(NavRoute.CALENDAR_DATE_KEY)
                 .orEmpty()
 
-            BottomBarScaffold(
-                navController = navController,
-                selectedRoute = NavRoute.MAIN,
-                onBottomBarReselected = { route ->
-                    if (route == NavRoute.MAIN) {
-                        navController.popBackStack(NavRoute.MAIN, inclusive = false)
-                    } else {
-                        onBottomBarReselected(route)
-                    }
+            CalendarRoute(
+                initialDateKey = dateKey,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onDateConfirmed = { selectedDateKey ->
+                    onCalendarDateSelected(selectedDateKey)
+                    navController.popBackStack()
                 }
-            ) { modifier ->
-                CalendarRoute(
-                    initialDateKey = dateKey,
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
-                    onDateConfirmed = { selectedDateKey ->
-                        onCalendarDateSelected(selectedDateKey)
-                        navController.popBackStack()
-                    },
-                    modifier = modifier
-                )
-            }
+            )
         }
 
         composable(

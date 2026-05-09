@@ -116,33 +116,14 @@ internal fun DateNavigationBar(
                 .padding(horizontal = 16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 NavigationArrowButton(
                     iconResId = R.drawable.ic_arrow_left,
                     onClick = { onDateSelected(shiftDate(route.dateKey, -1)) }
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    NavigationArrowButton(
-                        iconResId = R.drawable.ic_arrow_right,
-                        onClick = { onDateSelected(shiftDate(route.dateKey, 1)) }
-                    )
-                    MoreMenuButton(onClick = onMoreClick)
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(start = 48.dp, end = 76.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
-            ) {
                 BookmarkToggleButton(
                     isBookmarked = route.isBookmarked,
                     isEnabled = !isBookmarkUpdating,
@@ -178,6 +159,16 @@ internal fun DateNavigationBar(
                         )
                     }
                 }
+                NavigationArrowButton(
+                    iconResId = R.drawable.ic_arrow_right,
+                    onClick = { onDateSelected(shiftDate(route.dateKey, 1)) }
+                )
+            }
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MoreMenuButton(onClick = onMoreClick)
             }
         }
     }
