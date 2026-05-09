@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 public interface DayRouteRepository extends JpaRepository<DayRoute, Long> {
@@ -28,4 +29,18 @@ public interface DayRouteRepository extends JpaRepository<DayRoute, Long> {
         """)
     List<DayRoute> findByUserIdAndDateBetweenOrderByDate(@Param("userId") Long userId,
         @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+            select dr
+            from DayRoute dr
+            where dr.user.id = :userId
+              and dr.isBookmarked = true
+              and (:cursorDate is null or dr.date < :cursorDate)
+            order by dr.date desc
+        """)
+    List<DayRoute> findBookmarkedByUserIdAndCursorDateOrderByDateDesc(
+        @Param("userId") Long userId,
+        @Param("cursorDate") LocalDate cursorDate,
+        Pageable pageable
+    );
 }

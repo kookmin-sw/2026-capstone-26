@@ -12,6 +12,7 @@ import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +59,12 @@ public class DayRouteService {
             yearMonth.atDay(1), yearMonth.atEndOfMonth());
     }
 
+    @Transactional(readOnly = true)
+    public List<DayRoute> getBookmarkedDayRoutes(Long userId, LocalDate cursorDate, int size) {
+        return dayRouteRepository.findBookmarkedByUserIdAndCursorDateOrderByDateDesc(userId,
+            cursorDate, PageRequest.of(0, size)); //size개 조회
+    }
+
     @Transactional
     public void replaceTitle(DayRoute dayRoute, String title) {
         dayRoute.updateTitle(normalizeNullableText(title));
@@ -73,6 +80,11 @@ public class DayRouteService {
     @Transactional
     public boolean toggleBookmark(DayRoute dayRoute) {
         return dayRoute.toggleBookmarked();
+    }
+
+    @Transactional
+    public void bookmarkDayRoute(DayRoute dayRoute) {
+        dayRoute.markBookmarked();
     }
 
     @Transactional
