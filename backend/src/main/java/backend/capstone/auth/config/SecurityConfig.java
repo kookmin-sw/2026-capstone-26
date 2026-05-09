@@ -31,7 +31,7 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     "/.well-known/**",
-                    "/friend/**",
+                    "/care-relationship/**",
                     "/images/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
