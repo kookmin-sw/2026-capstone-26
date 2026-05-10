@@ -1,5 +1,6 @@
 package backend.capstone.domain.mobility.lastlocation.dto;
 
+import backend.capstone.domain.mobility.lastlocation.entity.LatestLocation;
 import java.time.Instant;
 
 public record DependentCurrentLocation(
@@ -9,13 +10,12 @@ public record DependentCurrentLocation(
     Instant recordedAt
 ) {
 
-    public static DependentCurrentLocation from(Long dependentUserId,
-        CurrentLocationCacheValue cacheValue) {
+    public static DependentCurrentLocation from(LatestLocation latestLocation) {
         return new DependentCurrentLocation(
-            dependentUserId,
-            cacheValue.latitude(),
-            cacheValue.longitude(),
-            cacheValue.recordedAt()
+            latestLocation.getUserId(),
+            latestLocation.getLatitude(),
+            latestLocation.getLongitude(),
+            latestLocation.getRecordedAt()
         );
     }
 }
