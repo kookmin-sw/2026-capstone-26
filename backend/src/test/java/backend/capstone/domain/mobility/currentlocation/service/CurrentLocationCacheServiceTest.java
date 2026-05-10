@@ -10,7 +10,6 @@ import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -34,7 +33,7 @@ class CurrentLocationCacheServiceTest {
     private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
-    void 가장_최근_recordedAt_좌표를_30일_ttl로_redis에_저장한다() {
+    void 가장_최근_recordedAt_좌표를_redis에_저장한다() {
         ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
         org.mockito.BDDMockito.given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
@@ -49,9 +48,7 @@ class CurrentLocationCacheServiceTest {
         ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
         then(valueOperations).should().set(
             org.mockito.ArgumentMatchers.eq("current:location:user:1"),
-            valueCaptor.capture(),
-            org.mockito.ArgumentMatchers.eq(30L),
-            org.mockito.ArgumentMatchers.eq(TimeUnit.DAYS)
+            valueCaptor.capture()
         );
 
         CurrentLocationCacheValue cacheValue = readCacheValue(valueCaptor.getValue());
@@ -74,12 +71,7 @@ class CurrentLocationCacheServiceTest {
         org.mockito.BDDMockito.given(redisTemplate.opsForValue()).willReturn(valueOperations);
         org.mockito.BDDMockito.willThrow(new RuntimeException("redis down"))
             .given(valueOperations)
-            .set(
-                org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.anyLong(),
-                org.mockito.ArgumentMatchers.any()
-            );
+            .set(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
 
         List<GpsPointRequest> gpsPoints = List.of(
             new GpsPointRequest(Instant.parse("2026-05-09T10:05:00Z"), 37.2, 127.2)
