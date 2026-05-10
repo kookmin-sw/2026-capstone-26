@@ -1,4 +1,4 @@
-package backend.capstone.domain.mobility.currentlocation.entity;
+package backend.capstone.domain.mobility.lastlocation.entity;
 
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.entity.BaseTimeEntity;

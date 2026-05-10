@@ -1,4 +1,4 @@
-package backend.capstone.domain.mobility.currentlocation.exception;
+package backend.capstone.domain.mobility.lastlocation.exception;
 
 public class CurrentLocationCacheException extends RuntimeException {
 

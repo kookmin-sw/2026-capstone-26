@@ -1,8 +1,8 @@
-package backend.capstone.domain.mobility.currentlocation.service;
+package backend.capstone.domain.mobility.lastlocation.service;
 
-import backend.capstone.domain.mobility.currentlocation.dto.CurrentLocationCacheValue;
-import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.GpsPointRequest;
+import backend.capstone.domain.mobility.lastlocation.dto.CurrentLocationCacheValue;
+import backend.capstone.domain.mobility.lastlocation.exception.CurrentLocationCacheException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;

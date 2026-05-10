@@ -1,6 +1,6 @@
-package backend.capstone.domain.mobility.currentlocation.repository;
+package backend.capstone.domain.mobility.lastlocation.repository;
 
-import backend.capstone.domain.mobility.currentlocation.entity.LatestLocation;
+import backend.capstone.domain.mobility.lastlocation.entity.LatestLocation;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

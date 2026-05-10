@@ -1,9 +1,9 @@
-package backend.capstone.domain.mobility.currentlocation.service;
+package backend.capstone.domain.mobility.lastlocation.service;
 
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.mobility.currentlocation.dto.CurrentLocationCacheValue;
-import backend.capstone.domain.mobility.currentlocation.dto.DependentCurrentLocation;
-import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
+import backend.capstone.domain.mobility.lastlocation.dto.CurrentLocationCacheValue;
+import backend.capstone.domain.mobility.lastlocation.dto.DependentCurrentLocation;
+import backend.capstone.domain.mobility.lastlocation.exception.CurrentLocationCacheException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

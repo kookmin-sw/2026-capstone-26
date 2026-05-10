@@ -1,8 +1,6 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
-import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
-import backend.capstone.domain.mobility.currentlocation.service.CurrentLocationCacheService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
@@ -22,6 +20,8 @@ import backend.capstone.domain.mobility.dayroute.mapper.DayRouteMapper;
 import backend.capstone.domain.mobility.dayroute.service.DayRouteService;
 import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
 import backend.capstone.domain.mobility.gpspoint.service.GpsPointService;
+import backend.capstone.domain.mobility.lastlocation.exception.CurrentLocationCacheException;
+import backend.capstone.domain.mobility.lastlocation.service.CurrentLocationCacheService;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;

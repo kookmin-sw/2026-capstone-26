@@ -1,4 +1,4 @@
-package backend.capstone.domain.mobility.currentlocation.dto;
+package backend.capstone.domain.mobility.lastlocation.dto;
 
 import java.time.Instant;
 
