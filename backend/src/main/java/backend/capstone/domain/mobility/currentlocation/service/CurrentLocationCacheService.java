@@ -36,10 +36,8 @@ public class CurrentLocationCacheService {
 
         try {
             redisTemplate.opsForValue().set(redisKey(userId), serialize(cacheValue));
-        } catch (CurrentLocationCacheException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new CurrentLocationCacheException("Failed to save current location cache.", e);
+        } catch (JsonProcessingException e) {
+            throw new CurrentLocationCacheException("최신 좌표 redis에 저장 실패.", e);
         }
     }
 
@@ -48,12 +46,7 @@ public class CurrentLocationCacheService {
     }
 
     //gpsPoint 객체를 json 문자열로 직렬화
-    private String serialize(CurrentLocationCacheValue cacheValue) {
-        try {
-            return objectMapper.writeValueAsString(cacheValue);
-        } catch (JsonProcessingException e) {
-            throw new CurrentLocationCacheException(
-                "최신 좌표 json 직렬화 실패", e);
-        }
+    private String serialize(CurrentLocationCacheValue cacheValue) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(cacheValue);
     }
 }
