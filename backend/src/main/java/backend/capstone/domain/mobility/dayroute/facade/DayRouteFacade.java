@@ -20,13 +20,11 @@ import backend.capstone.domain.mobility.dayroute.mapper.DayRouteMapper;
 import backend.capstone.domain.mobility.dayroute.service.DayRouteService;
 import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
 import backend.capstone.domain.mobility.gpspoint.service.GpsPointService;
-import backend.capstone.domain.mobility.lastlocation.exception.CurrentLocationCacheException;
-import backend.capstone.domain.mobility.lastlocation.service.CurrentLocationCacheService;
+import backend.capstone.domain.mobility.lastlocation.service.LatestLocationService;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.retry.annotation.Backoff;
@@ -36,13 +34,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class DayRouteFacade {
 
     private final DayRouteService dayRouteService;
     private final GpsPointService gpsPointService;
-    private final CurrentLocationCacheService currentLocationCacheService;
+    private final LatestLocationService latestLocationService;
     private final VisitedRegionService visitedRegionService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -60,7 +57,7 @@ public class DayRouteFacade {
 
         if (!request.gpsPoints().isEmpty()) {
             gpsPointService.batchInsert(dayRoute.getId(), request);
-            saveCurrentLocationCache(userId, request);
+            latestLocationService.upsertLatestLocation(userId, request.gpsPoints());
             dayRouteService.markHasGpsPoints(dayRoute);
         }
 
@@ -72,14 +69,6 @@ public class DayRouteFacade {
         }
 
         return new GpsPointBatchUploadResponse("좌표 업로드에 성공했습니다.");
-    }
-
-    private void saveCurrentLocationCache(Long userId, GpsPointBatchUploadRequest request) {
-        try {
-            currentLocationCacheService.saveLatestLocation(userId, request.gpsPoints());
-        } catch (CurrentLocationCacheException e) {
-            log.warn("최신 좌표 redis 적재 실패. userId={}", userId, e);
-        }
     }
 
     @Transactional
