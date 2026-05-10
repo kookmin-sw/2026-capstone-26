@@ -1,8 +1,8 @@
-package backend.capstone.domain.mobility.lastlocation.service;
+package backend.capstone.domain.mobility.latestgpspoint.service;
 
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.GpsPointRequest;
-import backend.capstone.domain.mobility.lastlocation.entity.LatestLocation;
-import backend.capstone.domain.mobility.lastlocation.repository.LatestLocationRepository;
+import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
+import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.service.UserService;
 import java.time.Instant;
@@ -14,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class LatestLocationService {
+public class LatestGpsPointService {
 
-    private final LatestLocationRepository latestLocationRepository;
+    private final LatestGpsPointRepository latestGpsPointRepository;
     private final UserService userService;
 
     @Transactional
@@ -29,25 +29,25 @@ public class LatestLocationService {
             .max(Comparator.comparing(GpsPointRequest::recordedAt))
             .orElseThrow();
 
-        latestLocationRepository.findById(userId)
+        latestGpsPointRepository.findById(userId)
             .ifPresentOrElse(
                 latestLocation -> updateIfNewer(latestLocation, latestPoint),
-                () -> latestLocationRepository.save(createLatestLocation(userId, latestPoint)));
+                () -> latestGpsPointRepository.save(createLatestLocation(userId, latestPoint)));
     }
 
-    private void updateIfNewer(LatestLocation latestLocation, GpsPointRequest latestPoint) {
-        Instant recordedAt = latestLocation.getRecordedAt();
+    private void updateIfNewer(LatestGpsPoint latestGpsPoint, GpsPointRequest latestPoint) {
+        Instant recordedAt = latestGpsPoint.getRecordedAt();
         if (recordedAt != null && !latestPoint.recordedAt().isAfter(recordedAt)) {
             return;
         }
 
-        latestLocation.update(latestPoint.latitude(), latestPoint.longitude(),
+        latestGpsPoint.update(latestPoint.latitude(), latestPoint.longitude(),
             latestPoint.recordedAt());
     }
 
-    private LatestLocation createLatestLocation(Long userId, GpsPointRequest latestPoint) {
+    private LatestGpsPoint createLatestLocation(Long userId, GpsPointRequest latestPoint) {
         User user = userService.findById(userId);
-        return LatestLocation.of(user, latestPoint.latitude(), latestPoint.longitude(),
+        return LatestGpsPoint.of(user, latestPoint.latitude(), latestPoint.longitude(),
             latestPoint.recordedAt());
     }
 }

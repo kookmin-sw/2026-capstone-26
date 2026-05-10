@@ -5,14 +5,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
-import backend.capstone.domain.mobility.currentlocation.exception.CurrentLocationCacheException;
-import backend.capstone.domain.mobility.currentlocation.service.CurrentLocationCacheService;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.GpsPointRequest;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadResponse;
 import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.mobility.dayroute.service.DayRouteService;
 import backend.capstone.domain.mobility.gpspoint.service.GpsPointService;
+import backend.capstone.domain.mobility.latestgpspoint.service.LatestGpsPointService;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import java.time.Instant;
@@ -39,7 +38,7 @@ class DayRouteFacadeTest {
     private GpsPointService gpsPointService;
 
     @Mock
-    private CurrentLocationCacheService currentLocationCacheService;
+    private LatestGpsPointService latestLocationService;
 
     @Mock
     private VisitedRegionService visitedRegionService;
@@ -48,7 +47,7 @@ class DayRouteFacadeTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Test
-    void redis_저장에_실패해도_좌표_업로드는_성공한다() {
+    void 좌표를_업로드하면_latest_location도_함께_갱신한다() {
         LocalDate date = LocalDate.of(2026, 5, 9);
         DayRoute dayRoute = DayRoute.builder()
             .user(createUser())
@@ -60,14 +59,12 @@ class DayRouteFacadeTest {
         );
 
         given(dayRouteService.getOrCreate(1L, date)).willReturn(dayRoute);
-        org.mockito.BDDMockito.willThrow(
-            new CurrentLocationCacheException("Failed to save current location cache.", new RuntimeException())
-        ).given(currentLocationCacheService).saveLatestLocation(1L, request.gpsPoints());
 
         GpsPointBatchUploadResponse response = dayRouteFacade.uploadGpsPoint(date, 1L, request);
 
         assertThat(response).isNotNull();
         then(gpsPointService).should().batchInsert(dayRoute.getId(), request);
+        then(latestLocationService).should().upsertLatestLocation(1L, request.gpsPoints());
         then(dayRouteService).should().markHasGpsPoints(dayRoute);
         then(dayRouteService).should().updateDistance(dayRoute, 120.0);
     }

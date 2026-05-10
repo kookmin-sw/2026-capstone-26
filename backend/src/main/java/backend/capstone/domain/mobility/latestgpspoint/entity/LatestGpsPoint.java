@@ -1,4 +1,4 @@
-package backend.capstone.domain.mobility.lastlocation.entity;
+package backend.capstone.domain.mobility.latestgpspoint.entity;
 
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.entity.BaseTimeEntity;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "latest_location")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LatestLocation extends BaseTimeEntity {
+public class LatestGpsPoint extends BaseTimeEntity {
 
     @Id
     @Column(name = "user_id")
@@ -41,16 +41,16 @@ public class LatestLocation extends BaseTimeEntity {
     private Instant recordedAt;
 
     @Builder
-    private LatestLocation(User user, double latitude, double longitude, Instant recordedAt) {
+    private LatestGpsPoint(User user, double latitude, double longitude, Instant recordedAt) {
         this.user = user;
         this.latitude = latitude;
         this.longitude = longitude;
         this.recordedAt = recordedAt;
     }
 
-    public static LatestLocation of(User user, double latitude, double longitude,
+    public static LatestGpsPoint of(User user, double latitude, double longitude,
         Instant recordedAt) {
-        return LatestLocation.builder()
+        return LatestGpsPoint.builder()
             .user(user)
             .latitude(latitude)
             .longitude(longitude)

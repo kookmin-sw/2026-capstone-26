@@ -20,7 +20,7 @@ import backend.capstone.domain.mobility.dayroute.mapper.DayRouteMapper;
 import backend.capstone.domain.mobility.dayroute.service.DayRouteService;
 import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
 import backend.capstone.domain.mobility.gpspoint.service.GpsPointService;
-import backend.capstone.domain.mobility.lastlocation.service.LatestLocationService;
+import backend.capstone.domain.mobility.latestgpspoint.service.LatestGpsPointService;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
@@ -39,7 +39,7 @@ public class DayRouteFacade {
 
     private final DayRouteService dayRouteService;
     private final GpsPointService gpsPointService;
-    private final LatestLocationService latestLocationService;
+    private final LatestGpsPointService latestGpsPointService;
     private final VisitedRegionService visitedRegionService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -57,7 +57,7 @@ public class DayRouteFacade {
 
         if (!request.gpsPoints().isEmpty()) {
             gpsPointService.batchInsert(dayRoute.getId(), request);
-            latestLocationService.upsertLatestLocation(userId, request.gpsPoints());
+            latestGpsPointService.upsertLatestLocation(userId, request.gpsPoints());
             dayRouteService.markHasGpsPoints(dayRoute);
         }
 
