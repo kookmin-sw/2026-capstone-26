@@ -43,15 +43,8 @@ public class CareSseEmitterRegistry {
         return List.copyOf(emitters.values());
     }
 
-    public void publishHeartbeat() {
-        List<Long> guardianUserIds = List.copyOf(emittersByGuardianUserId.keySet());
-        for (Long guardianUserId : guardianUserIds) {
-            publish(guardianUserId, "heartbeat", "keep-alive");
-        }
-    }
-
     //보호자 단위 브로드캐스트
-    public void publish(Long guardianUserId, String eventName, Object data) {
+    public void publish(Long guardianUserId, CareSseEventType eventType, Object data) {
         Map<String, SseEmitter> emitters = emittersByGuardianUserId.get(guardianUserId);
         if (emitters == null || emitters.isEmpty()) {
             return;
@@ -59,7 +52,14 @@ public class CareSseEmitterRegistry {
 
         for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
             sendEvent(guardianUserId, entry.getKey(), entry.getValue(),
-                SseEmitter.event().name(eventName).data(data));
+                SseEmitter.event().name(eventType.getEventName()).data(data));
+        }
+    }
+
+    public void publishHeartbeat() {
+        List<Long> guardianUserIds = List.copyOf(emittersByGuardianUserId.keySet());
+        for (Long guardianUserId : guardianUserIds) {
+            publish(guardianUserId, CareSseEventType.HEARTBEAT, "keep-alive");
         }
     }
 
@@ -82,7 +82,7 @@ public class CareSseEmitterRegistry {
 
     private void sendConnectedEvent(Long guardianUserId, String emitterId, SseEmitter emitter) {
         sendEvent(guardianUserId, emitterId, emitter, SseEmitter.event()
-            .name("connected")
+            .name(CareSseEventType.CONNECTED.getEventName())
             .data("보호 대상 위치 SSE 연결이 생성되었습니다."));
     }
 

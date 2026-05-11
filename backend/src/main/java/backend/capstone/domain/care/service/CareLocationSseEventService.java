@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CareLocationSseEventService {
 
-    private static final String LOCATION_UPDATED_EVENT_NAME = "location-updated";
-
     private final CareRelationshipRepository careRelationshipRepository;
     private final CareSseEmitterRegistry careSseEmitterRegistry;
 
@@ -29,7 +27,8 @@ public class CareLocationSseEventService {
 
         Object payload = LatestGpsPointMapper.toLatestGpsPointResponse(latestGpsPoint);
         for (Long guardianUserId : guardianUserIds) {
-            careSseEmitterRegistry.publish(guardianUserId, LOCATION_UPDATED_EVENT_NAME, payload);
+            careSseEmitterRegistry.publish(guardianUserId, CareSseEventType.LOCATION_UPDATED,
+                payload);
         }
     }
 }

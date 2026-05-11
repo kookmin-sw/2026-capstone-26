@@ -59,11 +59,11 @@ class CareLocationSseEventServiceTest {
         careLocationSseEventService.publishLocationUpdated(latestGpsPoint);
 
         then(careRelationshipRepository).should().findGuardianUserIdsByDependentUserId(1L);
-        then(careSseEmitterRegistry).should().publish(eq(10L), eq("location-updated"),
+        then(careSseEmitterRegistry).should().publish(eq(10L), eq(CareSseEventType.LOCATION_UPDATED),
             org.mockito.ArgumentMatchers.any());
-        then(careSseEmitterRegistry).should().publish(eq(20L), eq("location-updated"),
+        then(careSseEmitterRegistry).should().publish(eq(20L), eq(CareSseEventType.LOCATION_UPDATED),
             org.mockito.ArgumentMatchers.any());
-        then(careSseEmitterRegistry).should(never()).publish(eq(30L), eq("location-updated"),
+        then(careSseEmitterRegistry).should(never()).publish(eq(30L), eq(CareSseEventType.LOCATION_UPDATED),
             org.mockito.ArgumentMatchers.any());
     }
 
