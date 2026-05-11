@@ -43,21 +43,23 @@ public class CareSseEmitterRegistry {
         return List.copyOf(emitters.values());
     }
 
+    public void publishHeartbeat() {
+        List<Long> guardianUserIds = List.copyOf(emittersByGuardianUserId.keySet());
+        for (Long guardianUserId : guardianUserIds) {
+            publish(guardianUserId, "heartbeat", "keep-alive");
+        }
+    }
+
+    //보호자 단위 브로드캐스트
     public void publish(Long guardianUserId, String eventName, Object data) {
-        //해당 보호자에 연결되어 있는 emitter 목록을 찾음
         Map<String, SseEmitter> emitters = emittersByGuardianUserId.get(guardianUserId);
         if (emitters == null || emitters.isEmpty()) {
             return;
         }
 
         for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
-            try {
-                entry.getValue().send(SseEmitter.event().name(eventName).data(data));
-            } catch (IOException e) {
-                log.warn("SSE 이벤트 전송에 실패했습니다. guardianUserId={}, emitterId={}",
-                    guardianUserId, entry.getKey(), e);
-                remove(guardianUserId, entry.getKey());
-            }
+            sendEvent(guardianUserId, entry.getKey(), entry.getValue(),
+                SseEmitter.event().name(eventName).data(data));
         }
     }
 
@@ -79,12 +81,19 @@ public class CareSseEmitterRegistry {
     }
 
     private void sendConnectedEvent(Long guardianUserId, String emitterId, SseEmitter emitter) {
+        sendEvent(guardianUserId, emitterId, emitter, SseEmitter.event()
+            .name("connected")
+            .data("보호 대상 위치 SSE 연결이 생성되었습니다."));
+    }
+
+    //개별 emitter 단건 전송
+    private void sendEvent(Long guardianUserId, String emitterId, SseEmitter emitter,
+        SseEmitter.SseEventBuilder event) {
         try {
-            emitter.send(SseEmitter.event().name("connected").id(emitterId)
-                .data("보호 대상 위치 SSE 연결이 생성되었습니다."));
+            emitter.send(event);
         } catch (IOException e) {
-            log.warn("SSE 연결 초기 이벤트 전송에 실패했습니다. guardianUserId={}",
-                guardianUserId, e);
+            log.warn("SSE 이벤트 전송에 실패했습니다. guardianUserId={}, emitterId={}",
+                guardianUserId, emitterId, e);
             remove(guardianUserId, emitterId);
         }
     }

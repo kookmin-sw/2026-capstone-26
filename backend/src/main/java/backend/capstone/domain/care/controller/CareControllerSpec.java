@@ -25,7 +25,12 @@ public interface CareControllerSpec {
             로그인한 보호자가 보호 대상 위치 변경 이벤트를 실시간으로 구독합니다.<br>
             다른 api와 다르게 한 번 받고 끝나는 1회성 응답이 아니라 연결이 유지되어 서버로부터 실시간으로 응답이 오는 sse 스트림입니다.<br>
             클라이언트가 실시간 위치 추적 화면을 닫으면 이 연결을 종료해주세요.<br>
-            연결이 성공하면 connected 이벤트를 즉시 1회 전송합니다.
+            연결이 성공하면 아래 메시지가 이벤트 스트림으로 전송됩니다.<br>
+            ```
+            event:connected
+            id:e7bce0b3-8f84-45ba-8ec0-9bbdb4c88c84
+            data:보호 대상 위치 SSE 연결이 생성되었습니다.
+            ```
             """
     )
     SseEmitter subscribeDependentLocation(UserPrincipal principal);
