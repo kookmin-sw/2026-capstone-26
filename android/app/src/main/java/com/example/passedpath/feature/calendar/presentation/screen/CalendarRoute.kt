@@ -56,7 +56,7 @@ import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarVi
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
-import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
+import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green100
@@ -201,15 +201,15 @@ private fun CalendarScreen(
         )
 
         if (isLoading && errorMessage == null) {
-            Spacer(modifier = Modifier.height(39.dp))
-            CalendarRecordLoadingLine(
+            Spacer(modifier = Modifier.height(20.dp))
+            BaseLoadingLine(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(9.dp))
         } else {
-            Spacer(modifier = Modifier.height(52.dp))
+            Spacer(modifier = Modifier.height(33.dp))
         }
 
         WeekdayHeader(
@@ -242,7 +242,7 @@ private fun CalendarScreen(
             CalendarErrorNotice(
                 onRetryClick = onRetryClick,
                 modifier = Modifier
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 12.dp)
             )
         }
@@ -259,24 +259,6 @@ private fun CalendarScreen(
             textFontWeight = FontWeight.Bold
         )
     }
-}
-
-@Composable
-private fun CalendarRecordLoadingLine(
-    modifier: Modifier = Modifier
-) {
-    val shimmerBrush = rememberBaseSkeletonBrush(
-        edgeColor = Green100.copy(alpha = 0.45f),
-        baseColor = Green300.copy(alpha = 0.75f),
-        highlightColor = Green500.copy(alpha = 0.95f)
-    )
-
-    Box(
-        modifier = modifier
-            .height(5.dp)
-            .clip(RoundedCornerShape(999.dp))
-            .background(shimmerBrush)
-    )
 }
 
 @Composable

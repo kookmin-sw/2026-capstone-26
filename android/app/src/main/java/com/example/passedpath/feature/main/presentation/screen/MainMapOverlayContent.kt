@@ -19,10 +19,12 @@ import com.example.passedpath.feature.permission.presentation.mapper.createPermi
 import com.example.passedpath.feature.route.presentation.screen.RouteStatusOverlay
 import com.example.passedpath.feature.route.presentation.screen.RouteTopCenterControls
 import com.example.passedpath.feature.route.presentation.screen.RouteTopEndControls
+import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
 import com.example.passedpath.ui.component.banner.RequestActionBottomBanner
+import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.theme.Black
 
 @Composable
@@ -65,6 +67,18 @@ internal fun BoxScope.MainMapOverlayContent(
             .align(Alignment.TopCenter)
             .fillMaxWidth()
     )
+
+    if (uiState.routeModeUiState is MainRouteModeUiState.Past &&
+        uiState.routeModeUiState.isRouteLoading
+    ) {
+        BaseLoadingLine(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = RouteTopBarsHeight)
+        )
+    }
 
     FloatingButtonColumn(
         modifier = Modifier
