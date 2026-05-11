@@ -1,8 +1,10 @@
-package backend.capstone.domain.care.service;
+package backend.capstone.domain.care.sse.service;
 
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
+import backend.capstone.domain.care.sse.dto.CareLocationUpdatedPayload;
+import backend.capstone.domain.care.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
-import backend.capstone.domain.mobility.latestgpspoint.mapper.LatestGpsPointMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class CareLocationSseEventService {
             return;
         }
 
-        Object payload = LatestGpsPointMapper.toLatestGpsPointResponse(latestGpsPoint);
+        CareLocationUpdatedPayload payload = CareLocationUpdatedPayload.from(latestGpsPoint);
         for (Long guardianUserId : guardianUserIds) {
             careSseEmitterRegistry.publish(guardianUserId, CareSseEventType.LOCATION_UPDATED,
                 payload);

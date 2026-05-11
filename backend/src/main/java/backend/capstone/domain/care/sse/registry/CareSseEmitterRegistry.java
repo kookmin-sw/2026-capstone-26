@@ -1,5 +1,7 @@
-package backend.capstone.domain.care.service;
+package backend.capstone.domain.care.sse.registry;
 
+import backend.capstone.domain.care.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.sse.dto.CareSseMessagePayload;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -9,20 +11,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-// "지금 누가 sse 연결을 열어두었는지"를 서버 메모리에 보관하는 클래스
 @Slf4j
 @Component
 public class CareSseEmitterRegistry {
 
-    //TODO: 타임아웃 후 재연결
-    private static final long SSE_TIMEOUT_MILLIS = 60L * 60L * 1000L; //1시간
+    private static final long SSE_TIMEOUT_MILLIS = 6L * 60L * 60L * 1000L;
 
     private final Map<Long, Map<String, SseEmitter>> emittersByGuardianUserId =
         new ConcurrentHashMap<>();
 
     public SseEmitter register(Long guardianUserId) {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MILLIS);
-        String emitterId = UUID.randomUUID().toString(); //멀티 디바이스 고려
+        String emitterId = UUID.randomUUID().toString();
 
         emittersByGuardianUserId.computeIfAbsent(guardianUserId,
             ignored -> new ConcurrentHashMap<>()).put(emitterId, emitter);
@@ -43,7 +43,6 @@ public class CareSseEmitterRegistry {
         return List.copyOf(emitters.values());
     }
 
-    //보호자 단위 브로드캐스트
     public void publish(Long guardianUserId, CareSseEventType eventType, Object data) {
         Map<String, SseEmitter> emitters = emittersByGuardianUserId.get(guardianUserId);
         if (emitters == null || emitters.isEmpty()) {
@@ -51,15 +50,16 @@ public class CareSseEmitterRegistry {
         }
 
         for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
-            sendEvent(guardianUserId, entry.getKey(), entry.getValue(),
+            send(guardianUserId, entry.getKey(), entry.getValue(),
                 SseEmitter.event().name(eventType.getEventName()).data(data));
         }
     }
 
     public void publishHeartbeat() {
         List<Long> guardianUserIds = List.copyOf(emittersByGuardianUserId.keySet());
+        CareSseMessagePayload payload = CareSseMessagePayload.of("keep-alive");
         for (Long guardianUserId : guardianUserIds) {
-            publish(guardianUserId, CareSseEventType.HEARTBEAT, "keep-alive");
+            publish(guardianUserId, CareSseEventType.HEARTBEAT, payload);
         }
     }
 
@@ -81,13 +81,12 @@ public class CareSseEmitterRegistry {
     }
 
     private void sendConnectedEvent(Long guardianUserId, String emitterId, SseEmitter emitter) {
-        sendEvent(guardianUserId, emitterId, emitter, SseEmitter.event()
+        send(guardianUserId, emitterId, emitter, SseEmitter.event()
             .name(CareSseEventType.CONNECTED.getEventName())
-            .data("보호 대상 위치 SSE 연결이 생성되었습니다."));
+            .data(CareSseMessagePayload.of("보호 대상 위치 SSE 연결이 생성되었습니다.")));
     }
 
-    //개별 emitter 단건 전송
-    private void sendEvent(Long guardianUserId, String emitterId, SseEmitter emitter,
+    private void send(Long guardianUserId, String emitterId, SseEmitter emitter,
         SseEmitter.SseEventBuilder event) {
         try {
             emitter.send(event);

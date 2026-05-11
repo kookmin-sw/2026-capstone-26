@@ -3,7 +3,7 @@ package backend.capstone.domain.care.controller;
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
 import backend.capstone.domain.care.service.CareDependentUserService;
-import backend.capstone.domain.care.service.CareSseEmitterRegistry;
+import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

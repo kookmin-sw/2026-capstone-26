@@ -1,4 +1,4 @@
-package backend.capstone.domain.care.service;
+package backend.capstone.domain.care.sse.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

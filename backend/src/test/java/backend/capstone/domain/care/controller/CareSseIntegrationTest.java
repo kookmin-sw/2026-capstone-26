@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import backend.capstone.auth.jwt.service.JwtTokenProvider;
 import backend.capstone.domain.care.carerelationship.entity.CareRelationship;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.service.CareSseEmitterRegistry;
-import backend.capstone.domain.care.service.CareSseEventType;
+import backend.capstone.domain.care.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.repository.UserRepository;
@@ -25,15 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest(properties = {
-    "seed.region.enabled=false",
-    "spring.data.redis.host=localhost",
-    "spring.data.redis.port=6379",
-    "jwt.secret=12345678901234567890123456789012",
-    "jwt.access-exp-seconds=86400",
-    "jwt.refresh-exp-seconds=2592000",
-    "kakao.local.rest-api-key=test-key"
-})
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class CareSseIntegrationTest {
@@ -73,7 +65,8 @@ class CareSseIntegrationTest {
             "{\"dependentUserId\":%d,\"latitude\":37.1,\"longitude\":127.1}".formatted(
                 dependent.getId()));
 
-        waitUntil(() -> result.getResponse().getContentAsString().contains("event:location-updated"));
+        waitUntil(
+            () -> result.getResponse().getContentAsString().contains("event:location-updated"));
 
         String responseBody = result.getResponse().getContentAsString();
         assertThat(responseBody).contains("event:connected");

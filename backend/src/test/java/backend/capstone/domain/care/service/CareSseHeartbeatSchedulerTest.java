@@ -2,6 +2,8 @@ package backend.capstone.domain.care.service;
 
 import static org.mockito.Mockito.verify;
 
+import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.care.sse.service.CareSseHeartbeatScheduler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
