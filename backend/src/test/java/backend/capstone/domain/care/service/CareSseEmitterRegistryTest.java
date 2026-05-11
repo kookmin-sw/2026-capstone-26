@@ -23,4 +23,11 @@ class CareSseEmitterRegistryTest {
         assertThat(registry.getEmitters(1L)).isEmpty();
         assertThat(registry.count(1L)).isZero();
     }
+
+    @Test
+    void heartbeat_발행_대상이_없으면_예외_없이_종료된다() {
+        registry.publishHeartbeat();
+
+        assertThat(registry.count(1L)).isZero();
+    }
 }

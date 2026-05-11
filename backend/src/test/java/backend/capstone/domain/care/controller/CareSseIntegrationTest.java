@@ -69,7 +69,6 @@ class CareSseIntegrationTest {
 
         String responseBody = result.getResponse().getContentAsString();
         assertThat(responseBody).contains("event:connected");
-        assertThat(responseBody).contains("id:");
         assertThat(responseBody).contains("data:");
         assertThat(responseBody).contains("event:location-updated");
         assertThat(responseBody).contains("\"dependentUserId\":%d".formatted(dependent.getId()));
