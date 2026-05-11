@@ -23,7 +23,7 @@ import com.example.passedpath.feature.summary.presentation.component.DaySummaryM
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCardSkeleton
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
-import com.example.passedpath.ui.component.feedback.WifiFailurePanel
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.PassedPathTheme
 
@@ -69,7 +69,6 @@ fun DaySummaryBottomSheetContent(
             uiState.errorMessage != null -> {
                 item {
                     DaySummaryErrorNotice(
-                        message = uiState.errorMessage,
                         onRetryClick = onRetryClick
                     )
                 }
@@ -128,12 +127,9 @@ private fun DaySummarySkeletonList() {
 
 @Composable
 private fun DaySummaryErrorNotice(
-    message: String,
     onRetryClick: () -> Unit
 ) {
-    WifiFailurePanel(
-        title = stringResource(R.string.day_summary_error_title),
-        message = message,
+    NetworkFailureBanner(
         retryText = stringResource(R.string.route_retry),
         onRetryClick = onRetryClick
     )

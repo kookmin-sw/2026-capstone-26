@@ -66,7 +66,7 @@ import com.example.passedpath.feature.place.presentation.component.PlaceCard
 import com.example.passedpath.feature.place.presentation.state.PlaceListUiState
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.button.BaseButtonVariant
-import com.example.passedpath.ui.component.feedback.WifiFailurePanel
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
@@ -262,7 +262,6 @@ fun PlaceBottomSheetContent(
             item(key = "stale_notice") {
                 Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
                     StalePlaceSection(
-                        message = placeListUiState.errorMessage,
                         onRetryClick = onRetryClick
                     )
                 }
@@ -282,7 +281,6 @@ fun PlaceBottomSheetContent(
                 item(key = "error") {
                     Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
                         ErrorPlaceNotice(
-                            message = placeListUiState.errorMessage,
                             onRetryClick = onRetryClick
                         )
                     }
@@ -380,12 +378,9 @@ private fun PlaceSummarySection(placeCount: Int) {
 
 @Composable
 private fun ErrorPlaceNotice(
-    message: String,
     onRetryClick: () -> Unit
 ) {
-    WifiFailurePanel(
-        title = stringResource(R.string.place_sheet_error_title),
-        message = message,
+    NetworkFailureBanner(
         retryText = stringResource(R.string.route_retry),
         onRetryClick = onRetryClick
     )
@@ -393,12 +388,9 @@ private fun ErrorPlaceNotice(
 
 @Composable
 private fun StalePlaceSection(
-    message: String,
     onRetryClick: () -> Unit
 ) {
-    WifiFailurePanel(
-        title = stringResource(R.string.place_sheet_stale_title),
-        message = message,
+    NetworkFailureBanner(
         retryText = stringResource(R.string.route_retry),
         onRetryClick = onRetryClick
     )

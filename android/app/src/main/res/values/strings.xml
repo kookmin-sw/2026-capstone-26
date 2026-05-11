@@ -69,6 +69,7 @@
     <string name="calendar_record_view_cta">%1$s 기록 보기</string>
     <string name="calendar_monthly_loading">월별 기록을 불러오는 중이에요</string>
     <string name="calendar_monthly_error_title">월별 기록을 불러오지 못했어요</string>
+    <string name="network_request_failed_banner">네트워크 요청에 실패했습니다.</string>
     <string name="main_permission_off_title">위치 권한이 꺼져 있습니다</string>
     <string name="main_permission_off_message">정확한 위치 권한을 허용하면 현재 위치를 지도에서 볼 수 있습니다.</string>
     <string name="main_permission_enabled_background">백그라운드 위치 권한이 허용됨</string>

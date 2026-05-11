@@ -22,7 +22,7 @@ import com.example.passedpath.feature.route.presentation.screen.RouteTopEndContr
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
-import com.example.passedpath.ui.component.banner.ActionBottomBanner
+import com.example.passedpath.ui.component.banner.RequestActionBottomBanner
 import com.example.passedpath.ui.theme.Black
 
 @Composable
@@ -119,7 +119,7 @@ internal fun BoxScope.MainMapOverlayContent(
     }
 
     permissionOverlayUiModel?.let { overlayUiModel ->
-        ActionBottomBanner(
+        RequestActionBottomBanner(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 16.dp)

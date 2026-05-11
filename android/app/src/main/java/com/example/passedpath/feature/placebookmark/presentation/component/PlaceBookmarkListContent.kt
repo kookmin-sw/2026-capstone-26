@@ -42,7 +42,7 @@ import com.example.passedpath.R
 import com.example.passedpath.feature.placebookmark.domain.model.PlaceBookmarkSummary
 import com.example.passedpath.feature.placebookmark.presentation.state.PlaceBookmarkUiState
 import com.example.passedpath.ui.component.button.BaseButton
-import com.example.passedpath.ui.component.feedback.WifiFailurePanel
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
@@ -100,7 +100,6 @@ internal fun PlaceBookmarkListContent(
 
         uiState.errorMessage != null && !uiState.hasLoaded -> {
             PlaceBookmarkErrorContent(
-                message = uiState.errorMessage,
                 onRetryClick = onRetryClick,
                 modifier = modifier
             )
@@ -353,7 +352,6 @@ private fun PlaceBookmarkListItem(
 
 @Composable
 private fun PlaceBookmarkErrorContent(
-    message: String,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -362,9 +360,7 @@ private fun PlaceBookmarkErrorContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        WifiFailurePanel(
-            title = stringResource(R.string.place_bookmark_error_title),
-            message = message,
+        NetworkFailureBanner(
             retryText = stringResource(R.string.route_retry),
             onRetryClick = onRetryClick
         )

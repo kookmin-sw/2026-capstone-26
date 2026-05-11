@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,10 +55,9 @@ import com.example.passedpath.feature.calendar.presentation.model.toggleCalendar
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModel
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
-import com.example.passedpath.ui.component.feedback.WifiFailurePanel
-import com.example.passedpath.ui.theme.Gray100
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.Gray400
-import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green300
@@ -202,7 +200,17 @@ private fun CalendarScreen(
             onMoreClick = onMoreClick
         )
 
-        Spacer(modifier = Modifier.height(52.dp))
+        if (isLoading && errorMessage == null) {
+            Spacer(modifier = Modifier.height(39.dp))
+            CalendarRecordLoadingLine(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        } else {
+            Spacer(modifier = Modifier.height(52.dp))
+        }
 
         WeekdayHeader(
             modifier = Modifier
@@ -230,17 +238,8 @@ private fun CalendarScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (isLoading) {
-            CalendarLoadingNotice(
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .padding(bottom = 10.dp)
-            )
-        }
-
         if (errorMessage != null) {
             CalendarErrorNotice(
-                message = errorMessage,
                 onRetryClick = onRetryClick,
                 modifier = Modifier
                     .padding(horizontal = 32.dp)
@@ -263,33 +262,29 @@ private fun CalendarScreen(
 }
 
 @Composable
-private fun CalendarLoadingNotice(
+private fun CalendarRecordLoadingLine(
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        color = Gray100
-    ) {
-        Text(
-            text = stringResource(R.string.calendar_monthly_loading),
-            color = Gray500,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-        )
-    }
+    val shimmerBrush = rememberBaseSkeletonBrush(
+        edgeColor = Green100.copy(alpha = 0.45f),
+        baseColor = Green300.copy(alpha = 0.75f),
+        highlightColor = Green500.copy(alpha = 0.95f)
+    )
+
+    Box(
+        modifier = modifier
+            .height(5.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(shimmerBrush)
+    )
 }
 
 @Composable
 private fun CalendarErrorNotice(
-    message: String,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    WifiFailurePanel(
-        title = stringResource(R.string.calendar_monthly_error_title),
-        message = message,
+    NetworkFailureBanner(
         retryText = stringResource(R.string.route_retry),
         onRetryClick = onRetryClick,
         modifier = modifier
