@@ -4,6 +4,7 @@ import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "보호 관계 API")
 public interface CareControllerSpec {
@@ -17,4 +18,15 @@ public interface CareControllerSpec {
             """
     )
     CareDependentUserListResponse getDependentUsers(UserPrincipal principal);
+
+    @Operation(
+        summary = "실시간 위치를 받기 위한 SSE 구독 API",
+        description = """
+            로그인한 보호자가 보호 대상 위치 변경 이벤트를 실시간으로 구독합니다.<br>
+            다른 api와 다르게 한 번 받고 끝나는 1회성 응답이 아니라 연결이 유지되어 서버로부터 실시간으로 응답이 오는 sse 스트림입니다.<br>
+            클라이언트가 실시간 위치 추적 화면을 닫으면 이 연결을 종료해주세요.<br>
+            연결이 성공하면 connected 이벤트를 즉시 1회 전송합니다.
+            """
+    )
+    SseEmitter subscribeDependentLocation(UserPrincipal principal);
 }
