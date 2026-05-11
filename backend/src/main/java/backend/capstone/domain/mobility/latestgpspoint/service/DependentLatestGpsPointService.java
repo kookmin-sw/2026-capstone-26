@@ -3,6 +3,7 @@ package backend.capstone.domain.mobility.latestgpspoint.service;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
 import backend.capstone.domain.mobility.latestgpspoint.dto.DependentLatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
+import backend.capstone.domain.mobility.latestgpspoint.mapper.LatestGpsPointMapper;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class DependentLatestGpsPointService {
                 continue;
             }
 
-            currentLocations.add(DependentLatestGpsPoint.from(latestGpsPoint));
+            currentLocations.add(LatestGpsPointMapper.toDto(latestGpsPoint));
         }
 
         return currentLocations;
