@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray500
+import com.example.passedpath.ui.theme.Green50
 import com.example.passedpath.ui.theme.Green700
 
 @Composable
@@ -38,7 +39,7 @@ fun IconActionBottomBanner(
     iconResId: Int = R.drawable.ic_info_circle,
     cornerRadius: Dp = 22.dp,
     iconTint: Color = Color.Unspecified,
-    borderColor: Color = Gray100
+    borderColor: Color = Green50
 ) {
     BaseBottomBanner(
         modifier = modifier,
