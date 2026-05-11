@@ -1,6 +1,6 @@
 package backend.capstone.domain.mobility.latestgpspoint.dto;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record DependentLatestGpsPoint(
     Long dependentUserId,
@@ -10,7 +10,7 @@ public record DependentLatestGpsPoint(
     public record LatestGpsPoint(
         double latitude,
         double longitude,
-        Instant recordedAt
+        OffsetDateTime recordedAt
     ) {
 
     }

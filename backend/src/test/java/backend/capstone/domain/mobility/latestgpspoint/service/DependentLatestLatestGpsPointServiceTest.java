@@ -11,6 +11,7 @@ import backend.capstone.domain.mobility.latestgpspoint.dto.DependentLatestGpsPoi
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,8 +55,8 @@ class DependentLatestLatestGpsPointServiceTest {
             .containsExactly(127.1, 127.2);
         assertThat(result).extracting(location -> location.latestGpsPoint().recordedAt())
             .containsExactly(
-                Instant.parse("2026-05-10T00:00:00Z"),
-                Instant.parse("2026-05-10T01:00:00Z")
+                OffsetDateTime.parse("2026-05-10T09:00:00+09:00"),
+                OffsetDateTime.parse("2026-05-10T10:00:00+09:00")
             );
     }
 
@@ -77,7 +78,7 @@ class DependentLatestLatestGpsPointServiceTest {
         assertThat(result.get(0).latestGpsPoint().latitude()).isEqualTo(37.1);
         assertThat(result.get(0).latestGpsPoint().longitude()).isEqualTo(127.1);
         assertThat(result.get(0).latestGpsPoint().recordedAt())
-            .isEqualTo(Instant.parse("2026-05-10T00:00:00Z"));
+            .isEqualTo(OffsetDateTime.parse("2026-05-10T09:00:00+09:00"));
     }
 
     @Test

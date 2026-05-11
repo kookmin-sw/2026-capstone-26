@@ -39,7 +39,7 @@ public class DependentLatestGpsPointService {
                 continue;
             }
 
-            currentLocations.add(LatestGpsPointMapper.toDto(latestGpsPoint));
+            currentLocations.add(LatestGpsPointMapper.toLatestGpsPointResponse(latestGpsPoint));
         }
 
         return currentLocations;
