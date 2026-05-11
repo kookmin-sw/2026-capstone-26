@@ -25,8 +25,7 @@ public class CareSseEmitterRegistry {
         String emitterId = UUID.randomUUID().toString(); //멀티 디바이스 고려
 
         emittersByGuardianUserId.computeIfAbsent(guardianUserId,
-                ignored -> new ConcurrentHashMap<>())
-            .put(emitterId, emitter);
+            ignored -> new ConcurrentHashMap<>()).put(emitterId, emitter);
 
         emitter.onCompletion(() -> remove(guardianUserId, emitterId));
         emitter.onTimeout(() -> remove(guardianUserId, emitterId));
@@ -42,6 +41,24 @@ public class CareSseEmitterRegistry {
             return List.of();
         }
         return List.copyOf(emitters.values());
+    }
+
+    public void publish(Long guardianUserId, String eventName, Object data) {
+        //해당 보호자에 연결되어 있는 emitter 목록을 찾음
+        Map<String, SseEmitter> emitters = emittersByGuardianUserId.get(guardianUserId);
+        if (emitters == null || emitters.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
+            try {
+                entry.getValue().send(SseEmitter.event().name(eventName).data(data));
+            } catch (IOException e) {
+                log.warn("SSE 이벤트 전송에 실패했습니다. guardianUserId={}, emitterId={}",
+                    guardianUserId, entry.getKey(), e);
+                remove(guardianUserId, entry.getKey());
+            }
+        }
     }
 
     public void remove(Long guardianUserId, String emitterId) {
@@ -63,14 +80,11 @@ public class CareSseEmitterRegistry {
 
     private void sendConnectedEvent(Long guardianUserId, String emitterId, SseEmitter emitter) {
         try {
-            emitter.send(
-                SseEmitter.event()
-                    .name("connected")
-                    .id(emitterId)
-                    .data("보호 대상 위치 SSE 연결이 생성되었습니다.")
-            );
+            emitter.send(SseEmitter.event().name("connected").id(emitterId)
+                .data("보호 대상 위치 SSE 연결이 생성되었습니다."));
         } catch (IOException e) {
-            log.warn("SSE 연결 초기 이벤트 전송에 실패했습니다. guardianUserId={}", guardianUserId, e);
+            log.warn("SSE 연결 초기 이벤트 전송에 실패했습니다. guardianUserId={}",
+                guardianUserId, e);
             remove(guardianUserId, emitterId);
         }
     }
