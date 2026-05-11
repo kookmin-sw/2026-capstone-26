@@ -28,13 +28,13 @@ public interface CareControllerSpec {
             연결이 성공하면 아래 메시지가 이벤트 스트림으로 전송됩니다.<br>
             ```
             event:connected
-            data:보호 대상 위치 SSE 연결이 생성되었습니다.
+            data: {"message":"보호 대상 위치 SSE 연결이 생성되었습니다."}
             ```
             <br>
             서버는 30초마다 heartbeat 이벤트를 보내서 연결이 살아있음을 유지하는 신호를 보냅니다. 비지니스적으로 의미있는 데이터는 아닙니다. 형식은 다음과 같습니다.
             ```
             event:heartbeat
-            data:keep-alive
+            data: {"message":"keep-alive"}
             ```
             <br>
             보호대상자가 좌표 업로드를 갱신한 경우엔 아래 이벤트가 발행됩니다.

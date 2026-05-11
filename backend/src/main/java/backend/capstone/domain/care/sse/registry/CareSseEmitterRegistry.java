@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Component
 public class CareSseEmitterRegistry {
 
-    private static final long SSE_TIMEOUT_MILLIS = 6L * 60L * 60L * 1000L;
+    private static final long SSE_TIMEOUT_MILLIS = 60L * 60L * 1000L; //1시간
 
     private final Map<Long, Map<String, SseEmitter>> emittersByGuardianUserId =
         new ConcurrentHashMap<>();
@@ -50,7 +50,7 @@ public class CareSseEmitterRegistry {
         }
 
         for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
-            send(guardianUserId, entry.getKey(), entry.getValue(),
+            sendEvent(guardianUserId, entry.getKey(), entry.getValue(),
                 SseEmitter.event().name(eventType.getEventName()).data(data));
         }
     }
@@ -81,12 +81,12 @@ public class CareSseEmitterRegistry {
     }
 
     private void sendConnectedEvent(Long guardianUserId, String emitterId, SseEmitter emitter) {
-        send(guardianUserId, emitterId, emitter, SseEmitter.event()
+        sendEvent(guardianUserId, emitterId, emitter, SseEmitter.event()
             .name(CareSseEventType.CONNECTED.getEventName())
             .data(CareSseMessagePayload.of("보호 대상 위치 SSE 연결이 생성되었습니다.")));
     }
 
-    private void send(Long guardianUserId, String emitterId, SseEmitter emitter,
+    private void sendEvent(Long guardianUserId, String emitterId, SseEmitter emitter,
         SseEmitter.SseEventBuilder event) {
         try {
             emitter.send(event);
