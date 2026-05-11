@@ -1,5 +1,6 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
+import backend.capstone.domain.care.service.CareLocationSseEventService;
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
@@ -40,6 +41,7 @@ public class DayRouteFacade {
     private final DayRouteService dayRouteService;
     private final GpsPointService gpsPointService;
     private final LatestGpsPointService latestGpsPointService;
+    private final CareLocationSseEventService careLocationSseEventService;
     private final VisitedRegionService visitedRegionService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -57,7 +59,8 @@ public class DayRouteFacade {
 
         if (!request.gpsPoints().isEmpty()) {
             gpsPointService.batchInsert(dayRoute.getId(), request);
-            latestGpsPointService.upsertLatestLocation(userId, request.gpsPoints());
+            careLocationSseEventService.publishLocationUpdated(
+                latestGpsPointService.upsertLatestLocation(userId, request.gpsPoints()));
             dayRouteService.markHasGpsPoints(dayRoute);
         }
 

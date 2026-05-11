@@ -20,29 +20,29 @@ public class LatestGpsPointService {
     private final UserService userService;
 
     @Transactional
-    public void upsertLatestLocation(Long userId, List<GpsPointRequest> gpsPoints) {
+    public LatestGpsPoint upsertLatestLocation(Long userId, List<GpsPointRequest> gpsPoints) {
         if (gpsPoints == null || gpsPoints.isEmpty()) {
-            return;
+            return null;
         }
 
         GpsPointRequest latestPoint = gpsPoints.stream()
             .max(Comparator.comparing(GpsPointRequest::recordedAt))
             .orElseThrow();
 
-        latestGpsPointRepository.findById(userId)
-            .ifPresentOrElse(
-                latestLocation -> updateIfNewer(latestLocation, latestPoint),
-                () -> latestGpsPointRepository.save(createLatestLocation(userId, latestPoint)));
+        return latestGpsPointRepository.findById(userId)
+            .map(latestGpsPoint -> updateIfNewer(latestGpsPoint, latestPoint))
+            .orElseGet(() -> latestGpsPointRepository.save(createLatestLocation(userId, latestPoint)));
     }
 
-    private void updateIfNewer(LatestGpsPoint latestGpsPoint, GpsPointRequest latestPoint) {
+    private LatestGpsPoint updateIfNewer(LatestGpsPoint latestGpsPoint, GpsPointRequest latestPoint) {
         Instant recordedAt = latestGpsPoint.getRecordedAt();
         if (recordedAt != null && !latestPoint.recordedAt().isAfter(recordedAt)) {
-            return;
+            return latestGpsPoint;
         }
 
         latestGpsPoint.update(latestPoint.latitude(), latestPoint.longitude(),
             latestPoint.recordedAt());
+        return latestGpsPoint;
     }
 
     private LatestGpsPoint createLatestLocation(Long userId, GpsPointRequest latestPoint) {

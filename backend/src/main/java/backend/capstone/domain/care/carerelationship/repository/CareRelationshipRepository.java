@@ -19,6 +19,13 @@ public interface CareRelationshipRepository extends JpaRepository<CareRelationsh
     List<Long> findDependentUserIdsByGuardianUserId(@Param("guardianUserId") Long guardianUserId);
 
     @Query("""
+            select cr.guardianUser.id
+            from CareRelationship cr
+            where cr.dependentUser.id = :dependentUserId
+        """)
+    List<Long> findGuardianUserIdsByDependentUserId(@Param("dependentUserId") Long dependentUserId);
+
+    @Query("""
             select cr.dependentUser
             from CareRelationship cr
             where cr.guardianUser.id = :guardianUserId
