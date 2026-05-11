@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.BuildConfig
+import com.example.passedpath.R
 import com.example.passedpath.feature.main.presentation.component.MainMoreActionSheet
 import com.example.passedpath.feature.main.presentation.state.MainUiState
 import com.example.passedpath.feature.permission.presentation.mapper.createPermissionOverlayUiModel
@@ -26,6 +27,13 @@ import com.example.passedpath.ui.component.floating.FloatingButtonColumn
 import com.example.passedpath.ui.component.banner.RequestActionBottomBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.theme.Black
+
+private val RouteOverlayTopGap = 21.dp
+private val RouteOverlaySidePadding = 16.dp
+private val RouteFloatingButtonSize = 40.dp
+private val RouteErrorBannerGapFromFloatingButton = 12.dp
+private val RouteErrorBannerStartPadding =
+    RouteOverlaySidePadding + RouteFloatingButtonSize + RouteErrorBannerGapFromFloatingButton
 
 @Composable
 internal fun BoxScope.MainMapOverlayContent(
@@ -51,11 +59,17 @@ internal fun BoxScope.MainMapOverlayContent(
         permissionState = uiState.permissionState,
         isLocationServiceEnabled = uiState.isLocationServiceEnabled
     )
+    val routeModeUiState = uiState.routeModeUiState
+    val pastRouteErrorMessage = (routeModeUiState as? MainRouteModeUiState.Past)?.routeErrorMessage
+    val isPastRouteLoading = routeModeUiState is MainRouteModeUiState.Past &&
+        routeModeUiState.isRouteLoading
 
-    RouteStatusOverlay(
-        routeModeUiState = uiState.routeModeUiState,
-        onRouteAction = onRouteAction
-    )
+    if (pastRouteErrorMessage == null) {
+        RouteStatusOverlay(
+            routeModeUiState = routeModeUiState,
+            onRouteAction = onRouteAction
+        )
+    }
 
     RouteTopBars(
         route = uiState.selectedRoute,
@@ -68,23 +82,45 @@ internal fun BoxScope.MainMapOverlayContent(
             .fillMaxWidth()
     )
 
-    if (uiState.routeModeUiState is MainRouteModeUiState.Past &&
-        uiState.routeModeUiState.isRouteLoading
-    ) {
-        BaseLoadingLine(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(top = RouteTopBarsHeight)
-        )
+    when {
+        isPastRouteLoading -> {
+            BaseLoadingLine(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = RouteTopBarsHeight)
+            )
+        }
+
+        pastRouteErrorMessage != null -> {
+            RequestActionBottomBanner(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(
+                        top = RouteTopBarsHeight + RouteOverlayTopGap,
+                        start = RouteErrorBannerStartPadding,
+                        end = RouteOverlaySidePadding
+                    ),
+                message = pastRouteErrorMessage,
+                actionText = stringResource(R.string.route_retry),
+                onClickAction = { onRouteAction(RouteUiAction.RetryPastRoute) },
+                borderColor = null,
+                shadowElevation = 6.dp
+            )
+        }
     }
 
     FloatingButtonColumn(
         modifier = Modifier
             .align(Alignment.TopStart)
             .statusBarsPadding()
-            .padding(top = RouteTopBarsHeight + 21.dp, start = 16.dp)
+            .padding(
+                top = RouteTopBarsHeight + RouteOverlayTopGap,
+                start = RouteOverlaySidePadding
+            )
     ) {
         topStartControls?.invoke()
     }
@@ -93,7 +129,10 @@ internal fun BoxScope.MainMapOverlayContent(
         modifier = Modifier
             .align(Alignment.TopEnd)
             .statusBarsPadding()
-            .padding(top = RouteTopBarsHeight + 21.dp, end = 16.dp)
+            .padding(
+                top = RouteTopBarsHeight + RouteOverlayTopGap,
+                end = RouteOverlaySidePadding
+            )
     ) {
         RouteTopEndControls(
             routeMode = uiState.routeModeUiState,
@@ -110,10 +149,12 @@ internal fun BoxScope.MainMapOverlayContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        RouteTopCenterControls(
-            routeMode = uiState.routeModeUiState,
-            onRouteAction = onRouteAction
-        )
+        if (pastRouteErrorMessage == null) {
+            RouteTopCenterControls(
+                routeMode = routeModeUiState,
+                onRouteAction = onRouteAction
+            )
+        }
         if (BuildConfig.DEBUG && isDebugPanelVisible) {
             MainDebugPanel(
                 debugUiState = uiState.debugUiState,

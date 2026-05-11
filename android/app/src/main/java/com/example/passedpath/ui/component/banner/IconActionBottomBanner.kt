@@ -39,12 +39,14 @@ fun IconActionBottomBanner(
     iconResId: Int = R.drawable.ic_info_circle,
     cornerRadius: Dp = 22.dp,
     iconTint: Color = Color.Unspecified,
-    borderColor: Color = Green50
+    borderColor: Color? = Green50,
+    shadowElevation: Dp = 0.dp
 ) {
     BaseBottomBanner(
         modifier = modifier,
         cornerRadius = cornerRadius,
-        borderColor = borderColor
+        borderColor = borderColor,
+        shadowElevation = shadowElevation
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

@@ -21,7 +21,8 @@ import com.example.passedpath.ui.theme.Green50
 fun BaseBottomBanner(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 22.dp,
-    borderColor: Color = Gray100,
+    borderColor: Color? = Gray100,
+    shadowElevation: Dp = 0.dp,
     content: @Composable () -> Unit
 ) {
     Box(
@@ -33,7 +34,8 @@ fun BaseBottomBanner(
             shape = RoundedCornerShape(cornerRadius),
             color = Green50,
             tonalElevation = 0.dp,
-            border = BorderStroke(1.dp, borderColor)
+            shadowElevation = shadowElevation,
+            border = borderColor?.let { BorderStroke(1.dp, it) }
         ) {
             Box(
                 modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)

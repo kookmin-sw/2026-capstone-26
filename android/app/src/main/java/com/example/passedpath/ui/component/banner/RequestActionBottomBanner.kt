@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
 import com.example.passedpath.ui.theme.Green100
@@ -18,7 +19,9 @@ fun RequestActionBottomBanner(
     message: String,
     actionText: String,
     onClickAction: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    borderColor: Color? = Green100,
+    shadowElevation: Dp = 0.dp
 ) {
     IconActionBottomBanner(
         message = message,
@@ -28,7 +31,8 @@ fun RequestActionBottomBanner(
         iconResId = R.drawable.ic_alert,
         cornerRadius = 22.dp,
         iconTint = Green300,
-        borderColor = Green100
+        borderColor = borderColor,
+        shadowElevation = shadowElevation
     )
 }
 
