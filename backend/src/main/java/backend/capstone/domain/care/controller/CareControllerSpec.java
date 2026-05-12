@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@Tag(name = "보호 관계 API")
+@Tag(name = "함께가는 길 API")
 public interface CareControllerSpec {
 
     @Operation(

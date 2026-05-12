@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 
-@Tag(name = "나의 지나온길 즐겨찾기 API")
+@Tag(name = "나의 길 즐겨찾기 API")
 public interface DayRouteBookmarkControllerSpec {
 
     @Operation(

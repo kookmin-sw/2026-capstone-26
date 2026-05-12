@@ -19,7 +19,7 @@ import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-@Tag(name = "나의 지나온길 API")
+@Tag(name = "나의 길 API")
 public interface DayRouteControllerSpec {
 
     @Operation(
