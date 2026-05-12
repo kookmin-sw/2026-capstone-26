@@ -301,6 +301,13 @@ private fun AppNavigationGraph(
             DayRouteBookmarkListRoute(
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onBookmarkClick = { dateKey ->
+                    onCalendarDateSelected(dateKey)
+                    navController.popBackStack(
+                        route = NavRoute.MAIN,
+                        inclusive = false
+                    )
                 }
             )
         }

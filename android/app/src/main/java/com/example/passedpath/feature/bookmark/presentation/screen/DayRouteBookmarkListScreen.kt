@@ -61,6 +61,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun DayRouteBookmarkListRoute(
     onBackClick: () -> Unit,
+    onBookmarkClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DayRouteBookmarkListViewModel = viewModel(
         factory = DayRouteBookmarkListViewModelFactory(LocalContext.current.appContainer)
@@ -77,6 +78,7 @@ fun DayRouteBookmarkListRoute(
         onBackClick = onBackClick,
         onRetryClick = { viewModel.fetchBookmarks(forceRefresh = true) },
         onLoadMore = viewModel::fetchNextBookmarks,
+        onBookmarkClick = onBookmarkClick,
         modifier = modifier
     )
 }
@@ -87,6 +89,7 @@ internal fun DayRouteBookmarkListScreen(
     onBackClick: () -> Unit,
     onRetryClick: () -> Unit,
     onLoadMore: () -> Unit,
+    onBookmarkClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -128,6 +131,7 @@ internal fun DayRouteBookmarkListScreen(
                     uiState = uiState,
                     onRetryClick = onRetryClick,
                     onLoadMore = onLoadMore,
+                    onBookmarkClick = onBookmarkClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -178,6 +182,7 @@ private fun DayRouteBookmarkLoadedList(
     uiState: DayRouteBookmarkListUiState,
     onRetryClick: () -> Unit,
     onLoadMore: () -> Unit,
+    onBookmarkClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -219,7 +224,10 @@ private fun DayRouteBookmarkLoadedList(
             items = uiState.bookmarks,
             key = { index, bookmark -> "${bookmark.date}:$index" }
         ) { _, bookmark ->
-            DayRouteBookmarkListCard(bookmark = bookmark)
+            DayRouteBookmarkListCard(
+                bookmark = bookmark,
+                onClick = { onBookmarkClick(bookmark.date) }
+            )
         }
 
         if (uiState.isLoadingMore) {
@@ -399,7 +407,8 @@ private fun DayRouteBookmarkListScreenPreview() {
             ),
             onBackClick = {},
             onRetryClick = {},
-            onLoadMore = {}
+            onLoadMore = {},
+            onBookmarkClick = {}
         )
     }
 }
