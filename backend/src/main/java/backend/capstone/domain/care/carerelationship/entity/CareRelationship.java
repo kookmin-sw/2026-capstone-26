@@ -1,6 +1,7 @@
 package backend.capstone.domain.care.carerelationship.entity;
 
 import backend.capstone.domain.user.entity.User;
+import backend.capstone.global.entity.BaseTimeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,7 +35,7 @@ import lombok.NoArgsConstructor;
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CareRelationship {
+public class CareRelationship extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

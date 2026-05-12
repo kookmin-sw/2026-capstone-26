@@ -5,11 +5,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
+import backend.capstone.domain.mobility.analysis.listener.DayRouteAnalysisEventListener;
 import backend.capstone.domain.mobility.analysis.ongoinghomestatus.service.HomeStatusAnalysisService;
 import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
-import backend.capstone.domain.mobility.dayroute.event.DayRouteAnalysisEventListener;
-import backend.capstone.domain.mobility.dayroute.event.GpsPointsUploadedEvent;
-import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
+import backend.capstone.domain.mobility.analysis.service.DayRouteAnalysisLockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;

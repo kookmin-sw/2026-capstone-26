@@ -2,7 +2,7 @@ package backend.capstone.domain.mobility.analysis.ongoingstay.event;
 
 import backend.capstone.domain.mobility.analysis.ongoingstay.repository.OngoingStayRepository;
 import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
-import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
+import backend.capstone.domain.mobility.analysis.service.DayRouteAnalysisLockService;
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
