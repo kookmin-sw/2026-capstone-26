@@ -9,6 +9,7 @@ object NavRoute {
     const val CALENDAR = "calendar"
     const val CALENDAR_DATE_KEY = "dateKey"
     const val CALENDAR_WITH_DATE = "$CALENDAR/{$CALENDAR_DATE_KEY}"
+    const val DAY_ROUTE_BOOKMARKS = "day_route_bookmarks"
     const val ADD_PLACE = "add_place"
     const val ADD_PLACE_DATE_KEY = "dateKey"
     const val ADD_PLACE_WITH_DATE = "$ADD_PLACE/{$ADD_PLACE_DATE_KEY}"

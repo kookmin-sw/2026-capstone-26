@@ -378,7 +378,7 @@ private fun PlaceBookmarkEmptyContent(
         Icon(
             painter = painterResource(id = R.drawable.ic_information),
             contentDescription = null,
-            tint = Gray400,
+            tint = Gray200,
             modifier = Modifier.size(28.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))

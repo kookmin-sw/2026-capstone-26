@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
+import com.example.passedpath.feature.bookmark.presentation.screen.DayRouteBookmarkListRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
 import com.example.passedpath.feature.friends.presentation.screen.FriendsRoute
@@ -284,6 +285,21 @@ private fun AppNavigationGraph(
                 },
                 onDateConfirmed = { selectedDateKey ->
                     onCalendarDateSelected(selectedDateKey)
+                    navController.popBackStack()
+                },
+                onFavoriteListClick = {
+                    navController.navigate(NavRoute.DAY_ROUTE_BOOKMARKS)
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.DAY_ROUTE_BOOKMARKS,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            DayRouteBookmarkListRoute(
+                onBackClick = {
                     navController.popBackStack()
                 }
             )
