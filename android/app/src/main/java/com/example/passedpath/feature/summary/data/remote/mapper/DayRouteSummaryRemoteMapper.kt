@@ -12,7 +12,10 @@ internal fun DayRouteSummaryResponseDto.toDayRouteSummary(dateKey: String): DayR
         totalOutingCount = totalOutingCount ?: 0,
         totalOutingSeconds = seconds,
         totalOutingDurationText = totalOutingDurationText.normalizedOrNull()
-            ?: seconds.toDurationText()
+            ?: seconds.toDurationText(),
+        visitedDongNames = visitedDongName.orEmpty()
+            .map(String::trim)
+            .filter(String::isNotEmpty)
     )
 }
 

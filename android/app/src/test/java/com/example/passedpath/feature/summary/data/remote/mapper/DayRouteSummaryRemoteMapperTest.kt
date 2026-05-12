@@ -3,6 +3,7 @@ package com.example.passedpath.feature.summary.data.remote.mapper
 import com.example.passedpath.feature.summary.data.remote.dto.DayRouteSummaryResponseDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DayRouteSummaryRemoteMapperTest {
@@ -14,7 +15,8 @@ class DayRouteSummaryRemoteMapperTest {
             enterHomeTime = "2026-04-29T18:40:00+09:00",
             totalOutingCount = 2,
             totalOutingSeconds = 36_120L,
-            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84"
+            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84",
+            visitedDongName = listOf("\uC815\uB989\uB3D9", "\uC131\uBD81\uB3D9")
         )
 
         val result = response.toDayRouteSummary(dateKey = "2026-04-29")
@@ -25,6 +27,7 @@ class DayRouteSummaryRemoteMapperTest {
         assertEquals(2, result.totalOutingCount)
         assertEquals(36_120L, result.totalOutingSeconds)
         assertEquals("10\uC2DC\uAC04 2\uBD84", result.totalOutingDurationText)
+        assertEquals(listOf("\uC815\uB989\uB3D9", "\uC131\uBD81\uB3D9"), result.visitedDongNames)
     }
 
     @Test
@@ -34,7 +37,8 @@ class DayRouteSummaryRemoteMapperTest {
             enterHomeTime = " ",
             totalOutingCount = null,
             totalOutingSeconds = null,
-            totalOutingDurationText = null
+            totalOutingDurationText = null,
+            visitedDongName = listOf(" ", "")
         )
 
         val result = response.toDayRouteSummary(dateKey = "2026-04-30")
@@ -44,6 +48,7 @@ class DayRouteSummaryRemoteMapperTest {
         assertEquals(0, result.totalOutingCount)
         assertEquals(0L, result.totalOutingSeconds)
         assertEquals("0\uBD84", result.totalOutingDurationText)
+        assertTrue(result.visitedDongNames.isEmpty())
     }
 
     @Test

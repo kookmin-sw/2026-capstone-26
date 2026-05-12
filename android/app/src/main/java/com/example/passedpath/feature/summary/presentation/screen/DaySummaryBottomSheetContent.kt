@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCard
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCardSkeleton
+import com.example.passedpath.feature.summary.presentation.component.DaySummaryVisitedDongCard
+import com.example.passedpath.feature.summary.presentation.component.DaySummaryVisitedDongCardSkeleton
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
@@ -105,6 +107,12 @@ fun DaySummaryBottomSheetContent(
                         value = uiState.summary.totalOutingCountText
                     )
                 }
+                item {
+                    DaySummaryVisitedDongCard(
+                        label = stringResource(R.string.day_summary_visited_dong_title),
+                        visitedDongNames = uiState.summary.visitedDongNames
+                    )
+                }
             }
         }
 
@@ -122,6 +130,7 @@ private fun DaySummarySkeletonList() {
         repeat(4) {
             DaySummaryMetricCardSkeleton(shimmerBrush = skeletonBrush)
         }
+        DaySummaryVisitedDongCardSkeleton(shimmerBrush = skeletonBrush)
     }
 }
 
@@ -148,7 +157,8 @@ private fun DaySummaryBottomSheetContentPreview() {
                     outingTimeText = "09:12",
                     enterHomeTimeText = "21:03",
                     totalOutingDurationText = "11h 51m",
-                    totalOutingCountText = "3"
+                    totalOutingCountText = "3",
+                    visitedDongNames = listOf("Jeongneung-dong", "Seongbuk-dong", "Hyehwa-dong")
                 )
             ),
             onLoadSummary = {},

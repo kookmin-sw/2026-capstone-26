@@ -122,6 +122,92 @@ fun DaySummaryMetricCardSkeleton(
     }
 }
 
+@Composable
+fun DaySummaryVisitedDongCard(
+    label: String,
+    visitedDongNames: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = 20.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Green500,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        if (visitedDongNames.isEmpty()) {
+            Text(
+                text = EmptySummaryValue,
+                style = MaterialTheme.typography.titleLarge,
+                color = Gray900,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                visitedDongNames.forEachIndexed { index, dongName ->
+                    Text(
+                        text = "${index + 1}. $dongName",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Gray900,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DaySummaryVisitedDongCardSkeleton(
+    shimmerBrush: Brush,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = 20.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        BaseSkeletonBlock(
+            brush = shimmerBrush,
+            modifier = Modifier
+                .fillMaxWidth(0.32f)
+                .height(16.dp)
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            repeat(3) { index ->
+                BaseSkeletonBlock(
+                    brush = shimmerBrush,
+                    modifier = Modifier
+                        .fillMaxWidth(
+                            when (index) {
+                                0 -> 0.42f
+                                1 -> 0.58f
+                                else -> 0.36f
+                            }
+                        )
+                        .height(16.dp)
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun DaySummaryMetricCardPreview() {
@@ -134,6 +220,10 @@ private fun DaySummaryMetricCardPreview() {
             DaySummaryMetricCard(label = "Enter home time", value = "21:03")
             DaySummaryMetricCard(label = "Total outing time", value = "11h 51m")
             DaySummaryMetricCard(label = "Outing count", value = "3")
+            DaySummaryVisitedDongCard(
+                label = "Visited places",
+                visitedDongNames = listOf("Jeongneung-dong", "Seongbuk-dong", "Hyehwa-dong")
+            )
         }
     }
 }
@@ -151,6 +241,9 @@ private fun DaySummaryMetricCardSkeletonPreview() {
             repeat(4) {
                 DaySummaryMetricCardSkeleton(shimmerBrush = skeletonBrush)
             }
+            DaySummaryVisitedDongCardSkeleton(shimmerBrush = skeletonBrush)
         }
     }
 }
+
+private const val EmptySummaryValue = "-"

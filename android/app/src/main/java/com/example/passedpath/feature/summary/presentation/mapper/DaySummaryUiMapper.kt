@@ -11,7 +11,8 @@ internal fun DayRouteSummary.toDaySummaryContentUiState(): DaySummaryContentUiSt
         outingTimeText = outingTime.toSummaryTimeText(),
         enterHomeTimeText = enterHomeTime.toSummaryTimeText(),
         totalOutingDurationText = totalOutingDurationText,
-        totalOutingCountText = "${totalOutingCount}${KoreanCount}"
+        totalOutingCountText = "${totalOutingCount}${KoreanCount}",
+        visitedDongNames = visitedDongNames
     )
 }
 

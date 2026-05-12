@@ -35,6 +35,7 @@ class DaySummaryViewModelTest {
         assertNull(state.errorMessage)
         assertEquals("08:10", state.summary.outingTimeText)
         assertEquals("18:40", state.summary.enterHomeTimeText)
+        assertEquals(listOf("\uC815\uB989\uB3D9", "\uC131\uBD81\uB3D9"), state.summary.visitedDongNames)
     }
 
     @Test
@@ -55,6 +56,7 @@ class DaySummaryViewModelTest {
         assertEquals("-", state.summary.enterHomeTimeText)
         assertEquals("0\uBD84", state.summary.totalOutingDurationText)
         assertEquals("0\uD68C", state.summary.totalOutingCountText)
+        assertEquals(emptyList<String>(), state.summary.visitedDongNames)
         assertNotNull(state.errorMessage)
     }
 
@@ -108,7 +110,8 @@ private class FakeDayRouteSummaryRepository(
             enterHomeTime = "2026-04-29T18:40:00+09:00",
             totalOutingCount = 2,
             totalOutingSeconds = 36_120L,
-            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84"
+            totalOutingDurationText = "10\uC2DC\uAC04 2\uBD84",
+            visitedDongNames = listOf("\uC815\uB989\uB3D9", "\uC131\uBD81\uB3D9")
         )
     }
 }
