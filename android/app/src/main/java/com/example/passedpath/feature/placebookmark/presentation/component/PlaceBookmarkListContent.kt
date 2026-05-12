@@ -342,7 +342,7 @@ private fun PlaceBookmarkListItem(
             ),
             MenuActionItem(
                 text = deleteText,
-                iconResId = R.drawable.ic_trash,
+                iconResId = R.drawable.ic_delete,
                 onClick = onDeleteClick
             )
         ),

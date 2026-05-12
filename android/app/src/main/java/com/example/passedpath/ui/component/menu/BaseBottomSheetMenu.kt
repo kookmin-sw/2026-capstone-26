@@ -175,7 +175,7 @@ private fun BaseBottomSheetMenuPreview() {
                 BottomSheetMenuItem(
                     text = "1일 위치 기록 삭제",
                     supportingText = "선택한 날짜의 위치 기록을 삭제해요",
-                    iconResId = R.drawable.ic_trash,
+                    iconResId = R.drawable.ic_delete,
                     onClick = {},
                     isDestructive = true
                 )

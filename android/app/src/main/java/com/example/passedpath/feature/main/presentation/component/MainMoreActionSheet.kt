@@ -27,7 +27,7 @@ fun MainMoreActionSheet(
             BottomSheetMenuItem(
                 text = stringResource(id = R.string.main_more_delete_record),
                 supportingText = stringResource(id = R.string.main_more_delete_record_description),
-                iconResId = R.drawable.ic_trash,
+                iconResId = R.drawable.ic_delete,
                 onClick = onDeleteRecordClick,
                 isDestructive = true
             )

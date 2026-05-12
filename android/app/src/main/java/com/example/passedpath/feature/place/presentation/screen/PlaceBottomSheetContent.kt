@@ -641,7 +641,7 @@ private fun PlaceTimelineItem(
                     ),
                     MenuActionItem(
                         text = deleteMenuText,
-                        iconResId = R.drawable.ic_trash,
+                        iconResId = R.drawable.ic_delete,
                         onClick = onDeletePlaceClick
                     )
                 ),
