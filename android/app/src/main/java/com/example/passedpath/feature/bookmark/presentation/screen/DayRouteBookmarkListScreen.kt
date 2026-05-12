@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,12 +47,11 @@ import com.example.passedpath.feature.bookmark.presentation.component.DayRouteBo
 import com.example.passedpath.feature.bookmark.presentation.state.DayRouteBookmarkListUiState
 import com.example.passedpath.feature.bookmark.presentation.viewmodel.DayRouteBookmarkListViewModel
 import com.example.passedpath.feature.bookmark.presentation.viewmodel.DayRouteBookmarkListViewModelFactory
+import com.example.passedpath.ui.component.feedback.BaseEmptyContent
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
-import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.PassedPathTheme
@@ -350,41 +348,18 @@ private fun DayRouteBookmarkInitialError(
 private fun DayRouteBookmarkEmptyContent(
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Box(
         modifier = modifier.padding(horizontal = BookmarkListHorizontalPadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_star_list),
-            contentDescription = null,
-            tint = Gray100,
-            modifier = Modifier.size(width = 54.dp, height = 34.dp)
-        )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Text(
-            text = stringResource(R.string.day_route_bookmark_list_empty_title),
-            color = Gray900,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = stringResource(R.string.day_route_bookmark_list_empty_body),
-            color = Gray400,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center
+        BaseEmptyContent(
+            title = stringResource(R.string.day_route_bookmark_list_empty_title),
+            description = stringResource(R.string.day_route_bookmark_list_empty_body)
         )
     }
 }
 
-private val BookmarkListHorizontalPadding = 22.dp
+private val BookmarkListHorizontalPadding = 16.dp
 
 @Preview(
     name = "Day Route Bookmark List",

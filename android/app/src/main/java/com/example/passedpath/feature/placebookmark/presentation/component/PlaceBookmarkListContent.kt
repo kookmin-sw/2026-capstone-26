@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -42,6 +40,7 @@ import com.example.passedpath.R
 import com.example.passedpath.feature.placebookmark.domain.model.PlaceBookmarkSummary
 import com.example.passedpath.feature.placebookmark.presentation.state.PlaceBookmarkUiState
 import com.example.passedpath.ui.component.button.BaseButton
+import com.example.passedpath.ui.component.feedback.BaseEmptyContent
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
@@ -371,28 +370,9 @@ private fun PlaceBookmarkErrorContent(
 private fun PlaceBookmarkEmptyContent(
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_information),
-            contentDescription = null,
-            tint = Gray200,
-            modifier = Modifier.size(28.dp)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.place_bookmark_empty_title),
-            style = MaterialTheme.typography.bodyLarge,
-            color = Gray900,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(R.string.place_bookmark_empty_body),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Gray400
-        )
-    }
+    BaseEmptyContent(
+        title = stringResource(R.string.place_bookmark_empty_title),
+        description = stringResource(R.string.place_bookmark_empty_body),
+        modifier = modifier
+    )
 }
