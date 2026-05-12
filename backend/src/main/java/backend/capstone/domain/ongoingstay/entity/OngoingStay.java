@@ -76,6 +76,16 @@ public class OngoingStay extends BaseTimeEntity {
         this.lastTime = point.getRecordedAt();
     }
 
+    public void restart(GpsPoint point) {
+        this.centerLatitude = point.getLatitude();
+        this.centerLongitude = point.getLongitude();
+        this.startPoint = point;
+        this.lastPoint = point;
+        this.startTime = point.getRecordedAt();
+        this.lastTime = point.getRecordedAt();
+        this.pointCount = 1;
+    }
+
     public long getDurationMinutes() {
         return Duration.between(startTime, lastTime).toMinutes();
     }

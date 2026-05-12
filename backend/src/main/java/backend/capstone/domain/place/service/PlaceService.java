@@ -115,7 +115,7 @@ public class PlaceService {
     }
 
     @Transactional
-    public void saveAutoPlace(
+    public Place saveAutoPlace(
         DayRoute dayRoute,
         OngoingStay stay,
         Optional<SearchResultByCategoryAndCoord> searchResult
@@ -130,7 +130,7 @@ public class PlaceService {
                     stay.getStartTime(), stay.getLastTime()));
 
         applyBookmarkPlaceType(dayRoute, place);
-        placeRepository.save(place);
+        return placeRepository.save(place);
     }
 
     private void applyBookmarkPlaceType(DayRoute dayRoute, Place place) {
