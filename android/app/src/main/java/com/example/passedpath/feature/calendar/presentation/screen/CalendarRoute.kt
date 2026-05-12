@@ -117,6 +117,11 @@ fun CalendarRoute(
         favoriteSelectedDateKeys.toSet()
     }
     val visibleMonth = remember(anchorDate) { YearMonth.from(anchorDate) }
+    val visibleMonthSelectedDateKeySet = remember(favoriteSelectedDateKeys, visibleMonth) {
+        favoriteSelectedDateKeys
+            .filter { dateKey -> isDateKeyInMonth(dateKey, visibleMonth) }
+            .toSet()
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val bookmarkRegistrationUiState = uiState.bookmarkRegistrationUiState
 
@@ -204,6 +209,7 @@ fun CalendarRoute(
                     isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
                     errorMessage = uiState.errorMessage,
                     isSubmitting = bookmarkRegistrationUiState.isSubmitting,
+                    visibleMonthSelectedCount = visibleMonthSelectedDateKeySet.size,
                     onBackClick = { closeFavoriteSettingsMode() },
                     onPreviousMonthClick = {
                         anchorDateKey = anchorDate.shiftMonth(-1).toCalendarDateKey()
@@ -219,6 +225,11 @@ fun CalendarRoute(
                                 anchorDateKey = pickedDate.toCalendarDateKey()
                             }
                         )
+                    },
+                    onClearVisibleMonthSelectionClick = {
+                        favoriteSelectedDateKeys = favoriteSelectedDateKeys.filterNot { dateKey ->
+                            dateKey in visibleMonthSelectedDateKeySet
+                        }
                     },
                     onDateClick = { date ->
                         val dateKey = date.toCalendarDateKey()
@@ -771,6 +782,12 @@ private fun parseDateOrToday(dateKey: String): LocalDate {
     return runCatching { LocalDate.parse(dateKey) }
         .getOrDefault(LocalDate.now())
         .coerceToSelectableDateRange()
+}
+
+private fun isDateKeyInMonth(dateKey: String, visibleMonth: YearMonth): Boolean {
+    return runCatching {
+        YearMonth.from(LocalDate.parse(dateKey)) == visibleMonth
+    }.getOrDefault(false)
 }
 
 private fun LocalDate.shiftMonth(monthDelta: Long): LocalDate {
