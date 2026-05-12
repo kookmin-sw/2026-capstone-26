@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passedpath.R
 import com.example.passedpath.app.appContainer
+import com.example.passedpath.feature.calendar.presentation.component.CalendarMoreActionSheet
 import com.example.passedpath.feature.calendar.presentation.model.CalendarDayStatus
 import com.example.passedpath.feature.calendar.presentation.model.CalendarMonthCell
 import com.example.passedpath.feature.calendar.presentation.model.buildCalendarMonthCells
@@ -57,6 +58,8 @@ import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarVi
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
+import com.example.passedpath.ui.component.modal.PassedPathBottomModal
+import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green100
@@ -92,6 +95,7 @@ fun CalendarRoute(
     var selectedDateKey by rememberSaveable(initialDateKey) {
         mutableStateOf<String?>(null)
     }
+    var isMoreActionSheetVisible by rememberSaveable { mutableStateOf(false) }
     val anchorDate = remember(anchorDateKey) { parseDateOrToday(anchorDateKey) }
     val selectedDate = remember(selectedDateKey) {
         selectedDateKey?.let(::parseDateOrToday)
@@ -132,7 +136,10 @@ fun CalendarRoute(
             )
         },
         onFavoriteListClick = onFavoriteListClick,
-        onMoreClick = onMoreClick,
+        onMoreClick = {
+            isMoreActionSheetVisible = true
+            onMoreClick()
+        },
         onRetryClick = {
             viewModel.loadMonth(
                 visibleMonth = visibleMonth,
@@ -144,6 +151,19 @@ fun CalendarRoute(
         },
         modifier = modifier
     )
+
+    if (isMoreActionSheetVisible) {
+        PassedPathBottomModal(
+            onDimClick = { isMoreActionSheetVisible = false },
+            modifier = Modifier.background(Black.copy(alpha = 0.22f)),
+            onBackPress = { isMoreActionSheetVisible = false }
+        ) {
+            CalendarMoreActionSheet(
+                onFavoriteSettingsClick = { isMoreActionSheetVisible = false },
+                onDeleteRecordsClick = { isMoreActionSheetVisible = false }
+            )
+        }
+    }
 }
 
 @Composable
