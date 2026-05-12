@@ -73,6 +73,9 @@
     <string name="calendar_more_favorite_settings_description">여러 날짜를 한 번에 즐겨찾기로 설정해요</string>
     <string name="calendar_more_delete_records">선택 날짜 기록 삭제</string>
     <string name="calendar_more_delete_records_description">여러 날짜의 기록을 한 번에 삭제해요</string>
+    <string name="calendar_favorite_settings_title">즐겨찾기 설정</string>
+    <string name="calendar_favorite_settings_empty_cta">날짜를 선택해 주세요</string>
+    <string name="calendar_favorite_settings_submit">%1$d개 날짜 즐겨찾기로 설정하기</string>
     <string name="network_request_failed_banner">네트워크 요청에 실패했습니다.</string>
     <string name="main_permission_off_title">위치 권한이 꺼져 있습니다</string>
     <string name="main_permission_off_message">정확한 위치 권한을 허용하면 현재 위치를 지도에서 볼 수 있습니다.</string>

@@ -4,6 +4,10 @@ import com.example.passedpath.feature.calendar.domain.model.CalendarMonthlyDay
 import com.example.passedpath.feature.calendar.domain.model.CalendarMonthlyRoute
 import com.example.passedpath.feature.calendar.domain.repository.CalendarMonthlyRouteRepository
 import com.example.passedpath.feature.calendar.domain.usecase.GetCalendarMonthlyRouteUseCase
+import com.example.passedpath.feature.bookmark.domain.model.DayRouteBookmark
+import com.example.passedpath.feature.bookmark.domain.model.DayRouteBookmarkList
+import com.example.passedpath.feature.bookmark.domain.repository.DayRouteBookmarkRepository
+import com.example.passedpath.feature.bookmark.domain.usecase.MarkDayRouteBookmarksUseCase
 import com.example.passedpath.testutil.MainDispatcherRule
 import java.time.LocalDate
 import java.time.YearMonth
@@ -96,11 +100,63 @@ class CalendarViewModelTest {
         assertEquals(YearMonth.of(2026, 1), state.loadedMonth)
     }
 
+    @Test
+    fun `markSelectedDatesAsBookmarks marks selected dates and preserves calendar statuses`() = runTest {
+        val bookmarkRepository = FakeDayRouteBookmarkRepository()
+        val viewModel = createViewModel(bookmarkRepository = bookmarkRepository)
+
+        viewModel.loadMonth(YearMonth.of(2026, 1))
+        advanceUntilIdle()
+        viewModel.markSelectedDatesAsBookmarks(
+            listOf("2026-01-21", "2026-01-20", "2026-01-20")
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        val existingStatus = state.dayStatuses.getValue(LocalDate.of(2026, 1, 20))
+        val newStatus = state.dayStatuses.getValue(LocalDate.of(2026, 1, 21))
+        assertEquals(listOf("2026-01-20", "2026-01-21"), bookmarkRepository.markedDateKeys)
+        assertTrue(existingStatus.hasManualData)
+        assertTrue(existingStatus.hasLocationData)
+        assertTrue(existingStatus.isBookmarked)
+        assertFalse(newStatus.hasManualData)
+        assertFalse(newStatus.hasLocationData)
+        assertTrue(newStatus.isBookmarked)
+        assertFalse(state.bookmarkRegistrationUiState.isSubmitting)
+        assertTrue(state.bookmarkRegistrationUiState.isSuccess)
+        assertNotNull(state.bookmarkRegistrationUiState.feedbackMessage)
+        assertEquals(1L, state.bookmarkRegistrationUiState.feedbackEventId)
+    }
+
+    @Test
+    fun `markSelectedDatesAsBookmarks keeps statuses and exposes feedback on failure`() = runTest {
+        val bookmarkRepository = FakeDayRouteBookmarkRepository(
+            failure = RuntimeException("boom")
+        )
+        val viewModel = createViewModel(bookmarkRepository = bookmarkRepository)
+
+        viewModel.loadMonth(YearMonth.of(2026, 1))
+        advanceUntilIdle()
+        val beforeStatuses = viewModel.uiState.value.dayStatuses
+        viewModel.markSelectedDatesAsBookmarks(listOf("2026-01-21"))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("2026-01-21"), bookmarkRepository.markedDateKeys)
+        assertEquals(beforeStatuses, state.dayStatuses)
+        assertFalse(state.bookmarkRegistrationUiState.isSubmitting)
+        assertFalse(state.bookmarkRegistrationUiState.isSuccess)
+        assertNotNull(state.bookmarkRegistrationUiState.feedbackMessage)
+        assertEquals(1L, state.bookmarkRegistrationUiState.feedbackEventId)
+    }
+
     private fun createViewModel(
-        repository: CalendarMonthlyRouteRepository
+        repository: CalendarMonthlyRouteRepository = FakeCalendarMonthlyRouteRepository(),
+        bookmarkRepository: DayRouteBookmarkRepository = FakeDayRouteBookmarkRepository()
     ): CalendarViewModel {
         return CalendarViewModel(
-            getCalendarMonthlyRouteUseCase = GetCalendarMonthlyRouteUseCase(repository)
+            getCalendarMonthlyRouteUseCase = GetCalendarMonthlyRouteUseCase(repository),
+            markDayRouteBookmarksUseCase = MarkDayRouteBookmarksUseCase(bookmarkRepository)
         )
     }
 }
@@ -125,5 +181,32 @@ private class FakeCalendarMonthlyRouteRepository(
                 )
             )
         )
+    }
+}
+
+private class FakeDayRouteBookmarkRepository(
+    private val failure: Throwable? = null
+) : DayRouteBookmarkRepository {
+    var markedDateKeys: List<String> = emptyList()
+
+    override suspend fun getBookmarkedDayRoutes(
+        cursorDate: String?,
+        size: Int
+    ): DayRouteBookmarkList {
+        return DayRouteBookmarkList(
+            dayRouteCount = 0,
+            hasNext = false,
+            nextCursorDate = null,
+            dayRoutes = emptyList()
+        )
+    }
+
+    override suspend fun toggleBookmark(dateKey: String): DayRouteBookmark {
+        return DayRouteBookmark(isBookmarked = true)
+    }
+
+    override suspend fun markBookmarks(dateKeys: List<String>) {
+        markedDateKeys = dateKeys
+        failure?.let { throw it }
     }
 }

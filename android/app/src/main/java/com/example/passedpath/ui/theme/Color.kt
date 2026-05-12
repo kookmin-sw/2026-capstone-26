@@ -20,6 +20,10 @@ val Green700 = Color(0xFF15747B)
 val Green800 = Color(0xFF105A5F)
 val Green900 = Color(0xFF0C4449)
 
+// calendar
+val CalendarSundayColor = Color(0xFFDF0000)
+val CalendarSaturdayColor = Color(0xFF0049E5)
+
 // gray
 val Gray50 = Color(0xFFF9FAFB)
 

@@ -9,5 +9,14 @@ data class CalendarUiState(
     val loadingMonth: YearMonth? = null,
     val dayStatuses: Map<LocalDate, CalendarDayStatus> = emptyMap(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val bookmarkRegistrationUiState: CalendarBookmarkRegistrationUiState =
+        CalendarBookmarkRegistrationUiState()
+)
+
+data class CalendarBookmarkRegistrationUiState(
+    val isSubmitting: Boolean = false,
+    val feedbackMessage: String? = null,
+    val feedbackEventId: Long = 0L,
+    val isSuccess: Boolean = false
 )

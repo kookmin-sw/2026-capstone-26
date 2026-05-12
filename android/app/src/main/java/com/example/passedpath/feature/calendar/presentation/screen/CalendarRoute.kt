@@ -1,6 +1,7 @@
 package com.example.passedpath.feature.calendar.presentation.screen
 
 import android.app.DatePickerDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passedpath.R
 import com.example.passedpath.app.appContainer
+import com.example.passedpath.feature.calendar.presentation.component.CalendarFavoriteSettingsContent
 import com.example.passedpath.feature.calendar.presentation.component.CalendarMoreActionSheet
 import com.example.passedpath.feature.calendar.presentation.model.CalendarDayStatus
 import com.example.passedpath.feature.calendar.presentation.model.CalendarMonthCell
@@ -59,7 +61,12 @@ import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
+import com.example.passedpath.ui.component.toast.ToastOverlayHost
+import com.example.passedpath.ui.component.toast.ToastOverlayItem
 import com.example.passedpath.ui.theme.Black
+import com.example.passedpath.ui.theme.CalendarSaturdayColor
+import com.example.passedpath.ui.theme.CalendarSundayColor
+import com.example.passedpath.ui.theme.DateBookmarkColor
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green100
@@ -68,7 +75,6 @@ import com.example.passedpath.ui.theme.Green500
 import com.example.passedpath.ui.theme.Green700
 import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
-import com.example.passedpath.ui.theme.DateBookmarkColor
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -88,6 +94,7 @@ fun CalendarRoute(
         factory = CalendarViewModelFactory(LocalContext.current.appContainer)
     )
 ) {
+    val context = LocalContext.current
     val initialDate = remember(initialDateKey) { parseDateOrToday(initialDateKey) }
     var anchorDateKey by rememberSaveable(initialDateKey) {
         mutableStateOf(initialDate.toCalendarDateKey())
@@ -95,62 +102,167 @@ fun CalendarRoute(
     var selectedDateKey by rememberSaveable(initialDateKey) {
         mutableStateOf<String?>(null)
     }
+    var screenMode by rememberSaveable {
+        mutableStateOf(CalendarScreenMode.Normal)
+    }
+    var favoriteSelectedDateKeys by rememberSaveable {
+        mutableStateOf(emptyList<String>())
+    }
     var isMoreActionSheetVisible by rememberSaveable { mutableStateOf(false) }
     val anchorDate = remember(anchorDateKey) { parseDateOrToday(anchorDateKey) }
     val selectedDate = remember(selectedDateKey) {
         selectedDateKey?.let(::parseDateOrToday)
     }
+    val favoriteSelectedDateKeySet = remember(favoriteSelectedDateKeys) {
+        favoriteSelectedDateKeys.toSet()
+    }
     val visibleMonth = remember(anchorDate) { YearMonth.from(anchorDate) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val bookmarkRegistrationUiState = uiState.bookmarkRegistrationUiState
+
+    fun closeFavoriteSettingsMode() {
+        screenMode = CalendarScreenMode.Normal
+        favoriteSelectedDateKeys = emptyList()
+    }
 
     LaunchedEffect(visibleMonth) {
         viewModel.loadMonth(visibleMonth = visibleMonth)
     }
 
-    CalendarScreen(
-        anchorDate = anchorDate,
-        visibleMonth = visibleMonth,
-        selectedDate = selectedDate,
-        today = LocalDate.now(),
-        dayStatuses = uiState.dayStatuses,
-        isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
-        errorMessage = uiState.errorMessage,
-        onBackClick = onBackClick,
-        onDatePickedFromSystem = { pickedDate ->
-            anchorDateKey = pickedDate.toCalendarDateKey()
-            selectedDateKey = null
-        },
-        onPreviousMonthClick = {
-            anchorDateKey = anchorDate.shiftMonth(-1).toCalendarDateKey()
-            selectedDateKey = null
-        },
-        onNextMonthClick = {
-            anchorDateKey = anchorDate.shiftMonth(1).toCalendarDateKey()
-            selectedDateKey = null
-        },
-        onDateClick = { date ->
-            anchorDateKey = date.toCalendarDateKey()
-            selectedDateKey = toggleCalendarSelectedDateKey(
-                currentSelectedDateKey = selectedDateKey,
-                clickedDate = date
+    LaunchedEffect(
+        bookmarkRegistrationUiState.feedbackEventId,
+        bookmarkRegistrationUiState.isSuccess
+    ) {
+        if (
+            bookmarkRegistrationUiState.feedbackEventId > 0L &&
+            bookmarkRegistrationUiState.isSuccess
+        ) {
+            favoriteSelectedDateKeys = emptyList()
+        }
+    }
+
+    BackHandler(enabled = screenMode == CalendarScreenMode.FavoriteSettings) {
+        closeFavoriteSettingsMode()
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        when (screenMode) {
+            CalendarScreenMode.Normal -> {
+                CalendarScreen(
+                    anchorDate = anchorDate,
+                    visibleMonth = visibleMonth,
+                    selectedDate = selectedDate,
+                    today = LocalDate.now(),
+                    dayStatuses = uiState.dayStatuses,
+                    isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
+                    errorMessage = uiState.errorMessage,
+                    onBackClick = onBackClick,
+                    onDatePickedFromSystem = { pickedDate ->
+                        anchorDateKey = pickedDate.toCalendarDateKey()
+                        selectedDateKey = null
+                    },
+                    onPreviousMonthClick = {
+                        anchorDateKey = anchorDate.shiftMonth(-1).toCalendarDateKey()
+                        selectedDateKey = null
+                    },
+                    onNextMonthClick = {
+                        anchorDateKey = anchorDate.shiftMonth(1).toCalendarDateKey()
+                        selectedDateKey = null
+                    },
+                    onDateClick = { date ->
+                        anchorDateKey = date.toCalendarDateKey()
+                        selectedDateKey = toggleCalendarSelectedDateKey(
+                            currentSelectedDateKey = selectedDateKey,
+                            clickedDate = date
+                        )
+                    },
+                    onFavoriteListClick = onFavoriteListClick,
+                    onMoreClick = {
+                        isMoreActionSheetVisible = true
+                        onMoreClick()
+                    },
+                    onRetryClick = {
+                        viewModel.loadMonth(
+                            visibleMonth = visibleMonth,
+                            forceRefresh = true
+                        )
+                    },
+                    onConfirmClick = {
+                        selectedDateKey?.let(onDateConfirmed)
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            CalendarScreenMode.FavoriteSettings -> {
+                CalendarFavoriteSettingsContent(
+                    anchorDate = anchorDate,
+                    visibleMonth = visibleMonth,
+                    selectedDateKeys = favoriteSelectedDateKeySet,
+                    today = LocalDate.now(),
+                    dayStatuses = uiState.dayStatuses,
+                    isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
+                    errorMessage = uiState.errorMessage,
+                    isSubmitting = bookmarkRegistrationUiState.isSubmitting,
+                    onBackClick = { closeFavoriteSettingsMode() },
+                    onPreviousMonthClick = {
+                        anchorDateKey = anchorDate.shiftMonth(-1).toCalendarDateKey()
+                    },
+                    onNextMonthClick = {
+                        anchorDateKey = anchorDate.shiftMonth(1).toCalendarDateKey()
+                    },
+                    onMonthTitleClick = {
+                        showCalendarDatePicker(
+                            context = context,
+                            initialDate = anchorDate,
+                            onDatePicked = { pickedDate ->
+                                anchorDateKey = pickedDate.toCalendarDateKey()
+                            }
+                        )
+                    },
+                    onDateClick = { date ->
+                        val dateKey = date.toCalendarDateKey()
+                        favoriteSelectedDateKeys = if (dateKey in favoriteSelectedDateKeySet) {
+                            favoriteSelectedDateKeys.filterNot { it == dateKey }
+                        } else {
+                            (favoriteSelectedDateKeys + dateKey).distinct().sorted()
+                        }
+                    },
+                    onRetryClick = {
+                        viewModel.loadMonth(
+                            visibleMonth = visibleMonth,
+                            forceRefresh = true
+                        )
+                    },
+                    onSubmitClick = {
+                        viewModel.markSelectedDatesAsBookmarks(favoriteSelectedDateKeys)
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        bookmarkRegistrationUiState.feedbackMessage?.let { message ->
+            ToastOverlayHost(
+                toasts = listOf(
+                    ToastOverlayItem(
+                        message = message,
+                        triggerKey = "calendar-bookmark:" +
+                            "${bookmarkRegistrationUiState.feedbackEventId}:$message",
+                        onDismissed = {
+                            viewModel.consumeBookmarkRegistrationFeedback(
+                                bookmarkRegistrationUiState.feedbackEventId
+                            )
+                        }
+                    )
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = 84.dp)
             )
-        },
-        onFavoriteListClick = onFavoriteListClick,
-        onMoreClick = {
-            isMoreActionSheetVisible = true
-            onMoreClick()
-        },
-        onRetryClick = {
-            viewModel.loadMonth(
-                visibleMonth = visibleMonth,
-                forceRefresh = true
-            )
-        },
-        onConfirmClick = {
-            selectedDateKey?.let(onDateConfirmed)
-        },
-        modifier = modifier
-    )
+        }
+    }
 
     if (isMoreActionSheetVisible) {
         PassedPathBottomModal(
@@ -159,7 +271,11 @@ fun CalendarRoute(
             onBackPress = { isMoreActionSheetVisible = false }
         ) {
             CalendarMoreActionSheet(
-                onFavoriteSettingsClick = { isMoreActionSheetVisible = false },
+                onFavoriteSettingsClick = {
+                    isMoreActionSheetVisible = false
+                    selectedDateKey = null
+                    screenMode = CalendarScreenMode.FavoriteSettings
+                },
                 onDeleteRecordsClick = { isMoreActionSheetVisible = false }
             )
         }
@@ -676,14 +792,19 @@ private fun LocalDate.coerceToSelectableDateRange(): LocalDate {
 private val CalendarHeaderFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy.MM.dd. EEE", Locale.KOREAN)
 
-private val SundayColor = Color(0xFFDF0000)
-private val SaturdayColor = Color(0xFF0049E5)
+private val SundayColor = CalendarSundayColor
+private val SaturdayColor = CalendarSaturdayColor
 private val ManualDataColor = Green700
 private val LocationDataColor = Green300
 private val FavoriteColor = DateBookmarkColor
 
 private const val MinSelectableYear = 2000
 private const val MaxSelectableYear = 3000
+
+private enum class CalendarScreenMode {
+    Normal,
+    FavoriteSettings
+}
 
 @Preview(
     name = "Calendar Content",
