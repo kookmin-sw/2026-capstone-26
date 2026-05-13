@@ -4,4 +4,6 @@ import com.example.passedpath.feature.care.domain.model.CareRelationshipInviteLi
 
 interface CareRelationshipInviteRepository {
     suspend fun createInviteLink(): CareRelationshipInviteLink
+
+    suspend fun acceptInvite(inviteCode: String)
 }

@@ -34,4 +34,23 @@ class CareRelationshipInviteRemoteMapperTest {
             }
         }
     }
+
+    @Test
+    fun `toCareRelationshipInviteAcceptRequestDto trims invite code`() {
+        val result = " T5rfCFFy9j ".toCareRelationshipInviteAcceptRequestDto()
+
+        assertEquals("T5rfCFFy9j", result.inviteCode)
+    }
+
+    @Test
+    fun `toCareRelationshipInviteAcceptRequestDto throws when invite code is blank`() {
+        listOf("", " ").forEach { inviteCode ->
+            try {
+                inviteCode.toCareRelationshipInviteAcceptRequestDto()
+                fail("Expected exception for inviteCode=$inviteCode")
+            } catch (actual: IllegalArgumentException) {
+                assertTrue(actual.message.orEmpty().contains("inviteCode"))
+            }
+        }
+    }
 }
