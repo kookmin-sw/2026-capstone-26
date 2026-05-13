@@ -145,7 +145,7 @@ public class DayRouteFacade {
         request.dates().stream()
             .distinct()
             .map(date -> dayRouteService.getOrCreate(userId, date))
-            .forEach(dayRouteService::bookmarkDayRoute);
+            .forEach(dayRouteService::toggleBookmark);
     }
 
     @Recover

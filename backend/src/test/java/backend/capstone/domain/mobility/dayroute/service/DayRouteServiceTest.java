@@ -65,6 +65,31 @@ class DayRouteServiceTest {
         assertThat(dayRoute.isBookmarked()).isTrue();
     }
 
+    @Test
+    void 북마크를_토글하면_isBookmarked가_true로_변경된다() {
+        User user = createUser();
+        DayRoute dayRoute = DayRoute.builder()
+            .user(user)
+            .date(LocalDate.of(2026, 5, 10))
+            .build();
+
+        boolean isBookmarked = dayRouteService.toggleBookmark(dayRoute);
+
+        assertThat(isBookmarked).isTrue();
+        assertThat(dayRoute.isBookmarked()).isTrue();
+    }
+
+    @Test
+    void 이미_북마크된_dayRoute를_토글하면_isBookmarked가_false로_변경된다() {
+        User user = createUser();
+        DayRoute dayRoute = createBookmarkedDayRoute(user, LocalDate.of(2026, 5, 11));
+
+        boolean isBookmarked = dayRouteService.toggleBookmark(dayRoute);
+
+        assertThat(isBookmarked).isFalse();
+        assertThat(dayRoute.isBookmarked()).isFalse();
+    }
+
     private User createUser() {
         return User.builder()
             .provider(ProviderType.KAKAO)
