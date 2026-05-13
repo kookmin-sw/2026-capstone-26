@@ -1,4 +1,4 @@
-package com.example.passedpath.feature.friends.presentation.screen
+package com.example.passedpath.feature.care.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
 
 @Composable
-fun FriendsScreen() {
+fun CareScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -29,6 +29,6 @@ fun FriendsScreen() {
 
 @Preview(showBackground = true)
 @Composable
-private fun FriendsScreenPreview() {
-    FriendsScreen()
+private fun CareScreenPreview() {
+    CareScreen()
 }

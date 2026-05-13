@@ -1,4 +1,4 @@
-package com.example.passedpath.feature.friends.presentation.state
+package com.example.passedpath.feature.care.presentation.state
 
 import androidx.compose.runtime.Immutable
 

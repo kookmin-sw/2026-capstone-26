@@ -26,7 +26,7 @@ import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
 import com.example.passedpath.feature.bookmark.presentation.screen.DayRouteBookmarkListRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
-import com.example.passedpath.feature.friends.presentation.screen.FriendsRoute
+import com.example.passedpath.feature.care.presentation.screen.CareRoute
 import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelectedEvent
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
 import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
@@ -230,7 +230,7 @@ private fun AppNavigationGraph(
                 onBottomBarReselected = onBottomBarReselected
             ) { modifier ->
                 Box(modifier = modifier) {
-                    FriendsRoute()
+                    CareRoute()
                 }
             }
         }

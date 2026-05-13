@@ -1,4 +1,4 @@
-package com.example.passedpath.feature.friends.presentation.model
+package com.example.passedpath.feature.care.presentation.model
 
 enum class ProtectedPersonBottomSheetTab {
     PLACE,

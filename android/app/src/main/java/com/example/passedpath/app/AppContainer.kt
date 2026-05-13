@@ -26,6 +26,10 @@ import com.example.passedpath.feature.daynote.domain.repository.DayRouteMemoRepo
 import com.example.passedpath.feature.daynote.domain.repository.DayRouteTitleRepository
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteMemoUseCase
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteTitleUseCase
+import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteApi
+import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
 import com.example.passedpath.feature.locationtracking.data.manager.LocationTrackingServiceStateReader
@@ -221,6 +225,10 @@ class AppContainer(
         retrofit.create(PlaceBookmarkApi::class.java)
     }
 
+    private val careDependentDayRouteApi by lazy {
+        retrofit.create(CareDependentDayRouteApi::class.java)
+    }
+
     val trackingDebugLogRepository: TrackingDebugLogRepository by lazy {
         RoomTrackingDebugLogRepository(
             trackingDebugLogDao = trackingDatabase.trackingDebugLogDao()
@@ -325,6 +333,12 @@ class AppContainer(
         PlaceBookmarkRepositoryImpl(placeBookmarkApi)
     }
 
+    val protectedPersonDayRouteRepository: ProtectedPersonDayRouteRepository by lazy {
+        ProtectedPersonDayRouteRepositoryImpl(
+            careDependentDayRouteApi = careDependentDayRouteApi
+        )
+    }
+
     val uploadGpsPointsBatchUseCase: UploadGpsPointsBatchUseCase by lazy {
         UploadGpsPointsBatchUseCase(
             dayRouteApi = dayRouteApi,
@@ -413,6 +427,12 @@ class AppContainer(
 
     val createPlaceBookmarkUseCase: CreatePlaceBookmarkUseCase by lazy {
         CreatePlaceBookmarkUseCase(placeBookmarkRepository = placeBookmarkRepository)
+    }
+
+    val getProtectedPersonDayRouteUseCase: GetProtectedPersonDayRouteUseCase by lazy {
+        GetProtectedPersonDayRouteUseCase(
+            repository = protectedPersonDayRouteRepository
+        )
     }
 
     val reorderPlacesUseCase: ReorderPlacesUseCase by lazy {

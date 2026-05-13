@@ -1,4 +1,4 @@
-package com.example.passedpath.feature.friends.presentation.component
+package com.example.passedpath.feature.care.presentation.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -43,11 +43,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
-import com.example.passedpath.feature.friends.presentation.model.ProtectedPersonBottomSheetTab
-import com.example.passedpath.feature.friends.presentation.state.ProtectedPersonPlaceListUiState
-import com.example.passedpath.feature.friends.presentation.state.ProtectedPersonPlaceUiState
-import com.example.passedpath.feature.friends.presentation.state.ProtectedPersonSummaryContentUiState
-import com.example.passedpath.feature.friends.presentation.state.ProtectedPersonSummaryUiState
+import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBottomSheetTab
+import com.example.passedpath.feature.care.presentation.state.ProtectedPersonPlaceListUiState
+import com.example.passedpath.feature.care.presentation.state.ProtectedPersonPlaceUiState
+import com.example.passedpath.feature.care.presentation.state.ProtectedPersonSummaryContentUiState
+import com.example.passedpath.feature.care.presentation.state.ProtectedPersonSummaryUiState
 import com.example.passedpath.feature.place.presentation.component.PlaceCard
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCard
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryMetricCardSkeleton
