@@ -42,12 +42,12 @@ public interface DayRouteBookmarkControllerSpec {
     );
 
     @Operation(
-        summary = "복수 즐찾 API",
+        summary = "복수 즐겨찾기 토글 API",
         description = """
-            요청된 날짜들의 dayRoute를 isBookmarked를 모두 true로 설정합니다.<br>
-            만약 요청된 날짜의 dayRoute가 아직 생성되지 않았다면 생성 후 즐찾 설정을 합니다.
-            이미 북마크된 dayRoute는 그대로 유지됩니다.<br>
-            요청 바디에 빈 배열을 보내면 에러 메시지가 반환됩니다.<br>
+            요청한 날짜들의 dayRoute에 대해 isBookmarked 값을 각각 토글합니다.<br>
+            dayRoute가 아직 없으면 생성한 뒤 isBookmarked를 true로 토글합니다.<br>
+            같은 날짜가 중복으로 들어와도 한 번만 처리합니다.<br>
+            요청 바디가 빈 배열이면 에러 메시지가 반환됩니다.<br>
             """
     )
     void bookmarkDayRoutes(UserPrincipal principal, @Valid DayRouteBookmarkBatchRequest request);
