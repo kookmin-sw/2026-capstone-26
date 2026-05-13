@@ -21,7 +21,8 @@ public interface BookmarkPlaceRepository extends JpaRepository<BookmarkPlace, Lo
     @Query("""
         select bp
         from BookmarkPlace bp
-        where bp.id = :bookmarkPlaceId and bp.user.id = :userId
+        where bp.id = :bookmarkPlaceId
+            and bp.user.id = :userId
         """)
     Optional<BookmarkPlace> findByIdAndUserId(@Param("bookmarkPlaceId") Long bookmarkPlaceId,
         @Param("userId") Long userId);
@@ -31,8 +32,26 @@ public interface BookmarkPlaceRepository extends JpaRepository<BookmarkPlace, Lo
         from BookmarkPlace bp
         where bp.user.id = :userId
             and bp.type = :type
-            and bp.isDefault = true
         """)
-    Optional<BookmarkPlace> findDefaultByUserIdAndType(@Param("userId") Long userId,
+    Optional<BookmarkPlace> findByUserIdAndType(@Param("userId") Long userId,
         @Param("type") BookmarkPlaceType type);
+
+    @Query("""
+        select count(bp) > 0
+        from BookmarkPlace bp
+        where bp.user.id = :userId
+            and bp.type = :type
+        """)
+    boolean existsByUserIdAndType(@Param("userId") Long userId,
+        @Param("type") BookmarkPlaceType type);
+
+    @Query("""
+        select count(bp) > 0
+        from BookmarkPlace bp
+        where bp.user.id = :userId
+            and bp.type = :type
+            and bp.id <> :bookmarkPlaceId
+        """)
+    boolean existsByUserIdAndTypeAndIdNot(@Param("userId") Long userId,
+        @Param("type") BookmarkPlaceType type, @Param("bookmarkPlaceId") Long bookmarkPlaceId);
 }

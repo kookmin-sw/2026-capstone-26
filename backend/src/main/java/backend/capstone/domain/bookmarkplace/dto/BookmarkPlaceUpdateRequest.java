@@ -7,8 +7,7 @@ public record BookmarkPlaceUpdateRequest(
     String placeName,
     String roadAddress,
     double latitude,
-    double longitude,
-    boolean isDefault
+    double longitude
 ) {
 
 }
