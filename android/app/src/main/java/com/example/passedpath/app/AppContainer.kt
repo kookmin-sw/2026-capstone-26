@@ -2,6 +2,7 @@ package com.example.passedpath.app
 
 import android.content.Context
 import androidx.room.Room
+import com.example.passedpath.BuildConfig
 import com.example.passedpath.data.datastore.AuthSessionStorage
 import com.example.passedpath.data.network.RetrofitClient
 import com.example.passedpath.debug.TrackingDiagnosticsLogger
@@ -26,14 +27,17 @@ import com.example.passedpath.feature.daynote.domain.repository.DayRouteMemoRepo
 import com.example.passedpath.feature.daynote.domain.repository.DayRouteTitleRepository
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteMemoUseCase
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteTitleUseCase
+import com.example.passedpath.feature.care.data.remote.datasource.OkHttpCareDependentLocationStreamRemoteDataSource
 import com.example.passedpath.feature.care.data.remote.api.CareDependentApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoutePlacesApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteSummaryApi
+import com.example.passedpath.feature.care.data.repository.CareDependentLocationStreamRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
+import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
@@ -42,6 +46,7 @@ import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCa
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
+import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
 import com.example.passedpath.feature.locationtracking.data.manager.LocationTrackingServiceStateReader
@@ -99,7 +104,9 @@ import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRep
 import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
+import java.util.concurrent.TimeUnit
 import java.time.LocalTime
+import okhttp3.sse.EventSources
 
 class AppContainer(
     context: Context
@@ -253,6 +260,26 @@ class AppContainer(
         retrofit.create(CareDependentDayRoutePlacesApi::class.java)
     }
 
+    private val careDependentLocationStreamOkHttpClient by lazy {
+        RetrofitClient.provideOkHttpClient(
+            sessionStorage = authSessionStorage,
+            authenticator = AccessTokenAuthenticator(
+                sessionStorage = authSessionStorage,
+                tokenManager = authTokenManager
+            )
+        )
+            .newBuilder()
+            .readTimeout(0, TimeUnit.MILLISECONDS)
+            .build()
+    }
+
+    private val careDependentLocationStreamRemoteDataSource by lazy {
+        OkHttpCareDependentLocationStreamRemoteDataSource(
+            eventSourceFactory = EventSources.createFactory(careDependentLocationStreamOkHttpClient),
+            baseUrl = BuildConfig.BASE_URL
+        )
+    }
+
     val trackingDebugLogRepository: TrackingDebugLogRepository by lazy {
         RoomTrackingDebugLogRepository(
             trackingDebugLogDao = trackingDatabase.trackingDebugLogDao()
@@ -379,6 +406,12 @@ class AppContainer(
         )
     }
 
+    val careDependentLocationStreamRepository: CareDependentLocationStreamRepository by lazy {
+        CareDependentLocationStreamRepositoryImpl(
+            remoteDataSource = careDependentLocationStreamRemoteDataSource
+        )
+    }
+
     val uploadGpsPointsBatchUseCase: UploadGpsPointsBatchUseCase by lazy {
         UploadGpsPointsBatchUseCase(
             dayRouteApi = dayRouteApi,
@@ -488,6 +521,12 @@ class AppContainer(
     val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase by lazy {
         GetProtectedPersonVisitedPlacesUseCase(
             repository = protectedPersonVisitedPlaceRepository
+        )
+    }
+
+    val observeCareDependentLocationStreamUseCase: ObserveCareDependentLocationStreamUseCase by lazy {
+        ObserveCareDependentLocationStreamUseCase(
+            repository = careDependentLocationStreamRepository
         )
     }
 
