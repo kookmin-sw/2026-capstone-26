@@ -32,16 +32,20 @@ import com.example.passedpath.feature.care.data.remote.api.CareDependentApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoutePlacesApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteSummaryApi
+import com.example.passedpath.feature.care.data.remote.api.CareRelationshipInviteApi
 import com.example.passedpath.feature.care.data.repository.CareDependentLocationStreamRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.CareRelationshipInviteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
+import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
+import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
@@ -260,6 +264,10 @@ class AppContainer(
         retrofit.create(CareDependentDayRoutePlacesApi::class.java)
     }
 
+    private val careRelationshipInviteApi by lazy {
+        retrofit.create(CareRelationshipInviteApi::class.java)
+    }
+
     private val careDependentLocationStreamOkHttpClient by lazy {
         RetrofitClient.provideOkHttpClient(
             sessionStorage = authSessionStorage,
@@ -412,6 +420,12 @@ class AppContainer(
         )
     }
 
+    val careRelationshipInviteRepository: CareRelationshipInviteRepository by lazy {
+        CareRelationshipInviteRepositoryImpl(
+            careRelationshipInviteApi = careRelationshipInviteApi
+        )
+    }
+
     val uploadGpsPointsBatchUseCase: UploadGpsPointsBatchUseCase by lazy {
         UploadGpsPointsBatchUseCase(
             dayRouteApi = dayRouteApi,
@@ -527,6 +541,12 @@ class AppContainer(
     val observeCareDependentLocationStreamUseCase: ObserveCareDependentLocationStreamUseCase by lazy {
         ObserveCareDependentLocationStreamUseCase(
             repository = careDependentLocationStreamRepository
+        )
+    }
+
+    val createCareRelationshipInviteLinkUseCase: CreateCareRelationshipInviteLinkUseCase by lazy {
+        CreateCareRelationshipInviteLinkUseCase(
+            repository = careRelationshipInviteRepository
         )
     }
 
