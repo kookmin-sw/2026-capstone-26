@@ -26,9 +26,13 @@ import com.example.passedpath.feature.daynote.domain.repository.DayRouteMemoRepo
 import com.example.passedpath.feature.daynote.domain.repository.DayRouteTitleRepository
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteMemoUseCase
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteTitleUseCase
+import com.example.passedpath.feature.care.data.remote.api.CareDependentApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteApi
+import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
+import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
+import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
@@ -225,6 +229,10 @@ class AppContainer(
         retrofit.create(PlaceBookmarkApi::class.java)
     }
 
+    private val careDependentApi by lazy {
+        retrofit.create(CareDependentApi::class.java)
+    }
+
     private val careDependentDayRouteApi by lazy {
         retrofit.create(CareDependentDayRouteApi::class.java)
     }
@@ -333,6 +341,10 @@ class AppContainer(
         PlaceBookmarkRepositoryImpl(placeBookmarkApi)
     }
 
+    val careDependentRepository: CareDependentRepository by lazy {
+        CareDependentRepositoryImpl(careDependentApi = careDependentApi)
+    }
+
     val protectedPersonDayRouteRepository: ProtectedPersonDayRouteRepository by lazy {
         ProtectedPersonDayRouteRepositoryImpl(
             careDependentDayRouteApi = careDependentDayRouteApi
@@ -433,6 +445,10 @@ class AppContainer(
         GetProtectedPersonDayRouteUseCase(
             repository = protectedPersonDayRouteRepository
         )
+    }
+
+    val getCareDependentsUseCase: GetCareDependentsUseCase by lazy {
+        GetCareDependentsUseCase(repository = careDependentRepository)
     }
 
     val reorderPlacesUseCase: ReorderPlacesUseCase by lazy {
