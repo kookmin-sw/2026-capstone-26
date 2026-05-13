@@ -54,6 +54,7 @@ import com.example.passedpath.feature.route.presentation.screen.RouteMapContent
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.ui.component.button.BaseCircleButton
+import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetDefaults
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
 import com.example.passedpath.ui.component.floating.FloatingCircleIconButton
 import com.example.passedpath.ui.state.CoordinateUiState
@@ -111,9 +112,11 @@ internal fun MainMapSection(
         )
     }
     val fallbackPosition = LatLng(37.5662952, 126.9779451)
-    val mapCameraBottomPadding = (BottomSheetMiddleVisibleHeight + BottomSheetFloatingPadding) * 0.3f
+    val middleSheetVisiblePadding =
+        BaseBottomSheetDefaults.middleVisibleHeight + BaseBottomSheetDefaults.floatingPadding
+    val mapCameraBottomPadding = middleSheetVisiblePadding * 0.3f
     val currentLocationBottomPadding =
-        floatingBottomPadding.coerceAtMost(BottomSheetMiddleVisibleHeight + BottomSheetFloatingPadding)
+        floatingBottomPadding.coerceAtMost(middleSheetVisiblePadding)
     val currentLocation = if (uiState.permissionState == LocationPermissionUiState.DENIED) {
         null
     } else {
