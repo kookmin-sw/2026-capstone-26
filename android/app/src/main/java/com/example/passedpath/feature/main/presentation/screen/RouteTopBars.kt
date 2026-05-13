@@ -83,7 +83,6 @@ internal fun RouteTopBars(
             )
             DaySummaryBar(
                 totalDistanceKm = route.totalDistanceKm,
-                pathPointCount = route.pathPointCount,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(DaySummaryBarHeight)
@@ -239,7 +238,6 @@ private fun BookmarkToggleButton(
 @Composable
 internal fun DaySummaryBar(
     totalDistanceKm: Double,
-    pathPointCount: Int,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -268,14 +266,6 @@ internal fun DaySummaryBar(
                         R.string.main_total_distance_value,
                         totalDistanceKm.formatDistanceKm()
                     )
-                )
-                Text(
-                    text = "|",
-                    color = Gray300,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                SummaryItem(
-                    text = stringResource(R.string.main_path_points_value, pathPointCount)
                 )
             }
         }
