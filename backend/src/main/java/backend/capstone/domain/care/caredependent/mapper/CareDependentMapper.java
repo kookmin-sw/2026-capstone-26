@@ -1,6 +1,8 @@
-package backend.capstone.domain.care.mapper;
+package backend.capstone.domain.care.caredependent.mapper;
 
-import backend.capstone.domain.care.dto.CareDependentUserListResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.util.KstDateTimeUtils;
@@ -10,7 +12,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CareDependentUserMapper {
+public class CareDependentMapper {
 
     public static CareDependentUserListResponse toListResponse(
         List<User> dependentUsers,
@@ -48,6 +50,16 @@ public class CareDependentUserMapper {
             .latitude(latestGpsPoint.getLatitude())
             .longitude(latestGpsPoint.getLongitude())
             .recordedAt(KstDateTimeUtils.toKstOffsetDateTime(latestGpsPoint.getRecordedAt()))
+            .build();
+    }
+
+    public static CareDayRouteDetailResponse toCareDayRouteDetailResponse(
+        DayRouteDetailResponse dayRouteDetailResponse
+    ) {
+        return CareDayRouteDetailResponse.builder()
+            .date(dayRouteDetailResponse.date())
+            .totalDistance(dayRouteDetailResponse.totalDistance())
+            .gpsPoints(dayRouteDetailResponse.gpsPoints())
             .build();
     }
 }

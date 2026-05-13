@@ -2,7 +2,7 @@ package backend.capstone.domain.care.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

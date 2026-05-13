@@ -6,8 +6,9 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
+import backend.capstone.domain.care.caredependent.service.CareDependentUserService;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.dto.CareDependentUserListResponse;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import backend.capstone.domain.user.entity.ProviderType;
@@ -51,13 +52,13 @@ class CareDependentUserServiceTest {
         assertThat(result.dependentUserCount()).isEqualTo(2);
         assertThat(result.dependentUsers()).hasSize(2);
         assertThat(result.dependentUsers()).extracting(
-            CareDependentUserListResponse.CareDependentUserItem::dependentUserId)
+                CareDependentUserListResponse.CareDependentUserItem::dependentUserId)
             .containsExactly(10L, 20L);
         assertThat(result.dependentUsers()).extracting(
-            CareDependentUserListResponse.CareDependentUserItem::nickname)
+                CareDependentUserListResponse.CareDependentUserItem::nickname)
             .containsExactly("첫째", "둘째");
         assertThat(result.dependentUsers()).extracting(
-            CareDependentUserListResponse.CareDependentUserItem::profileImageUrl)
+                CareDependentUserListResponse.CareDependentUserItem::profileImageUrl)
             .containsExactly("https://example.com/1.png", "https://example.com/2.png");
         assertThat(result.dependentUsers().get(0).latestGpsPoint()).isNotNull();
         assertThat(result.dependentUsers().get(0).latestGpsPoint().recordedAt())

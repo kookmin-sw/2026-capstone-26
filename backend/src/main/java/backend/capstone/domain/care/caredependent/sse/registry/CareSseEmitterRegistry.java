@@ -1,7 +1,7 @@
-package backend.capstone.domain.care.sse.registry;
+package backend.capstone.domain.care.caredependent.sse.registry;
 
-import backend.capstone.domain.care.sse.dto.CareSseEventType;
-import backend.capstone.domain.care.sse.dto.CareSseMessagePayload;
+import backend.capstone.domain.care.caredependent.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.caredependent.sse.dto.CareSseMessagePayload;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
