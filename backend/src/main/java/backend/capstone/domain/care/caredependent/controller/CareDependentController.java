@@ -5,6 +5,7 @@ import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse
 import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
 import backend.capstone.domain.care.caredependent.service.CareDependentUserService;
 import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteSummaryResponse;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -62,5 +63,16 @@ public class CareDependentController implements CareDependentControllerSpec {
     ) {
         return careDependentUserService.getDependentUserPlaces(principal.userId(), dependentUserId,
             date);
+    }
+
+    @Override
+    @GetMapping("/dependents/{dependentUserId}/day-routes/{date}/summary")
+    public DayRouteSummaryResponse getDependentUserDayRouteSummary(
+        @PathVariable("dependentUserId") Long dependentUserId,
+        @PathVariable("date") LocalDate date,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return careDependentUserService.getDependentUserDayRouteSummary(
+            principal.userId(), dependentUserId, date);
     }
 }

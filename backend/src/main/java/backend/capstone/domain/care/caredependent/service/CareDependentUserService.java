@@ -6,6 +6,7 @@ import backend.capstone.domain.care.caredependent.exception.CareDependentErrorCo
 import backend.capstone.domain.care.caredependent.mapper.CareDependentMapper;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteSummaryResponse;
 import backend.capstone.domain.mobility.dayroute.facade.DayRouteFacade;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
@@ -63,6 +64,13 @@ public class CareDependentUserService {
         LocalDate date) {
         validateDependentUserAccess(guardianUserId, dependentUserId);
         return placeFacade.getPlaces(date, dependentUserId);
+    }
+
+    public DayRouteSummaryResponse getDependentUserDayRouteSummary(
+        Long guardianUserId, Long dependentUserId, LocalDate date
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return dayRouteFacade.getDayRouteSummary(date, dependentUserId);
     }
 
     private Map<Long, LatestGpsPoint> toLatestGpsPointMap(List<LatestGpsPoint> latestGpsPoints) {
