@@ -1,9 +1,9 @@
-package backend.capstone.domain.care.sse.service;
+package backend.capstone.domain.care.caredependent.sse.service;
 
+import backend.capstone.domain.care.caredependent.sse.dto.CareLocationUpdatedPayload;
+import backend.capstone.domain.care.caredependent.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.sse.dto.CareLocationUpdatedPayload;
-import backend.capstone.domain.care.sse.dto.CareSseEventType;
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

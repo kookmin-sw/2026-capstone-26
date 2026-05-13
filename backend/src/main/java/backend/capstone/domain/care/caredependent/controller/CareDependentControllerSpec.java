@@ -1,8 +1,8 @@
-package backend.capstone.domain.care.controller;
+package backend.capstone.domain.care.caredependent.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
-import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
-import backend.capstone.domain.care.dto.CareDependentUserListResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "함께 가는 길 API")
-public interface CareControllerSpec {
+public interface CareDependentControllerSpec {
 
     @Operation(
         summary = "보호 대상자 목록 및 최신 좌표 조회 API",

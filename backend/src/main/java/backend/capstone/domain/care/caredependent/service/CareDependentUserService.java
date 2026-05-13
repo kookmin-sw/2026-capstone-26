@@ -1,11 +1,10 @@
-package backend.capstone.domain.care.service;
+package backend.capstone.domain.care.caredependent.service;
 
+import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
+import backend.capstone.domain.care.caredependent.exception.CareDependentErrorCode;
+import backend.capstone.domain.care.caredependent.mapper.CareDependentMapper;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
-import backend.capstone.domain.care.dto.CareDependentUserListResponse;
-import backend.capstone.domain.care.exception.CareErrorCode;
-import backend.capstone.domain.care.mapper.CareDayRouteMapper;
-import backend.capstone.domain.care.mapper.CareDependentUserMapper;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.facade.DayRouteFacade;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
@@ -37,7 +36,7 @@ public class CareDependentUserService {
         List<User> dependentUsers = careRelationshipRepository.findDependentUsersByGuardianUserId(
             guardianUserId);
         if (dependentUsers.isEmpty()) {
-            return CareDependentUserMapper.toListResponse(List.of(), Map.of());
+            return CareDependentMapper.toListResponse(List.of(), Map.of());
         }
 
         List<Long> dependentUserIds = dependentUsers.stream()
@@ -46,7 +45,7 @@ public class CareDependentUserService {
         List<LatestGpsPoint> latestGpsPoints = latestGpsPointRepository.findAllByUserIdIn(
             dependentUserIds);
 
-        return CareDependentUserMapper.toListResponse(dependentUsers,
+        return CareDependentMapper.toListResponse(dependentUsers,
             toLatestGpsPointMap(latestGpsPoints));
     }
 
@@ -57,7 +56,7 @@ public class CareDependentUserService {
 
         DayRouteDetailResponse dayRouteDetailResponse = dayRouteFacade.getDayRouteDetail(
             date, dependentUserId);
-        return CareDayRouteMapper.toCareDayRouteDetailResponse(dayRouteDetailResponse);
+        return CareDependentMapper.toCareDayRouteDetailResponse(dayRouteDetailResponse);
     }
 
     public PlaceListResponse getDependentUserPlaces(Long guardianUserId, Long dependentUserId,
@@ -77,7 +76,7 @@ public class CareDependentUserService {
     private void validateDependentUserAccess(Long guardianUserId, Long dependentUserId) {
         if (!careRelationshipRepository.existsByGuardianUserIdAndDependentUserId(
             guardianUserId, dependentUserId)) {
-            throw new BusinessException(CareErrorCode.CARE_DEPENDENT_USER_ACCESS_DENIED);
+            throw new BusinessException(CareDependentErrorCode.CARE_DEPENDENT_USER_ACCESS_DENIED);
         }
     }
 }

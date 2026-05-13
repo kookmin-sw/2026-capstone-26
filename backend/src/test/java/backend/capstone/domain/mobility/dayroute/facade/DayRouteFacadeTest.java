@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import backend.capstone.domain.care.sse.service.CareLocationSseEventService;
+import backend.capstone.domain.care.caredependent.sse.service.CareLocationSseEventService;
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest;
 import backend.capstone.domain.mobility.dayroute.dto.GpsPointBatchUploadRequest.GpsPointRequest;

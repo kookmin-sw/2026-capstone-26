@@ -6,10 +6,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import backend.capstone.auth.jwt.service.JwtTokenProvider;
+import backend.capstone.domain.care.caredependent.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.care.carerelationship.entity.CareRelationship;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.sse.dto.CareSseEventType;
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.domain.user.repository.UserRepository;

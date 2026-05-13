@@ -1,4 +1,4 @@
-package backend.capstone.domain.care.sse.dto;
+package backend.capstone.domain.care.caredependent.sse.dto;
 
 public record CareSseMessagePayload(
     String message

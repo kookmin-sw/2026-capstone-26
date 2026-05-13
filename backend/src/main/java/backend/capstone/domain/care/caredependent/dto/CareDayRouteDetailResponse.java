@@ -1,4 +1,4 @@
-package backend.capstone.domain.care.dto;
+package backend.capstone.domain.care.caredependent.dto;
 
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse.GpsPointItem;
 import java.time.LocalDate;

@@ -1,6 +1,6 @@
-package backend.capstone.domain.care.sse.service;
+package backend.capstone.domain.care.caredependent.sse.service;
 
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

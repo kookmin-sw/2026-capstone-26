@@ -5,10 +5,10 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 
+import backend.capstone.domain.care.caredependent.sse.dto.CareSseEventType;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.care.caredependent.sse.service.CareLocationSseEventService;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
-import backend.capstone.domain.care.sse.dto.CareSseEventType;
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
-import backend.capstone.domain.care.sse.service.CareLocationSseEventService;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.user.entity.ProviderType;
 import backend.capstone.domain.user.entity.User;

@@ -1,4 +1,4 @@
-package backend.capstone.domain.care.dto;
+package backend.capstone.domain.care.caredependent.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;

@@ -1,10 +1,10 @@
-package backend.capstone.domain.care.controller;
+package backend.capstone.domain.care.caredependent.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
-import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
-import backend.capstone.domain.care.dto.CareDependentUserListResponse;
-import backend.capstone.domain.care.service.CareDependentUserService;
-import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
+import backend.capstone.domain.care.caredependent.service.CareDependentUserService;
+import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/care")
-public class CareController implements CareControllerSpec {
+public class CareDependentDependentController implements CareDependentControllerSpec {
 
     private final CareDependentUserService careDependentUserService;
     private final CareSseEmitterRegistry careSseEmitterRegistry;
