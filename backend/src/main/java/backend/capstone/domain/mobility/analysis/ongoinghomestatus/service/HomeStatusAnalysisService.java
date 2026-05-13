@@ -33,7 +33,7 @@ public class HomeStatusAnalysisService {
     public void analyzeHomeStatus(Long dayRouteId) {
         DayRoute dayRoute = dayRouteService.getDayRouteById(dayRouteId);
 
-        Optional<BookmarkPlace> optionalHome = bookmarkPlaceRepository.findDefaultByUserIdAndType(
+        Optional<BookmarkPlace> optionalHome = bookmarkPlaceRepository.findByUserIdAndType(
             dayRoute.getUser().getId(), BookmarkPlaceType.HOME);
 
         if (optionalHome.isEmpty()) {
@@ -42,7 +42,6 @@ public class HomeStatusAnalysisService {
         }
         BookmarkPlace homeBookmark = optionalHome.get();
 
-        //증분 분석
         List<GpsPoint> newPoints = gpsPointService.getNewPoints(dayRoute,
             dayRoute.getHomeAnalysisLastPointAt());
 
