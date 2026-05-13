@@ -12,8 +12,8 @@ import com.example.passedpath.feature.bookmark.data.remote.api.DayRouteBookmarkA
 import com.example.passedpath.feature.bookmark.data.repository.DayRouteBookmarkRepositoryImpl
 import com.example.passedpath.feature.bookmark.domain.repository.DayRouteBookmarkRepository
 import com.example.passedpath.feature.bookmark.domain.usecase.GetDayRouteBookmarksUseCase
-import com.example.passedpath.feature.bookmark.domain.usecase.MarkDayRouteBookmarksUseCase
 import com.example.passedpath.feature.bookmark.domain.usecase.ToggleDayRouteBookmarkUseCase
+import com.example.passedpath.feature.bookmark.domain.usecase.ToggleDayRouteBookmarksUseCase
 import com.example.passedpath.feature.calendar.data.remote.api.CalendarMonthlyRouteApi
 import com.example.passedpath.feature.calendar.data.repository.CalendarMonthlyRouteRepositoryImpl
 import com.example.passedpath.feature.calendar.domain.repository.CalendarMonthlyRouteRepository
@@ -349,8 +349,8 @@ class AppContainer(
         GetDayRouteBookmarksUseCase(dayRouteBookmarkRepository = dayRouteBookmarkRepository)
     }
 
-    val markDayRouteBookmarksUseCase: MarkDayRouteBookmarksUseCase by lazy {
-        MarkDayRouteBookmarksUseCase(dayRouteBookmarkRepository = dayRouteBookmarkRepository)
+    val toggleDayRouteBookmarksUseCase: ToggleDayRouteBookmarksUseCase by lazy {
+        ToggleDayRouteBookmarksUseCase(dayRouteBookmarkRepository = dayRouteBookmarkRepository)
     }
 
     val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {

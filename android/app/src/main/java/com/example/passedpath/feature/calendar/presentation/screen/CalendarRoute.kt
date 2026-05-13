@@ -58,6 +58,7 @@ import com.example.passedpath.feature.calendar.presentation.model.toggleCalendar
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModel
 import com.example.passedpath.feature.calendar.presentation.viewmodel.CalendarViewModelFactory
 import com.example.passedpath.ui.component.button.BaseButton
+import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
@@ -105,33 +106,118 @@ fun CalendarRoute(
     var screenMode by rememberSaveable {
         mutableStateOf(CalendarScreenMode.Normal)
     }
-    var favoriteSelectedDateKeys by rememberSaveable {
+    var selectedMonthFavoriteDateKeys by rememberSaveable {
         mutableStateOf(emptyList<String>())
     }
+    var originalMonthFavoriteDateKeys by rememberSaveable {
+        mutableStateOf(emptyList<String>())
+    }
+    var editingFavoriteMonthKey by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+    var pendingFavoriteTargetDateKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingFavoriteCloseAfterDiscard by rememberSaveable { mutableStateOf(false) }
     var isMoreActionSheetVisible by rememberSaveable { mutableStateOf(false) }
     val anchorDate = remember(anchorDateKey) { parseDateOrToday(anchorDateKey) }
     val selectedDate = remember(selectedDateKey) {
         selectedDateKey?.let(::parseDateOrToday)
     }
-    val favoriteSelectedDateKeySet = remember(favoriteSelectedDateKeys) {
-        favoriteSelectedDateKeys.toSet()
+    val selectedMonthFavoriteDateKeySet = remember(selectedMonthFavoriteDateKeys) {
+        selectedMonthFavoriteDateKeys.toSet()
+    }
+    val originalMonthFavoriteDateKeySet = remember(originalMonthFavoriteDateKeys) {
+        originalMonthFavoriteDateKeys.toSet()
     }
     val visibleMonth = remember(anchorDate) { YearMonth.from(anchorDate) }
-    val visibleMonthSelectedDateKeySet = remember(favoriteSelectedDateKeys, visibleMonth) {
-        favoriteSelectedDateKeys
-            .filter { dateKey -> isDateKeyInMonth(dateKey, visibleMonth) }
-            .toSet()
+    val changedMonthFavoriteDateKeys = remember(
+        selectedMonthFavoriteDateKeySet,
+        originalMonthFavoriteDateKeySet
+    ) {
+        (
+            (selectedMonthFavoriteDateKeySet - originalMonthFavoriteDateKeySet) +
+                (originalMonthFavoriteDateKeySet - selectedMonthFavoriteDateKeySet)
+            ).sorted()
     }
+    val hasFavoriteSettingsChanges = changedMonthFavoriteDateKeys.isNotEmpty()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val bookmarkRegistrationUiState = uiState.bookmarkRegistrationUiState
 
+    fun resetFavoriteMonthEditState() {
+        selectedMonthFavoriteDateKeys = emptyList()
+        originalMonthFavoriteDateKeys = emptyList()
+        editingFavoriteMonthKey = null
+    }
+
     fun closeFavoriteSettingsMode() {
         screenMode = CalendarScreenMode.Normal
-        favoriteSelectedDateKeys = emptyList()
+        resetFavoriteMonthEditState()
+    }
+
+    fun requestFavoriteTargetDate(targetDate: LocalDate) {
+        val targetDateKey = targetDate.toCalendarDateKey()
+        if (hasFavoriteSettingsChanges) {
+            pendingFavoriteTargetDateKey = targetDateKey
+            pendingFavoriteCloseAfterDiscard = false
+        } else {
+            resetFavoriteMonthEditState()
+            anchorDateKey = targetDateKey
+        }
+    }
+
+    fun requestCloseFavoriteSettingsMode() {
+        if (hasFavoriteSettingsChanges) {
+            pendingFavoriteTargetDateKey = null
+            pendingFavoriteCloseAfterDiscard = true
+        } else {
+            closeFavoriteSettingsMode()
+        }
+    }
+
+    fun dismissFavoriteDiscardDialog() {
+        pendingFavoriteTargetDateKey = null
+        pendingFavoriteCloseAfterDiscard = false
+    }
+
+    fun confirmFavoriteDiscardDialog() {
+        val targetDateKey = pendingFavoriteTargetDateKey
+        val shouldClose = pendingFavoriteCloseAfterDiscard
+        dismissFavoriteDiscardDialog()
+        if (shouldClose) {
+            closeFavoriteSettingsMode()
+        } else if (targetDateKey != null) {
+            resetFavoriteMonthEditState()
+            anchorDateKey = targetDateKey
+        }
     }
 
     LaunchedEffect(visibleMonth) {
         viewModel.loadMonth(visibleMonth = visibleMonth)
+    }
+
+    LaunchedEffect(
+        screenMode,
+        uiState.loadedMonth,
+        uiState.dayStatuses,
+        visibleMonth,
+        editingFavoriteMonthKey
+    ) {
+        if (
+            screenMode == CalendarScreenMode.FavoriteSettings &&
+            uiState.loadedMonth == visibleMonth &&
+            editingFavoriteMonthKey != visibleMonth.toString()
+        ) {
+            val loadedFavoriteDateKeys = uiState.dayStatuses
+                .filter { (date, status) ->
+                    YearMonth.from(date) == visibleMonth && status.isBookmarked
+                }
+                .keys
+                .map(LocalDate::toCalendarDateKey)
+                .sorted()
+
+            originalMonthFavoriteDateKeys = loadedFavoriteDateKeys
+            selectedMonthFavoriteDateKeys = loadedFavoriteDateKeys
+            editingFavoriteMonthKey = visibleMonth.toString()
+        }
     }
 
     LaunchedEffect(
@@ -142,12 +228,12 @@ fun CalendarRoute(
             bookmarkRegistrationUiState.feedbackEventId > 0L &&
             bookmarkRegistrationUiState.isSuccess
         ) {
-            favoriteSelectedDateKeys = emptyList()
+            originalMonthFavoriteDateKeys = selectedMonthFavoriteDateKeys.distinct().sorted()
         }
     }
 
     BackHandler(enabled = screenMode == CalendarScreenMode.FavoriteSettings) {
-        closeFavoriteSettingsMode()
+        requestCloseFavoriteSettingsMode()
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -203,41 +289,44 @@ fun CalendarRoute(
                 CalendarFavoriteSettingsContent(
                     anchorDate = anchorDate,
                     visibleMonth = visibleMonth,
-                    selectedDateKeys = favoriteSelectedDateKeySet,
+                    selectedDateKeys = selectedMonthFavoriteDateKeySet,
                     today = LocalDate.now(),
                     dayStatuses = uiState.dayStatuses,
                     isLoading = uiState.isLoading && uiState.loadingMonth == visibleMonth,
                     errorMessage = uiState.errorMessage,
                     isSubmitting = bookmarkRegistrationUiState.isSubmitting,
-                    visibleMonthSelectedCount = visibleMonthSelectedDateKeySet.size,
-                    onBackClick = { closeFavoriteSettingsMode() },
+                    hasChanges = hasFavoriteSettingsChanges,
+                    onBackClick = { requestCloseFavoriteSettingsMode() },
                     onPreviousMonthClick = {
-                        anchorDateKey = anchorDate.shiftMonth(-1).toCalendarDateKey()
+                        requestFavoriteTargetDate(anchorDate.shiftMonth(-1))
                     },
                     onNextMonthClick = {
-                        anchorDateKey = anchorDate.shiftMonth(1).toCalendarDateKey()
+                        requestFavoriteTargetDate(anchorDate.shiftMonth(1))
                     },
                     onMonthTitleClick = {
                         showCalendarDatePicker(
                             context = context,
                             initialDate = anchorDate,
                             onDatePicked = { pickedDate ->
-                                anchorDateKey = pickedDate.toCalendarDateKey()
+                                requestFavoriteTargetDate(pickedDate)
                             }
                         )
                     },
                     onClearVisibleMonthSelectionClick = {
-                        favoriteSelectedDateKeys = favoriteSelectedDateKeys.filterNot { dateKey ->
-                            dateKey in visibleMonthSelectedDateKeySet
-                        }
+                        selectedMonthFavoriteDateKeys = emptyList()
+                    },
+                    onRestoreVisibleMonthSelectionClick = {
+                        selectedMonthFavoriteDateKeys =
+                            originalMonthFavoriteDateKeys.distinct().sorted()
                     },
                     onDateClick = { date ->
                         val dateKey = date.toCalendarDateKey()
-                        favoriteSelectedDateKeys = if (dateKey in favoriteSelectedDateKeySet) {
-                            favoriteSelectedDateKeys.filterNot { it == dateKey }
-                        } else {
-                            (favoriteSelectedDateKeys + dateKey).distinct().sorted()
-                        }
+                        selectedMonthFavoriteDateKeys =
+                            if (dateKey in selectedMonthFavoriteDateKeySet) {
+                                selectedMonthFavoriteDateKeys.filterNot { it == dateKey }
+                            } else {
+                                (selectedMonthFavoriteDateKeys + dateKey).distinct().sorted()
+                            }
                     },
                     onRetryClick = {
                         viewModel.loadMonth(
@@ -246,7 +335,10 @@ fun CalendarRoute(
                         )
                     },
                     onSubmitClick = {
-                        viewModel.markSelectedDatesAsBookmarks(favoriteSelectedDateKeys)
+                        viewModel.toggleChangedDateBookmarks(
+                            changedDateKeys = changedMonthFavoriteDateKeys,
+                            selectedDateKeys = selectedMonthFavoriteDateKeySet
+                        )
                     },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -285,11 +377,23 @@ fun CalendarRoute(
                 onFavoriteSettingsClick = {
                     isMoreActionSheetVisible = false
                     selectedDateKey = null
+                    resetFavoriteMonthEditState()
                     screenMode = CalendarScreenMode.FavoriteSettings
                 },
                 onDeleteRecordsClick = { isMoreActionSheetVisible = false }
             )
         }
+    }
+
+    if (pendingFavoriteCloseAfterDiscard || pendingFavoriteTargetDateKey != null) {
+        BaseConfirmDialog(
+            title = stringResource(R.string.calendar_favorite_settings_discard_title),
+            message = stringResource(R.string.calendar_favorite_settings_discard_message),
+            dismissText = stringResource(R.string.calendar_favorite_settings_discard_cancel),
+            confirmText = stringResource(R.string.calendar_favorite_settings_discard_confirm),
+            onDismiss = { dismissFavoriteDiscardDialog() },
+            onConfirm = { confirmFavoriteDiscardDialog() }
+        )
     }
 }
 
@@ -782,12 +886,6 @@ private fun parseDateOrToday(dateKey: String): LocalDate {
     return runCatching { LocalDate.parse(dateKey) }
         .getOrDefault(LocalDate.now())
         .coerceToSelectableDateRange()
-}
-
-private fun isDateKeyInMonth(dateKey: String, visibleMonth: YearMonth): Boolean {
-    return runCatching {
-        YearMonth.from(LocalDate.parse(dateKey)) == visibleMonth
-    }.getOrDefault(false)
 }
 
 private fun LocalDate.shiftMonth(monthDelta: Long): LocalDate {

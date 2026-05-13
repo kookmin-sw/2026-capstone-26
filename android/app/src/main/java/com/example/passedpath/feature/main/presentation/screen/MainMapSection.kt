@@ -262,7 +262,7 @@ internal fun MainMapSection(
                     onClick = onCalendarClick,
                     modifier = Modifier
                 )
-                if (BuildConfig.DEBUG) {
+                if (false) {
                     DebugPanelButton(
                         onClick = { isDebugPanelVisible = !isDebugPanelVisible },
                         modifier = Modifier

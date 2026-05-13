@@ -26,8 +26,8 @@ class DayRouteBookmarkRepositoryImpl(
         return DayRouteBookmark(isBookmarked = response.isBookmarked)
     }
 
-    override suspend fun markBookmarks(dateKeys: List<String>) {
-        val response = dayRouteBookmarkApi.markBookmarks(
+    override suspend fun toggleBookmarks(dateKeys: List<String>) {
+        val response = dayRouteBookmarkApi.toggleBookmarks(
             request = DayRouteBookmarkBatchRequestDto(dates = dateKeys)
         )
         if (!response.isSuccessful) {

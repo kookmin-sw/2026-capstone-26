@@ -11,5 +11,5 @@ interface DayRouteBookmarkRepository {
 
     suspend fun toggleBookmark(dateKey: String): DayRouteBookmark
 
-    suspend fun markBookmarks(dateKeys: List<String>)
+    suspend fun toggleBookmarks(dateKeys: List<String>)
 }

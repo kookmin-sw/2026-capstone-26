@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -74,12 +73,13 @@ internal fun CalendarFavoriteSettingsContent(
     isLoading: Boolean,
     errorMessage: String?,
     isSubmitting: Boolean,
-    visibleMonthSelectedCount: Int,
+    hasChanges: Boolean,
     onBackClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
     onMonthTitleClick: () -> Unit,
     onClearVisibleMonthSelectionClick: () -> Unit,
+    onRestoreVisibleMonthSelectionClick: () -> Unit,
     onDateClick: (LocalDate) -> Unit,
     onRetryClick: () -> Unit,
     onSubmitClick: () -> Unit,
@@ -91,13 +91,10 @@ internal fun CalendarFavoriteSettingsContent(
             dayStatuses = dayStatuses
         )
     }
-    val ctaText = if (selectedDateKeys.isEmpty()) {
-        stringResource(R.string.calendar_favorite_settings_empty_cta)
+    val ctaText = if (hasChanges) {
+        stringResource(R.string.calendar_favorite_settings_submit)
     } else {
-        stringResource(
-            R.string.calendar_favorite_settings_submit,
-            selectedDateKeys.size
-        )
+        stringResource(R.string.calendar_favorite_settings_empty_cta)
     }
 
     Column(
@@ -118,11 +115,13 @@ internal fun CalendarFavoriteSettingsContent(
         ) {
             CalendarFavoriteSettingsCardHeader(
                 anchorDate = anchorDate,
-                visibleMonthSelectedCount = visibleMonthSelectedCount,
+                hasSelectedDates = selectedDateKeys.isNotEmpty(),
+                hasChanges = hasChanges,
                 onPreviousMonthClick = onPreviousMonthClick,
                 onNextMonthClick = onNextMonthClick,
                 onMonthTitleClick = onMonthTitleClick,
                 onClearVisibleMonthSelectionClick = onClearVisibleMonthSelectionClick,
+                onRestoreVisibleMonthSelectionClick = onRestoreVisibleMonthSelectionClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -180,7 +179,7 @@ internal fun CalendarFavoriteSettingsContent(
         BaseButton(
             text = ctaText,
             onClick = onSubmitClick,
-            enabled = selectedDateKeys.isNotEmpty() && !isSubmitting,
+            enabled = hasChanges && !isSubmitting,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .navigationBarsPadding()
@@ -230,11 +229,13 @@ private fun CalendarFavoriteSettingsTopBar(
 @Composable
 private fun CalendarFavoriteSettingsCardHeader(
     anchorDate: LocalDate,
-    visibleMonthSelectedCount: Int,
+    hasSelectedDates: Boolean,
+    hasChanges: Boolean,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
     onMonthTitleClick: () -> Unit,
     onClearVisibleMonthSelectionClick: () -> Unit,
+    onRestoreVisibleMonthSelectionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -249,22 +250,56 @@ private fun CalendarFavoriteSettingsCardHeader(
             modifier = Modifier.align(Alignment.Center)
         )
 
-        if (visibleMonthSelectedCount > 0) {
-            Text(
-                text = stringResource(R.string.calendar_favorite_settings_clear_month),
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(70.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.End)
+        ) {
+            Box(
+                modifier = Modifier.size(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (hasChanges) {
+                    IconButton(
+                        onClick = onRestoreVisibleMonthSelectionClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_undo),
+                            contentDescription = stringResource(
+                                R.string.calendar_favorite_settings_restore
+                            ),
+                            tint = Gray400,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .heightIn(min = 36.dp)
-                    .widthIn(min = 52.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .clickable(onClick = onClearVisibleMonthSelectionClick)
-                    .padding(horizontal = 12.dp, vertical = 7.dp),
-                color = Gray400,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                textAlign = TextAlign.Center
-            )
+                    .width(30.dp)
+                    .height(36.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                if (hasSelectedDates) {
+                    Text(
+                        text = stringResource(R.string.calendar_favorite_settings_clear_month),
+                        modifier = Modifier
+                            .heightIn(min = 36.dp)
+                            .clip(RoundedCornerShape(999.dp))
+                            .clickable(onClick = onClearVisibleMonthSelectionClick)
+                            .padding(start = 6.dp, end = 0.dp, top = 10.dp, bottom = 4.dp),
+                        color = Gray400,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
@@ -571,12 +606,13 @@ private fun CalendarFavoriteSettingsContentPreview() {
             isLoading = false,
             errorMessage = null,
             isSubmitting = false,
-            visibleMonthSelectedCount = 3,
+            hasChanges = true,
             onBackClick = {},
             onPreviousMonthClick = {},
             onNextMonthClick = {},
             onMonthTitleClick = {},
             onClearVisibleMonthSelectionClick = {},
+            onRestoreVisibleMonthSelectionClick = {},
             onDateClick = {},
             onRetryClick = {},
             onSubmitClick = {}

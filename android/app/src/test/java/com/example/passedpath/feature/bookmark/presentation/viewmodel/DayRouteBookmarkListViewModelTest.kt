@@ -129,7 +129,7 @@ class DayRouteBookmarkListViewModelTest {
             return DayRouteBookmark(isBookmarked = true)
         }
 
-        override suspend fun markBookmarks(dateKeys: List<String>) = Unit
+        override suspend fun toggleBookmarks(dateKeys: List<String>) = Unit
     }
 }
 
