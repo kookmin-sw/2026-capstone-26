@@ -4,6 +4,7 @@ import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -59,13 +60,15 @@ public interface CareControllerSpec {
         summary = "보호대상자 개인별 지나온길 조회 API",
         description = """
             로그인한 보호자가 보호대상자 개인 별 dayRoute를 조회합니다.<br>
+            경로변수로 넘겨주는 보호 대상자 목록 조회 api에서 받은 `dependentUserId`를 경로 변수로 넘겨주세요.<br>
             응답에는 날짜, 총 이동거리, GPS 좌표 목록을 반환합니다.<br>
-            연결되지 않은 보호대상자를 조회하면 권한 오류가 발생합니다.
+            연결되지 않은 보호대상자를 조회하면 권한 오류가 발생합니다.<br>
+            나의 지나온길 조회와 동일하게 해당 날짜에 기록된 데이터가 없으면 404에러가 반환됩니다.
             """
     )
     CareDayRouteDetailResponse getDependentUserDayRouteDetail(
-        Long dependentUserId,
-        LocalDate date,
+        @Schema(example = "1") Long dependentUserId,
+        @Schema(example = "2026-01-01") LocalDate date,
         UserPrincipal principal
     );
 }
