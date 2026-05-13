@@ -3,10 +3,10 @@ package backend.capstone.domain.care.controller;
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
-import backend.capstone.domain.care.service.CareDayRouteService;
 import backend.capstone.domain.care.service.CareDependentUserService;
-import java.time.LocalDate;
 import backend.capstone.domain.care.sse.registry.CareSseEmitterRegistry;
+import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,7 +23,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api/care")
 public class CareController implements CareControllerSpec {
 
-    private final CareDayRouteService careDayRouteService;
     private final CareDependentUserService careDependentUserService;
     private final CareSseEmitterRegistry careSseEmitterRegistry;
 
@@ -50,7 +49,18 @@ public class CareController implements CareControllerSpec {
         @PathVariable("date") LocalDate date,
         @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return careDayRouteService.getDependentUserDayRouteDetail(
+        return careDependentUserService.getDependentUserDayRouteDetail(
             principal.userId(), dependentUserId, date);
+    }
+
+    @Override
+    @GetMapping("/dependents/{dependentUserId}/day-routes/{date}/places")
+    public PlaceListResponse getDependentUserPlaces(
+        @PathVariable("dependentUserId") Long dependentUserId,
+        @PathVariable("date") LocalDate date,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return careDependentUserService.getDependentUserPlaces(principal.userId(), dependentUserId,
+            date);
     }
 }

@@ -3,6 +3,7 @@ package backend.capstone.domain.care.controller;
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
+import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,7 +58,7 @@ public interface CareControllerSpec {
     SseEmitter subscribeDependentLocation(UserPrincipal principal);
 
     @Operation(
-        summary = "보호대상자 개인별 지나온길 조회 API",
+        summary = "보호대상자 별 지나온길 조회 API",
         description = """
             로그인한 보호자가 보호대상자 개인 별 dayRoute를 조회합니다.<br>
             경로변수로 넘겨주는 보호 대상자 목록 조회 api에서 받은 `dependentUserId`를 경로 변수로 넘겨주세요.<br>
@@ -67,7 +68,24 @@ public interface CareControllerSpec {
             """
     )
     CareDayRouteDetailResponse getDependentUserDayRouteDetail(
-        @Schema(example = "1") Long dependentUserId,
+        Long dependentUserId,
+        @Schema(example = "2026-01-01") LocalDate date,
+        UserPrincipal principal
+    );
+
+    @Operation(
+        summary = "보호대상자 별 방문장소 목록 조회 API",
+        description = """
+            로그인한 보호자가 본인과 연결된 보호대상자의 특정 날짜 방문장소 목록을 조회합니다.<br>
+            경로변수로 넘겨주는 보호 대상자 목록 조회 api에서 받은 `dependentUserId`를 경로 변수로 넘겨주세요.<br>
+            보호대상자가 수기로 추가한 장소와 자동 저장 체류 장소 모두 반환됩니다.<br>
+            응답 필드 구성은 사용자의 방문장소 목록 조회 API와 동일합니다.<br>
+            연결되지 않은 보호대상자를 조회하면 권한 오류가 발생합니다.<br>
+            해당 날짜 dayRoute가 없으면 404 에러가 반환됩니다.
+            """
+    )
+    PlaceListResponse getDependentUserPlaces(
+        Long dependentUserId,
         @Schema(example = "2026-01-01") LocalDate date,
         UserPrincipal principal
     );
