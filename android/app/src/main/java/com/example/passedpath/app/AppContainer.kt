@@ -28,16 +28,20 @@ import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteMemoUs
 import com.example.passedpath.feature.daynote.domain.usecase.PatchDayRouteTitleUseCase
 import com.example.passedpath.feature.care.data.remote.api.CareDependentApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteApi
+import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoutePlacesApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteSummaryApi
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
 import com.example.passedpath.feature.locationtracking.data.manager.LocationTrackingServiceStateReader
@@ -245,6 +249,10 @@ class AppContainer(
         retrofit.create(CareDependentDayRouteSummaryApi::class.java)
     }
 
+    private val careDependentDayRoutePlacesApi by lazy {
+        retrofit.create(CareDependentDayRoutePlacesApi::class.java)
+    }
+
     val trackingDebugLogRepository: TrackingDebugLogRepository by lazy {
         RoomTrackingDebugLogRepository(
             trackingDebugLogDao = trackingDatabase.trackingDebugLogDao()
@@ -365,6 +373,12 @@ class AppContainer(
         )
     }
 
+    val protectedPersonVisitedPlaceRepository: ProtectedPersonVisitedPlaceRepository by lazy {
+        ProtectedPersonVisitedPlaceRepositoryImpl(
+            careDependentDayRoutePlacesApi = careDependentDayRoutePlacesApi
+        )
+    }
+
     val uploadGpsPointsBatchUseCase: UploadGpsPointsBatchUseCase by lazy {
         UploadGpsPointsBatchUseCase(
             dayRouteApi = dayRouteApi,
@@ -468,6 +482,12 @@ class AppContainer(
     val getProtectedPersonDaySummaryUseCase: GetProtectedPersonDaySummaryUseCase by lazy {
         GetProtectedPersonDaySummaryUseCase(
             repository = protectedPersonDaySummaryRepository
+        )
+    }
+
+    val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase by lazy {
+        GetProtectedPersonVisitedPlacesUseCase(
+            repository = protectedPersonVisitedPlaceRepository
         )
     }
 
