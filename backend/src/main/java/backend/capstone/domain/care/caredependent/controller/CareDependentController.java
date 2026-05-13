@@ -21,7 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/care")
-public class CareDependentDependentController implements CareDependentControllerSpec {
+public class CareDependentController implements CareDependentControllerSpec {
 
     private final CareDependentUserService careDependentUserService;
     private final CareSseEmitterRegistry careSseEmitterRegistry;
