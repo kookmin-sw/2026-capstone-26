@@ -1,9 +1,11 @@
 package backend.capstone.domain.care.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
+import backend.capstone.domain.care.dto.CareDayRouteDetailResponse;
 import backend.capstone.domain.care.dto.CareDependentUserListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "함께 가는 길 API")
@@ -52,4 +54,18 @@ public interface CareControllerSpec {
             """
     )
     SseEmitter subscribeDependentLocation(UserPrincipal principal);
+
+    @Operation(
+        summary = "보호대상자 개인별 지나온길 조회 API",
+        description = """
+            로그인한 보호자가 보호대상자 개인 별 dayRoute를 조회합니다.<br>
+            응답에는 날짜, 총 이동거리, GPS 좌표 목록을 반환합니다.<br>
+            연결되지 않은 보호대상자를 조회하면 권한 오류가 발생합니다.
+            """
+    )
+    CareDayRouteDetailResponse getDependentUserDayRouteDetail(
+        Long dependentUserId,
+        LocalDate date,
+        UserPrincipal principal
+    );
 }

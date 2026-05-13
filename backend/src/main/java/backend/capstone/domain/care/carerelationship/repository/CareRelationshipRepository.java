@@ -11,12 +11,7 @@ public interface CareRelationshipRepository extends JpaRepository<CareRelationsh
 
     boolean existsByGuardianUserAndDependentUser(User guardianUser, User dependentUser);
 
-    @Query("""
-            select cr.dependentUser.id
-            from CareRelationship cr
-            where cr.guardianUser.id = :guardianUserId
-        """)
-    List<Long> findDependentUserIdsByGuardianUserId(@Param("guardianUserId") Long guardianUserId);
+    boolean existsByGuardianUserIdAndDependentUserId(Long guardianUserId, Long dependentUserId);
 
     @Query("""
             select cr.guardianUser.id
