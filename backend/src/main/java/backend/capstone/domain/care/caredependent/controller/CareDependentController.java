@@ -2,6 +2,7 @@ package backend.capstone.domain.care.caredependent.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentDayRouteListResponse;
 import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
 import backend.capstone.domain.care.caredependent.service.CareDependentUserService;
 import backend.capstone.domain.care.caredependent.sse.registry.CareSseEmitterRegistry;
@@ -12,9 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -41,6 +45,18 @@ public class CareDependentController implements CareDependentControllerSpec {
         @AuthenticationPrincipal UserPrincipal principal
     ) {
         return careSseEmitterRegistry.register(principal.userId());
+    }
+
+    @Override
+    @GetMapping("/dependents/{dependentUserId}/day-routes")
+    public CareDependentDayRouteListResponse getDependentUserDayRoutes(
+        @PathVariable("dependentUserId") Long dependentUserId,
+        @RequestParam(value = "cursorDate", required = false) LocalDate cursorDate,
+        @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(100) int size,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return careDependentUserService.getDependentUserDayRoutes(
+            principal.userId(), dependentUserId, cursorDate, size);
     }
 
     @Override

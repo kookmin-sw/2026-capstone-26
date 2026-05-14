@@ -1,11 +1,14 @@
 package backend.capstone.domain.care.caredependent.mapper;
 
 import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentDayRouteListResponse;
 import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
+import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.util.KstDateTimeUtils;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -60,6 +63,30 @@ public class CareDependentMapper {
             .date(dayRouteDetailResponse.date())
             .totalDistance(dayRouteDetailResponse.totalDistance())
             .gpsPoints(dayRouteDetailResponse.gpsPoints())
+            .build();
+    }
+
+    public static CareDependentDayRouteListResponse toDayRouteListResponse(
+        List<DayRoute> dayRoutes, boolean hasNext, LocalDate nextCursorDate
+    ) {
+        return CareDependentDayRouteListResponse.builder()
+            .dayRouteCount(dayRoutes.size())
+            .hasNext(hasNext)
+            .nextCursorDate(nextCursorDate)
+            .dayRoutes(dayRoutes.stream()
+                .map(CareDependentMapper::toDayRouteItem)
+                .toList())
+            .build();
+    }
+
+    private static CareDependentDayRouteListResponse.CareDependentDayRouteItem toDayRouteItem(
+        DayRoute dayRoute
+    ) {
+        return CareDependentDayRouteListResponse.CareDependentDayRouteItem.builder()
+            .date(dayRoute.getDate())
+            .outingTime(KstDateTimeUtils.toKstOffsetDateTime(dayRoute.getOutingTime()))
+            .enterHomeTime(KstDateTimeUtils.toKstOffsetDateTime(dayRoute.getEnterHomeTime()))
+            .totalOutingCount(dayRoute.getTotalOutingCount())
             .build();
     }
 }

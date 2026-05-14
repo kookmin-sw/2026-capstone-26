@@ -1,13 +1,16 @@
 package backend.capstone.domain.care.caredependent.service;
 
 import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentDayRouteListResponse;
 import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
 import backend.capstone.domain.care.caredependent.exception.CareDependentErrorCode;
 import backend.capstone.domain.care.caredependent.mapper.CareDependentMapper;
 import backend.capstone.domain.care.carerelationship.repository.CareRelationshipRepository;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteSummaryResponse;
+import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.mobility.dayroute.facade.DayRouteFacade;
+import backend.capstone.domain.mobility.dayroute.repository.DayRouteRepository;
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
@@ -19,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +33,7 @@ public class CareDependentUserService {
 
     private final CareRelationshipRepository careRelationshipRepository;
     private final LatestGpsPointRepository latestGpsPointRepository;
+    private final DayRouteRepository dayRouteRepository;
 
     private final DayRouteFacade dayRouteFacade;
     private final PlaceFacade placeFacade;
@@ -71,6 +76,25 @@ public class CareDependentUserService {
     ) {
         validateDependentUserAccess(guardianUserId, dependentUserId);
         return dayRouteFacade.getDayRouteSummary(date, dependentUserId);
+    }
+
+    public CareDependentDayRouteListResponse getDependentUserDayRoutes(
+        Long guardianUserId, Long dependentUserId, LocalDate cursorDate, int size
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+
+        List<DayRoute> fetchedDayRoutes = dayRouteRepository.findByUserIdAndCursorDateOrderByDateDesc(
+            dependentUserId, cursorDate, PageRequest.of(0, size + 1));
+
+        boolean hasNext = fetchedDayRoutes.size() > size;
+
+        List<DayRoute> dayRoutes = hasNext
+            ? fetchedDayRoutes.subList(0, size)
+            : fetchedDayRoutes;
+
+        LocalDate nextCursorDate = hasNext ? dayRoutes.get(dayRoutes.size() - 1).getDate() : null;
+
+        return CareDependentMapper.toDayRouteListResponse(dayRoutes, hasNext, nextCursorDate);
     }
 
     private Map<Long, LatestGpsPoint> toLatestGpsPointMap(List<LatestGpsPoint> latestGpsPoints) {
