@@ -2,12 +2,15 @@ package backend.capstone.domain.care.caredependent.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.care.caredependent.dto.CareDayRouteDetailResponse;
+import backend.capstone.domain.care.caredependent.dto.CareDependentDayRouteListResponse;
 import backend.capstone.domain.care.caredependent.dto.CareDependentUserListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteSummaryResponse;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -59,7 +62,24 @@ public interface CareDependentControllerSpec {
     SseEmitter subscribeDependentLocation(UserPrincipal principal);
 
     @Operation(
-        summary = "보호대상자 별 지나온길 조회 API",
+        summary = "보호대상자 지나온길 목록 조회 API",
+        description = """
+            로그인한 보호자가 연결된 보호대상자의 dayRoute 목록을 조회합니다.<br>
+            쿼리 파라미터로 별도의 size 값을 안넘겨주면 default로 10개가 반환됩니다.<br>
+            date 내림차순 커서 페이징 방식으로 반환합니다.<br>
+            hasNext가 true이면 nextCursorDate를 다음 요청의 cursorDate로 전달하면 됩니다.<br>
+            맨 처음 요청 시에는 cursorDate 값을 넘주지 않으며 그다음 요청부터는 cursorDate에 응답으로 받은 nextCursorDate 값을 넘겨주세요.
+            """
+    )
+    CareDependentDayRouteListResponse getDependentUserDayRoutes(
+        Long dependentUserId,
+        LocalDate cursorDate,
+        @Min(1) @Max(100) int size,
+        UserPrincipal principal
+    );
+
+    @Operation(
+        summary = "보호대상자 지나온길 조회 API",
         description = """
             로그인한 보호자가 보호대상자 개인 별 dayRoute를 조회합니다.<br>
             경로변수로 넘겨주는 보호 대상자 목록 조회 api에서 받은 `dependentUserId`를 경로 변수로 넘겨주세요.<br>
@@ -75,7 +95,7 @@ public interface CareDependentControllerSpec {
     );
 
     @Operation(
-        summary = "보호대상자 별 방문장소 목록 조회 API",
+        summary = "보호대상자 방문장소 목록 조회 API",
         description = """
             로그인한 보호자가 본인과 연결된 보호대상자의 특정 날짜 방문장소 목록을 조회합니다.<br>
             경로변수로 넘겨주는 보호 대상자 목록 조회 api에서 받은 `dependentUserId`를 경로 변수로 넘겨주세요.<br>
@@ -93,7 +113,7 @@ public interface CareDependentControllerSpec {
     );
 
     @Operation(
-        summary = "보호대상자 별 하루 요약 조회 API",
+        summary = "보호대상자 하루 요약 조회 API",
         description = """
             로그인한 보호자가 본인과 연결된 보호대상자의 특정 날짜 하루 요약 정보를 조회합니다.<br>
             응답 필드 구성은 사용자의 하루 요약 조회 API와 동일합니다.<br>

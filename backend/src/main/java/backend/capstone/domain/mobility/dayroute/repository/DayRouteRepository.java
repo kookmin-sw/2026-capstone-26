@@ -43,4 +43,17 @@ public interface DayRouteRepository extends JpaRepository<DayRoute, Long> {
         @Param("cursorDate") LocalDate cursorDate,
         Pageable pageable
     );
+
+    @Query("""
+            select dr
+            from DayRoute dr
+            where dr.user.id = :userId
+              and (:cursorDate is null or dr.date < :cursorDate)
+            order by dr.date desc
+        """)
+    List<DayRoute> findByUserIdAndCursorDateOrderByDateDesc(
+        @Param("userId") Long userId,
+        @Param("cursorDate") LocalDate cursorDate,
+        Pageable pageable
+    );
 }
