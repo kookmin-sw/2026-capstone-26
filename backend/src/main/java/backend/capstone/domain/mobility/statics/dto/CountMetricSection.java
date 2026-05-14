@@ -5,8 +5,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record CountMetricSection(
+    @Schema(description = "기록된 dayRoute 기준 평균 외출 횟수")
     CountMetricAverage average,
-    List<CountMetricDailyItem> dailyValues
+
+    @Schema(description = "최근 7일 일자별 외출 횟수. dayRoute가 없는 날짜도 null 값으로 포함됩니다.")
+    List<CountMetricDailyItem> sevenDays
 ) {
 
     public record CountMetricAverage(

@@ -5,12 +5,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record TimeMetricSection(
+    @Schema(description = "기록된 dayRoute 기준 평균 시각")
     TimeMetricAverage average,
-    List<TimeMetricDailyItem> dailyValues
+
+    @Schema(description = "최근 7일 일자별 시각 값. dayRoute가 없는 날짜도 null 값으로 포함됩니다.")
+    List<TimeMetricDailyItem> sevenDays
 ) {
 
     public record TimeMetricAverage(
-        @Schema(example = "552", description = "평균 시각을 분 단위로 환산한 값")
+        @Schema(example = "552", description = "평균 시각을 KST 00:00부터 지난 분으로 환산한 값")
         Integer value,
 
         @Schema(example = "09:12", description = "평균 시각 표시 문자열")
@@ -29,7 +32,7 @@ public record TimeMetricSection(
         @Schema(example = "true", description = "해당 날짜 dayRoute 존재 여부")
         boolean hasDayRoute,
 
-        @Schema(example = "540", description = "시각을 분 단위로 환산한 값")
+        @Schema(example = "540", description = "시각을 KST 00:00부터 지난 분으로 환산한 값")
         Integer value,
 
         @Schema(example = "09:00", description = "시각 표시 문자열")

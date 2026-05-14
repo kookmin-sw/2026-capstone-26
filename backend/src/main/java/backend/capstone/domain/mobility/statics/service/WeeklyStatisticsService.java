@@ -164,13 +164,14 @@ public class WeeklyStatisticsService {
             }
         }
 
-        Long averageValue = sampleSize == 0 ? null : Math.round((double) totalSeconds / sampleSize);
+        Double averageValue = sampleSize == 0 ? null
+            : Math.round(((double) totalSeconds / sampleSize) * 10.0) / 10.0;
 
         return new DurationMetricSection(
             new DurationMetricSection.DurationMetricAverage(
                 averageValue,
                 averageValue == null ? null
-                    : DurationFormatUtils.formatOutingDurationText(averageValue),
+                    : DurationFormatUtils.formatOutingDurationText(Math.round(averageValue)),
                 sampleSize
             ),
             dailyValues
@@ -190,7 +191,8 @@ public class WeeklyStatisticsService {
                 .add(visitedRegion));
 
         List<RegionSummary> topRegions = regionSummaryMap.values().stream()
-            .sorted((left, right) -> Long.compare(right.totalStaySeconds(), left.totalStaySeconds()))
+            .sorted(
+                (left, right) -> Long.compare(right.totalStaySeconds(), left.totalStaySeconds()))
             .limit(TOP_REGION_LIMIT)
             .toList();
 
@@ -199,9 +201,7 @@ public class WeeklyStatisticsService {
             RegionSummary regionSummary = topRegions.get(index);
             items.add(new VisitedRegionsSection.VisitedRegionSummaryItem(
                 index + 1,
-                regionSummary.regionName(),
-                regionSummary.totalStaySeconds(),
-                regionSummary.visitDays()
+                regionSummary.regionName()
             ));
         }
 
@@ -225,13 +225,13 @@ public class WeeklyStatisticsService {
     }
 
     private record DailySlot(LocalDate date, DayRoute dayRoute) {
+
     }
 
     private static final class RegionSummary {
 
         private final String regionName;
         private long totalStaySeconds;
-        private int visitDays;
 
         private RegionSummary(String regionName) {
             this.regionName = regionName;
@@ -239,7 +239,6 @@ public class WeeklyStatisticsService {
 
         private void add(VisitedRegion visitedRegion) {
             totalStaySeconds += visitedRegion.getTotalStaySeconds();
-            visitDays++;
         }
 
         private String regionName() {
@@ -250,8 +249,5 @@ public class WeeklyStatisticsService {
             return totalStaySeconds;
         }
 
-        private int visitDays() {
-            return visitDays;
-        }
     }
 }
