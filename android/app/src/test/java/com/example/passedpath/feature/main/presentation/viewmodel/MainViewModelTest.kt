@@ -793,7 +793,7 @@ class MainViewModelTest {
             return DayRouteBookmark(isBookmarked = nextValue)
         }
 
-        override suspend fun markBookmarks(dateKeys: List<String>) {
+        override suspend fun toggleBookmarks(dateKeys: List<String>) {
             markedDateBatches += dateKeys
         }
     }

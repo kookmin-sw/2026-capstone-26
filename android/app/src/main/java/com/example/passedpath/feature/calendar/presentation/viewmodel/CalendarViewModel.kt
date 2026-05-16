@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
-import com.example.passedpath.feature.bookmark.domain.usecase.MarkDayRouteBookmarksUseCase
+import com.example.passedpath.feature.bookmark.domain.usecase.ToggleDayRouteBookmarksUseCase
 import com.example.passedpath.feature.calendar.domain.usecase.GetCalendarMonthlyRouteUseCase
 import com.example.passedpath.feature.calendar.presentation.model.CalendarDayStatus
 import com.example.passedpath.feature.calendar.presentation.state.CalendarUiState
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 class CalendarViewModel(
     private val getCalendarMonthlyRouteUseCase: GetCalendarMonthlyRouteUseCase,
-    private val markDayRouteBookmarksUseCase: MarkDayRouteBookmarksUseCase
+    private val toggleDayRouteBookmarksUseCase: ToggleDayRouteBookmarksUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CalendarUiState())
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
@@ -73,8 +73,11 @@ class CalendarViewModel(
         }
     }
 
-    fun markSelectedDatesAsBookmarks(dateKeys: List<String>) {
-        val targetDateKeys = dateKeys.distinct().sorted()
+    fun toggleChangedDateBookmarks(
+        changedDateKeys: List<String>,
+        selectedDateKeys: Set<String>
+    ) {
+        val targetDateKeys = changedDateKeys.distinct().sorted()
         if (targetDateKeys.isEmpty()) return
         if (_uiState.value.bookmarkRegistrationUiState.isSubmitting) return
 
@@ -90,16 +93,19 @@ class CalendarViewModel(
 
         viewModelScope.launch {
             runCatching {
-                markDayRouteBookmarksUseCase(targetDateKeys)
+                toggleDayRouteBookmarksUseCase(targetDateKeys)
             }.onSuccess {
-                val bookmarkedDates = targetDateKeys.mapNotNull { dateKey ->
-                    runCatching { LocalDate.parse(dateKey) }.getOrNull()
+                val toggledDates = targetDateKeys.mapNotNull { dateKey ->
+                    val parsedDate = runCatching { LocalDate.parse(dateKey) }.getOrNull()
+                    parsedDate?.let { date -> date to dateKey }
                 }
                 _uiState.update { currentState ->
                     val patchedStatuses = currentState.dayStatuses.toMutableMap()
-                    bookmarkedDates.forEach { date ->
+                    toggledDates.forEach { (date, dateKey) ->
                         val currentStatus = patchedStatuses[date] ?: CalendarDayStatus()
-                        patchedStatuses[date] = currentStatus.copy(isBookmarked = true)
+                        patchedStatuses[date] = currentStatus.copy(
+                            isBookmarked = dateKey in selectedDateKeys
+                        )
                     }
                     currentState.copy(
                         dayStatuses = patchedStatuses,
@@ -151,7 +157,7 @@ class CalendarViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return CalendarViewModel(
                 getCalendarMonthlyRouteUseCase = appContainer.getCalendarMonthlyRouteUseCase,
-                markDayRouteBookmarksUseCase = appContainer.markDayRouteBookmarksUseCase
+                toggleDayRouteBookmarksUseCase = appContainer.toggleDayRouteBookmarksUseCase
             ) as T
         }
 
@@ -162,4 +168,4 @@ class CalendarViewModelFactory(
 private const val MinYear = 2000
 private const val MaxYear = 3000
 private const val CalendarBookmarkRegistrationSuccessMessage =
-    "선택한 날짜를 즐겨찾기로 등록했어요"
+    "즐겨찾기 변경사항을 저장했어요"

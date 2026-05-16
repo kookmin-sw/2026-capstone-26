@@ -55,6 +55,19 @@ class DayRouteBookmarkRepositoryImplTest {
         repository.getBookmarkedDayRoutes(cursorDate = null, size = 10)
     }
 
+    @Test
+    fun `toggleBookmarks forwards requested dates`() = runTest {
+        val fakeApi = FakeDayRouteBookmarkApi()
+        val repository = DayRouteBookmarkRepositoryImpl(dayRouteBookmarkApi = fakeApi)
+
+        repository.toggleBookmarks(listOf("2026-05-09", "2026-05-10"))
+
+        assertEquals(
+            listOf("2026-05-09", "2026-05-10"),
+            fakeApi.receivedBatchRequest?.dates
+        )
+    }
+
     private class FakeDayRouteBookmarkApi(
         private val listResponse: DayRouteBookmarkListResponseDto =
             DayRouteBookmarkListResponseDto(
@@ -67,6 +80,7 @@ class DayRouteBookmarkRepositoryImplTest {
     ) : DayRouteBookmarkApi {
         var receivedCursorDate: String? = null
         var receivedSize: Int? = null
+        var receivedBatchRequest: DayRouteBookmarkBatchRequestDto? = null
 
         override suspend fun getBookmarkedDayRoutes(
             cursorDate: String?,
@@ -82,9 +96,10 @@ class DayRouteBookmarkRepositoryImplTest {
             return DayRouteBookmarkResponseDto(isBookmarked = true)
         }
 
-        override suspend fun markBookmarks(
+        override suspend fun toggleBookmarks(
             request: DayRouteBookmarkBatchRequestDto
         ): Response<Unit> {
+            receivedBatchRequest = request
             return Response.success(Unit)
         }
     }

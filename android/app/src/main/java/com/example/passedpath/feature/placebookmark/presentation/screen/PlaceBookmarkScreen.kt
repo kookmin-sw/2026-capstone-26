@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +44,7 @@ import com.example.passedpath.feature.placebookmark.presentation.viewmodel.Place
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
 import com.example.passedpath.ui.theme.Gray900
+import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 
 data class PlaceBookmarkSearchResultEvent(
@@ -125,6 +127,7 @@ internal fun PlaceBookmarkScreen(
     var isFormSearchVisible by rememberSaveable { mutableStateOf(false) }
     var shouldRenderFormSearch by rememberSaveable { mutableStateOf(false) }
     var formSearchSessionId by rememberSaveable { mutableStateOf(0) }
+    var pendingAddType by rememberSaveable { mutableStateOf(BookmarkPlaceType.ETC) }
     var pendingDeleteBookmark by remember { mutableStateOf<PlaceBookmarkSummary?>(null) }
     val feedbackMessage = uiState.errorMessage ?: uiState.successMessage
 
@@ -145,6 +148,7 @@ internal fun PlaceBookmarkScreen(
         formLatitude = 0.0
         formLongitude = 0.0
         selectedType = BookmarkPlaceType.ETC
+        pendingAddType = BookmarkPlaceType.ETC
         submittedFeedbackEventId = null
         isFormSearchVisible = false
         shouldRenderFormSearch = false
@@ -152,6 +156,7 @@ internal fun PlaceBookmarkScreen(
     }
 
     fun openAddSheet(place: PlaceSearchResult) {
+        val initialType = pendingAddType
         formMode = PlaceBookmarkFormMode.ADD
         editingBookmarkId = null
         originalPlaceName = ""
@@ -163,7 +168,8 @@ internal fun PlaceBookmarkScreen(
         formRoadAddress = place.displayAddress
         formLatitude = place.latitude
         formLongitude = place.longitude
-        selectedType = BookmarkPlaceType.ETC
+        selectedType = initialType
+        pendingAddType = BookmarkPlaceType.ETC
         isFormSearchVisible = false
         shouldRenderFormSearch = false
         clearInputFocus()
@@ -274,7 +280,14 @@ internal fun PlaceBookmarkScreen(
                 uiState = uiState,
                 openedMenuBookmarkId = openedMenuBookmarkId,
                 onMenuOpenedChange = { openedMenuBookmarkId = it },
-                onAddPlaceBookmarkClick = onAddPlaceBookmarkClick,
+                onRegisterHomeClick = {
+                    pendingAddType = BookmarkPlaceType.HOME
+                    onAddPlaceBookmarkClick()
+                },
+                onAddPlaceBookmarkClick = {
+                    pendingAddType = BookmarkPlaceType.ETC
+                    onAddPlaceBookmarkClick()
+                },
                 onEditPlaceBookmarkClick = ::openEditSheet,
                 onDeletePlaceBookmarkClick = { pendingDeleteBookmark = it },
                 onRetryClick = onRetryClick,
@@ -381,4 +394,100 @@ internal fun PlaceBookmarkScreen(
             )
         }
     }
+}
+
+@Preview(showBackground = true, name = "집 등록됨")
+@Composable
+private fun PlaceBookmarkScreenWithHomePreview() {
+    PassedPathTheme {
+        PlaceBookmarkScreenPreviewContent(
+            bookmarkPlaces = listOf(
+                previewPlaceBookmark(
+                    id = 1L,
+                    type = BookmarkPlaceType.HOME,
+                    placeName = "우리집",
+                    roadAddress = "서울 성북구 정릉로 77"
+                ),
+                previewPlaceBookmark(
+                    id = 2L,
+                    type = BookmarkPlaceType.SCHOOL,
+                    placeName = "국민대학교 복지관",
+                    roadAddress = "서울 성북구 정릉로 77"
+                ),
+                previewPlaceBookmark(
+                    id = 3L,
+                    type = BookmarkPlaceType.COMPANY,
+                    placeName = "패스드패스 사무실",
+                    roadAddress = "서울 종로구 대명길 34 2층"
+                ),
+                previewPlaceBookmark(
+                    id = 4L,
+                    type = BookmarkPlaceType.ETC,
+                    placeName = "동대문프라임시티2차",
+                    roadAddress = "서울 동대문구 왕산로 18"
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "집 미등록")
+@Composable
+private fun PlaceBookmarkScreenWithoutHomePreview() {
+    PassedPathTheme {
+        PlaceBookmarkScreenPreviewContent(
+            bookmarkPlaces = listOf(
+                previewPlaceBookmark(
+                    id = 1L,
+                    type = BookmarkPlaceType.SCHOOL,
+                    placeName = "국민대학교 복지관",
+                    roadAddress = "서울 성북구 정릉로 77"
+                ),
+                previewPlaceBookmark(
+                    id = 2L,
+                    type = BookmarkPlaceType.COMPANY,
+                    placeName = "성수 공유오피스",
+                    roadAddress = "서울 성동구 연무장길 12"
+                )
+            )
+        )
+    }
+}
+
+@Composable
+private fun PlaceBookmarkScreenPreviewContent(
+    bookmarkPlaces: List<PlaceBookmarkSummary>
+) {
+    PlaceBookmarkScreen(
+        uiState = PlaceBookmarkUiState(
+            placeCount = bookmarkPlaces.size,
+            hasLoaded = true,
+            bookmarkPlaces = bookmarkPlaces
+        ),
+        searchResultEvent = null,
+        onSearchResultEventConsumed = {},
+        onBackClick = {},
+        onAddPlaceBookmarkClick = {},
+        onRetryClick = {},
+        onCreatePlaceBookmark = { _, _, _, _, _ -> },
+        onUpdatePlaceBookmark = { _, _, _, _, _, _ -> },
+        onDeletePlaceBookmark = {},
+        onFeedbackDismissed = {}
+    )
+}
+
+private fun previewPlaceBookmark(
+    id: Long,
+    type: BookmarkPlaceType,
+    placeName: String,
+    roadAddress: String
+): PlaceBookmarkSummary {
+    return PlaceBookmarkSummary(
+        bookmarkPlaceId = id,
+        type = type,
+        placeName = placeName,
+        roadAddress = roadAddress,
+        latitude = 37.6113,
+        longitude = 126.9958
+    )
 }

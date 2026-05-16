@@ -23,7 +23,7 @@ interface DayRouteBookmarkApi {
     ): DayRouteBookmarkResponseDto
 
     @PATCH("/api/day-routes/bookmarks:batch")
-    suspend fun markBookmarks(
+    suspend fun toggleBookmarks(
         @Body request: DayRouteBookmarkBatchRequestDto
     ): Response<Unit>
 }

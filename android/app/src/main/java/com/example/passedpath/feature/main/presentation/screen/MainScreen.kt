@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -551,18 +552,23 @@ private fun MainScreenScaffoldContent(
     onPlaceClick: (Long) -> Unit,
     onDeletePlaceRequested: (Long) -> Unit
 ) {
+    var isBookmarkMarkersVisible by rememberSaveable { mutableStateOf(true) }
+    var currentLocationCameraRequestKey by remember { mutableIntStateOf(0) }
+
     MainBottomSheetScaffold(
         modifier = Modifier.fillMaxSize(),
         initialSheetValue = localUiState.bottomSheetValue,
         requestedSheetValue = localUiState.requestedSheetValue,
         onSheetValueChanged = onSheetValueChanged,
         onSheetCommandConsumed = onSheetCommandConsumed,
-        content = { floatingBottomPadding ->
+        content = {
             MainMapSection(
                 uiState = uiState,
                 markerPlaces = markerPlaces,
                 bookmarkMarkers = bookmarkMarkers,
                 focusedPlaceId = localUiState.focusedPlaceId,
+                isBookmarkMarkersVisible = isBookmarkMarkersVisible,
+                currentLocationCameraRequestKey = currentLocationCameraRequestKey,
                 onFocusedPlaceHandled = onFocusedPlaceHandled,
                 onCameraIntentConsumed = onCameraIntentConsumed,
                 onDateSelected = onDateSelectionRequested,
@@ -576,13 +582,27 @@ private fun MainScreenScaffoldContent(
                 onMorePlaceBookmarkClick = onNavigateToPlaceBookmarks,
                 onMapClick = onMapClick,
                 onPlaceMarkerClick = onPlaceMarkerClick,
-                onPermissionActionClick = onPermissionActionClick,
-                debugActions = debugActions,
-                floatingBottomPadding = floatingBottomPadding,
-                showCurrentLocationButton = shouldShowCurrentLocationButton(
-                    bottomSheetValue = localUiState.bottomSheetValue
-                )
+                debugActions = debugActions
             )
+        },
+        floatingOverlay = { floatingBottomPadding ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                MainMapBottomOverlayContent(
+                    uiState = uiState,
+                    floatingBottomPadding = floatingBottomPadding,
+                    isBookmarkMarkersVisible = isBookmarkMarkersVisible,
+                    showCurrentLocationButton = shouldShowCurrentLocationButton(
+                        bottomSheetValue = localUiState.bottomSheetValue
+                    ),
+                    onBookmarkMarkersToggleClick = {
+                        isBookmarkMarkersVisible = !isBookmarkMarkersVisible
+                    },
+                    onCurrentLocationClick = {
+                        currentLocationCameraRequestKey += 1
+                    },
+                    onPermissionActionClick = onPermissionActionClick
+                )
+            }
         },
         sheet = { sheetModifier ->
             MainBottomSheet(

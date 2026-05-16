@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.RoundCap
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberMarkerState
 
 private const val RouteStrokeWidth = 14f
 private const val RouteOutlineWidth = 20f
@@ -51,7 +53,9 @@ fun RouteMapContent(
 ) {
     val selectedRoute = routeModeUiState.route
     if (selectedRoute.polylinePoints.size >= 2) {
-        val routePoints = selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+        val routePoints = remember(selectedRoute.polylinePoints) {
+            selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+        }
 
         Polyline(
             points = routePoints,
@@ -73,10 +77,18 @@ fun RouteMapContent(
 
     if (markerPlaces.isNotEmpty()) {
         markerPlaces.forEach { place ->
+            val position = remember(place.placeId, place.latitude, place.longitude) {
+                LatLng(place.latitude, place.longitude)
+            }
+            val markerState = rememberMarkerState(
+                key = "route-place:${place.placeId}:${place.latitude}:${place.longitude}",
+                position = position
+            )
+
             MarkerComposable(
-                state = com.google.maps.android.compose.MarkerState(
-                    position = LatLng(place.latitude, place.longitude)
-                ),
+                place.orderIndex,
+                routeAccentColor,
+                state = markerState,
                 title = place.placeName.ifBlank {
                     stringResource(R.string.route_place_fallback_title, place.orderIndex)
                 },

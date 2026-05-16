@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
@@ -51,6 +52,7 @@ import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green50
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green500
+import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 
 @Composable
@@ -256,7 +258,6 @@ private fun PlaceBookmarkFormBottomSheet(
                 enabled = isSubmitEnabled && !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
             )
         }
     }
@@ -349,3 +350,73 @@ private val BookmarkPlaceType.displayName: String
         BookmarkPlaceType.SCHOOL -> "학교"
         BookmarkPlaceType.ETC -> "기타"
     }
+
+@Preview(
+    name = "Place Bookmark Form Add",
+    showBackground = true,
+    backgroundColor = 0xFF4B5563,
+    widthDp = 393
+)
+@Composable
+private fun PlaceBookmarkFormBottomSheetAddPreview() {
+    PassedPathTheme {
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF4B5563))
+                .padding(top = 64.dp)
+        ) {
+            PlaceBookmarkFormBottomSheet(
+                title = "즐겨찾기 장소 추가",
+                submitText = "추가하기",
+                placeNameMarker = null,
+                placeName = "토이저러스 대구율하점",
+                roadAddress = "대구 동구 안심로 80",
+                selectedType = BookmarkPlaceType.SCHOOL,
+                isSubmitting = false,
+                isSubmitEnabled = true,
+                onPlaceNameChange = {},
+                onNameFocusChanged = {},
+                onTypeSelected = {},
+                onClearInputFocus = {},
+                onAddressClick = {},
+                onDismiss = {},
+                onSubmit = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Place Bookmark Form Edit",
+    showBackground = true,
+    backgroundColor = 0xFF4B5563,
+    widthDp = 393
+)
+@Composable
+private fun PlaceBookmarkFormBottomSheetEditPreview() {
+    PassedPathTheme {
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF4B5563))
+                .padding(top = 64.dp)
+        ) {
+            PlaceBookmarkFormBottomSheet(
+                title = "즐겨찾는 장소 수정",
+                submitText = "수정하기",
+                placeNameMarker = "우리집",
+                placeName = "우리집",
+                roadAddress = "서울 성북구 정릉로 77",
+                selectedType = BookmarkPlaceType.HOME,
+                isSubmitting = false,
+                isSubmitEnabled = false,
+                onPlaceNameChange = {},
+                onNameFocusChanged = {},
+                onTypeSelected = {},
+                onClearInputFocus = {},
+                onAddressClick = {},
+                onDismiss = {},
+                onSubmit = {}
+            )
+        }
+    }
+}
