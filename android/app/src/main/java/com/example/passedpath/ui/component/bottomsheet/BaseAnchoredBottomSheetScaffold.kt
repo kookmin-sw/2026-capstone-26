@@ -44,7 +44,8 @@ fun BaseAnchoredBottomSheetScaffold(
     floatingPadding: Dp = BaseBottomSheetDefaults.floatingPadding,
     onSheetValueChanged: (BaseBottomSheetValue) -> Unit = {},
     onSheetCommandConsumed: (BaseBottomSheetValue) -> Unit = {},
-    content: @Composable (Dp) -> Unit,
+    content: @Composable () -> Unit,
+    floatingOverlay: @Composable (Dp) -> Unit = {},
     sheet: @Composable (Modifier) -> Unit
 ) {
     BoxWithConstraints(
@@ -126,7 +127,8 @@ fun BaseAnchoredBottomSheetScaffold(
             )
 
         Box(modifier = Modifier.fillMaxSize()) {
-            content(floatingBottomPadding)
+            content()
+            floatingOverlay(floatingBottomPadding)
             sheet(sheetModifier)
         }
     }

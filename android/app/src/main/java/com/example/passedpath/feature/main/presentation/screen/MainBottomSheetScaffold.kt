@@ -13,7 +13,8 @@ internal fun MainBottomSheetScaffold(
     requestedSheetValue: MainBottomSheetValue? = null,
     onSheetValueChanged: (MainBottomSheetValue) -> Unit = {},
     onSheetCommandConsumed: (MainBottomSheetValue) -> Unit = {},
-    content: @Composable (Dp) -> Unit,
+    content: @Composable () -> Unit,
+    floatingOverlay: @Composable (Dp) -> Unit = {},
     sheet: @Composable (Modifier) -> Unit
 ) {
     BaseAnchoredBottomSheetScaffold(
@@ -27,6 +28,7 @@ internal fun MainBottomSheetScaffold(
         onSheetValueChanged = onSheetValueChanged,
         onSheetCommandConsumed = onSheetCommandConsumed,
         content = content,
+        floatingOverlay = floatingOverlay,
         sheet = sheet
     )
 }

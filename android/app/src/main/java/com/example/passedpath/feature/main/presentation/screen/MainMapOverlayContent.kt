@@ -10,13 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.BuildConfig
 import com.example.passedpath.R
 import com.example.passedpath.feature.main.presentation.component.MainMoreActionSheet
 import com.example.passedpath.feature.main.presentation.state.MainUiState
-import com.example.passedpath.feature.permission.presentation.mapper.createPermissionOverlayUiModel
 import com.example.passedpath.feature.route.presentation.screen.RouteStatusOverlay
 import com.example.passedpath.feature.route.presentation.screen.RouteTopCenterControls
 import com.example.passedpath.feature.route.presentation.screen.RouteTopEndControls
@@ -46,19 +44,11 @@ internal fun BoxScope.MainMapOverlayContent(
     onMorePlaceBookmarkClick: () -> Unit,
     onMoreDeleteRecordClick: () -> Unit,
     onRouteAction: (RouteUiAction) -> Unit,
-    onPermissionActionClick: () -> Unit,
     debugActions: MainDebugActions,
-    floatingBottomPadding: Dp,
-    bottomEndControlsBottomPadding: Dp = floatingBottomPadding,
     isDebugPanelVisible: Boolean,
     onCloseDebugPanel: () -> Unit,
-    topStartControls: @Composable (() -> Unit)? = null,
-    floatingControls: @Composable (() -> Unit)? = null
+    topStartControls: @Composable (() -> Unit)? = null
 ) {
-    val permissionOverlayUiModel = createPermissionOverlayUiModel(
-        permissionState = uiState.permissionState,
-        isLocationServiceEnabled = uiState.isLocationServiceEnabled
-    )
     val routeModeUiState = uiState.routeModeUiState
     val pastRouteErrorMessage = (routeModeUiState as? MainRouteModeUiState.Past)?.routeErrorMessage
     val isPastRouteLoading = routeModeUiState is MainRouteModeUiState.Past &&
@@ -163,26 +153,6 @@ internal fun BoxScope.MainMapOverlayContent(
                 onClose = onCloseDebugPanel
             )
         }
-    }
-
-    FloatingButtonColumn(
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(end = 16.dp, bottom = bottomEndControlsBottomPadding)
-    ) {
-        floatingControls?.invoke()
-    }
-
-    permissionOverlayUiModel?.let { overlayUiModel ->
-        RequestActionBottomBanner(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp)
-                .padding(bottom = floatingBottomPadding),
-            message = stringResource(overlayUiModel.messageResId),
-            actionText = stringResource(overlayUiModel.actionTextResId),
-            onClickAction = onPermissionActionClick
-        )
     }
 
     if (isMoreMenuVisible) {
