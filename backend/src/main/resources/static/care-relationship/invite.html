@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>길벗 초대</title>
+    <style>
+        :root {
+            --text-primary: #111111;
+            --text-secondary: #555555;
+            --background: #f7f7f5;
+            --button-bg: #2f2f2f;
+            --button-text: #ffffff;
+            --button-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Pretendard", "Noto Sans KR", sans-serif;
+            background: radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(247, 247, 245, 0.98)),
+            linear-gradient(180deg, #fbfbfa 0%, var(--background) 100%);
+            color: var(--text-primary);
+        }
+
+        .page {
+            width: 100%;
+            max-width: 640px;
+            padding: 40px 24px 56px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px 12px;
+        }
+
+        .logo {
+            width: 112px;
+            height: auto;
+            margin-bottom: 34px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: clamp(1.85rem, 3.6vw, 2.45rem);
+            line-height: 1.22;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .subtitle {
+            margin: 22px 0 0;
+            font-size: 1.08rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            letter-spacing: -0.02em;
+        }
+
+        .actions {
+            margin-top: 36px;
+        }
+
+        .play-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: var(--button-bg);
+            color: var(--button-text);
+            text-decoration: none;
+            box-shadow: var(--button-shadow);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .play-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+        }
+
+        .play-icon {
+            width: 18px;
+            height: 18px;
+            display: block;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .play-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            line-height: 1.1;
+        }
+
+        .play-label {
+            font-size: 0.63rem;
+            opacity: 0.78;
+        }
+
+        .play-store {
+            margin-top: 2px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        @media (max-width: 480px) {
+            .page {
+                padding: 28px 18px 40px;
+            }
+
+            .logo {
+                width: 92px;
+                margin-bottom: 26px;
+            }
+
+            .subtitle {
+                margin-top: 18px;
+                font-size: 1rem;
+            }
+
+            .actions {
+                margin-top: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="page">
+    <section class="card">
+        <img alt="길벗 로고" class="logo" src="/images/gilbut_logo.svg">
+        <h1 class="title">길벗이 당신의 하루를 대신 기억합니다</h1>
+        <p class="subtitle">길벗 앱에서 보호 관계를 추가할 수 있어요</p>
+        <div class="actions">
+            <a class="play-button" href="https://play.google.com/store" rel="noopener noreferrer"
+               target="_blank">
+                <img alt="" class="play-icon" src="/images/google_play_logo.png">
+                <span class="play-text">
+                    <span class="play-store">Google Play</span>
+                </span>
+            </a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

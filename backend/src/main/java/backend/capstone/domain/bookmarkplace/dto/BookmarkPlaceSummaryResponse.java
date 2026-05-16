@@ -23,10 +23,7 @@ public record BookmarkPlaceSummaryResponse(
     double latitude,
 
     @Schema(example = "127.027610", description = "경도")
-    double longitude,
-
-    @Schema(example = "false", description = "기본 장소 여부 (home 타입 한정)")
-    boolean isDefault
+    double longitude
 ) {
 
 }

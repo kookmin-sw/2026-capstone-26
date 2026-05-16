@@ -37,7 +37,6 @@ public class UserInitializer implements ApplicationRunner {
             .roadAddress("서울 마포구 포은로6길 9")
             .latitude(37.5557871997154)
             .longitude(126.905567731547)
-            .isDefault(true)
             .build();
 
         bookmarkPlaceRepository.save(homeBookmarkPlace);
