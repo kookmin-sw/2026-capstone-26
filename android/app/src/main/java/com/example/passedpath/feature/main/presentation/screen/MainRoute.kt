@@ -2,7 +2,6 @@ package com.example.passedpath.feature.main.presentation.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +43,7 @@ fun MainRoute(
 ) {
     val context = LocalContext.current
     val appContainer = context.appContainer
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val dayNoteViewModel: DayNoteViewModel = viewModel(
         factory = DayNoteViewModelFactory(
             appContainer = appContainer,

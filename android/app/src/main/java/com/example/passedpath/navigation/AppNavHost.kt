@@ -229,9 +229,7 @@ private fun AppNavigationGraph(
                 selectedRoute = NavRoute.FRIENDS,
                 onBottomBarReselected = onBottomBarReselected
             ) { modifier ->
-                Box(modifier = modifier) {
-                    CareRoute()
-                }
+                CareRoute(modifier = modifier)
             }
         }
 

@@ -51,6 +51,14 @@ val PlaceBookmarkCompanyColor = Color(0xFF00BC06)
 val PlaceBookmarkSchoolColor = Color(0xFF1A73E8)
 val PlaceBookmarkOtherColor = Color(0xFFF1B934)
 
+// care
+val CareAvatarPink50 = Color(0xFFFFEEF5)
+val CareAvatarPink500 = Color(0xFFD84F7B)
+val CareAvatarPurple50 = Color(0xFFF1EDFF)
+val CareAvatarPurple500 = Color(0xFF6656D9)
+val CareAvatarBlue50 = Color(0xFFEFF6FF)
+val CareAvatarBlue500 = Color(0xFF2F7DE1)
+
 val Primary = Green500
 
 

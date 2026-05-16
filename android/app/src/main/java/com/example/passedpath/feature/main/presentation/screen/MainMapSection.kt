@@ -72,8 +72,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerComposable
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -122,7 +122,9 @@ internal fun MainMapSection(
     } else {
         uiState.currentLocation
     }
-    val routePoints = uiState.selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+    val routePoints = remember(uiState.selectedRoute.polylinePoints) {
+        uiState.selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+    }
     val initialCameraTarget =
         routePoints.firstOrNull() ?: currentLocation?.toLatLng() ?: fallbackPosition
     val cameraPositionState = rememberCameraPositionState {
@@ -302,8 +304,17 @@ private fun PlaceBookmarkMapMarkers(
     onBookmarkMarkerClick: (Long) -> Unit
 ) {
     bookmarkMarkers.forEach { place ->
+        val position = remember(place.bookmarkPlaceId, place.latitude, place.longitude) {
+            LatLng(place.latitude, place.longitude)
+        }
+        val markerState = rememberMarkerState(
+            key = "bookmark:${place.bookmarkPlaceId}:${place.latitude}:${place.longitude}",
+            position = position
+        )
+
         MarkerComposable(
-            state = MarkerState(position = LatLng(place.latitude, place.longitude)),
+            place.type,
+            state = markerState,
             title = place.placeName.ifBlank { place.roadAddress },
             anchor = Offset(0.5f, 0.5f),
             zIndex = PlaceBookmarkMarkerZIndex,
@@ -325,8 +336,19 @@ private fun PlaceBookmarkMapMarkers(
 
 @Composable
 private fun PlaceBookmarkCalloutMarker(placeBookmark: PlaceBookmarkSummary) {
+    val position = remember(placeBookmark.bookmarkPlaceId, placeBookmark.latitude, placeBookmark.longitude) {
+        LatLng(placeBookmark.latitude, placeBookmark.longitude)
+    }
+    val markerState = rememberMarkerState(
+        key = "bookmark-callout:${placeBookmark.bookmarkPlaceId}:${placeBookmark.latitude}:${placeBookmark.longitude}",
+        position = position
+    )
+
     MarkerComposable(
-        state = MarkerState(position = LatLng(placeBookmark.latitude, placeBookmark.longitude)),
+        placeBookmark.bookmarkPlaceId,
+        placeBookmark.placeName,
+        placeBookmark.roadAddress,
+        state = markerState,
         anchor = Offset(0.5f, 1f),
         zIndex = PlaceBookmarkCalloutZIndex,
         onClick = { true }

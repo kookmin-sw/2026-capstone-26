@@ -12,6 +12,13 @@
     <string name="bottom_nav_profile">프로필</string>
     <string name="friends_title">Friends</string>
     <string name="friends_placeholder">Friends screen is under preparation.</string>
+    <string name="care_all_dependents">모두 보기</string>
+    <string name="care_invite_dependent">초대</string>
+    <string name="care_dependents_empty_title">아직 연결된 보호 대상자가 없어요</string>
+    <string name="care_dependents_empty_body">오른쪽 + 버튼으로 함께 가는 길 초대를 시작해 보세요</string>
+    <string name="care_dependent_marker_content_description">%1$s 위치</string>
+    <string name="care_all_dependents_content_description">모든 보호 대상자 위치 보기</string>
+    <string name="care_invite_content_description">보호 대상자 초대하기</string>
     <string name="protected_person_place_banner">보호 대상자의 방문 장소를 시간순으로 확인할 수 있어요</string>
     <string name="protected_person_place_empty_title">아직 방문한 장소가 없어요</string>
     <string name="protected_person_place_empty_body">선택한 날짜에 기록된 방문 장소가 있으면 이곳에 표시돼요</string>
