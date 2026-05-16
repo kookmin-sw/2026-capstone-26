@@ -6,10 +6,9 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.capstone.domain.mobility.analysis.ongoingstay.event.OngoingStayTailScheduler;
 import backend.capstone.domain.mobility.analysis.ongoingstay.repository.OngoingStayRepository;
 import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
-import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
+import backend.capstone.domain.mobility.analysis.service.DayRouteAnalysisLockService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;

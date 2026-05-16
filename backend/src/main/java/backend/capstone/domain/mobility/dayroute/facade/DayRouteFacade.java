@@ -1,5 +1,6 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
+import backend.capstone.domain.care.sse.service.CareLocationSseEventService;
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
@@ -20,6 +21,7 @@ import backend.capstone.domain.mobility.dayroute.mapper.DayRouteMapper;
 import backend.capstone.domain.mobility.dayroute.service.DayRouteService;
 import backend.capstone.domain.mobility.gpspoint.entity.GpsPoint;
 import backend.capstone.domain.mobility.gpspoint.service.GpsPointService;
+import backend.capstone.domain.mobility.latestgpspoint.service.LatestGpsPointService;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +40,8 @@ public class DayRouteFacade {
 
     private final DayRouteService dayRouteService;
     private final GpsPointService gpsPointService;
+    private final LatestGpsPointService latestGpsPointService;
+    private final CareLocationSseEventService careLocationSseEventService;
     private final VisitedRegionService visitedRegionService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -55,6 +59,8 @@ public class DayRouteFacade {
 
         if (!request.gpsPoints().isEmpty()) {
             gpsPointService.batchInsert(dayRoute.getId(), request);
+            careLocationSseEventService.publishLocationUpdated(
+                latestGpsPointService.upsertLatestLocation(userId, request.gpsPoints()));
             dayRouteService.markHasGpsPoints(dayRoute);
         }
 
@@ -98,7 +104,6 @@ public class DayRouteFacade {
     @Transactional(readOnly = true)
     public DayRouteBookmarkListResponse getBookmarkedDayRoutes(Long userId, LocalDate cursorDate,
         int size) {
-        //date 내림차순으로 dayRoute를 갖고옴
         List<DayRoute> fetchedDayRoutes = dayRouteService.getBookmarkedDayRoutes(
             userId, cursorDate, size + 1);
         boolean hasNext = fetchedDayRoutes.size() > size;

@@ -1,4 +1,4 @@
-package backend.capstone.domain.mobility.dayroute.service;
+package backend.capstone.domain.mobility.analysis.service;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;

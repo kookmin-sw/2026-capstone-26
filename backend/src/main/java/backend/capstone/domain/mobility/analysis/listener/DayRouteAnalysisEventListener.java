@@ -1,8 +1,9 @@
-package backend.capstone.domain.mobility.dayroute.event;
+package backend.capstone.domain.mobility.analysis.listener;
 
 import backend.capstone.domain.mobility.analysis.ongoinghomestatus.service.HomeStatusAnalysisService;
 import backend.capstone.domain.mobility.analysis.ongoingstay.service.StayAnalysisService;
-import backend.capstone.domain.mobility.dayroute.service.DayRouteAnalysisLockService;
+import backend.capstone.domain.mobility.analysis.service.DayRouteAnalysisLockService;
+import backend.capstone.domain.mobility.dayroute.event.GpsPointsUploadedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
