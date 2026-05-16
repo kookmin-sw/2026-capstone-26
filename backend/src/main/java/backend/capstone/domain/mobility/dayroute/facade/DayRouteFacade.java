@@ -1,6 +1,8 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
+import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteDetailResponse;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteMemoRequest;
@@ -93,6 +95,20 @@ public class DayRouteFacade {
         return DayRouteMapper.toDayRouteMonthlyResponse(year, month, dayRoutes);
     }
 
+    @Transactional(readOnly = true)
+    public DayRouteBookmarkListResponse getBookmarkedDayRoutes(Long userId, LocalDate cursorDate,
+        int size) {
+        //date 내림차순으로 dayRoute를 갖고옴
+        List<DayRoute> fetchedDayRoutes = dayRouteService.getBookmarkedDayRoutes(
+            userId, cursorDate, size + 1);
+        boolean hasNext = fetchedDayRoutes.size() > size;
+        List<DayRoute> dayRoutes = hasNext ? fetchedDayRoutes.subList(0, size) : fetchedDayRoutes;
+        LocalDate nextCursorDate = hasNext ? dayRoutes.get(dayRoutes.size() - 1).getDate() : null;
+
+        return DayRouteMapper.toDayRouteBookmarkListResponse(dayRoutes, hasNext, nextCursorDate,
+            visitedRegionService.getVisitedRegionDongNames(dayRoutes));
+    }
+
     @Transactional
     public DayRouteMemoResponse replaceMemo(LocalDate date, Long userId,
         DayRouteMemoRequest request) {
@@ -117,6 +133,14 @@ public class DayRouteFacade {
         boolean isBookmarked = dayRouteService.toggleBookmark(dayRoute);
 
         return new DayRouteBookmarkResponse(isBookmarked);
+    }
+
+    @Transactional
+    public void bookmarkDayRoutes(Long userId, DayRouteBookmarkBatchRequest request) {
+        request.dates().stream()
+            .distinct()
+            .map(date -> dayRouteService.getOrCreate(userId, date))
+            .forEach(dayRouteService::toggleBookmark);
     }
 
     @Recover

@@ -132,6 +132,10 @@ public class DayRoute {
         return isBookmarked;
     }
 
+    public void markBookmarked() {
+        this.isBookmarked = true;
+    }
+
     public void updateDistance(double distance) {
         this.totalDistance = distance;
     }

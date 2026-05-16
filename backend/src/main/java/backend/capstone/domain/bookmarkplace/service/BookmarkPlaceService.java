@@ -28,8 +28,7 @@ public class BookmarkPlaceService {
     @Transactional
     public BookmarkPlaceCreateResponse createBookmarkPlace(Long userId,
         BookmarkPlaceCreateRequest request) {
-        validateDefaultBookmarkPlace(request.type(), request.isDefault());
-        updateExistingDefaultHomeBookmarkPlace(userId, null, request.type(), request.isDefault());
+        validateHomeBookmarkOnly(userId, null, request.type());
 
         User user = userService.findById(userId);
         BookmarkPlace bookmarkPlace = BookmarkPlaceMapper.toEntity(user, request);
@@ -46,13 +45,10 @@ public class BookmarkPlaceService {
             .orElseThrow(
                 () -> new BusinessException(BookmarkPlaceErrorCode.BOOKMARK_PLACE_NOT_FOUND));
 
-        validateDefaultBookmarkPlace(request.type(), request.isDefault());
-        updateExistingDefaultHomeBookmarkPlace(userId, bookmarkPlace.getId(), request.type(),
-            request.isDefault());
+        validateHomeBookmarkOnly(userId, bookmarkPlace.getId(), request.type());
 
         bookmarkPlace.update(request.type(), request.placeName(), request.roadAddress(),
-            request.latitude(), request.longitude(), request.isDefault()
-        );
+            request.latitude(), request.longitude());
 
         return BookmarkPlaceMapper.toUpdateResponse(bookmarkPlace);
     }
@@ -80,23 +76,19 @@ public class BookmarkPlaceService {
         return bookmarkPlaceRepository.findByUserIdOrderByIdAsc(userId);
     }
 
-    private void validateDefaultBookmarkPlace(BookmarkPlaceType type, boolean isDefault) {
-        if (isDefault && type != BookmarkPlaceType.HOME) {
-            throw new BusinessException(BookmarkPlaceErrorCode.INVALID_DEFAULT_BOOKMARK_PLACE);
-        }
-    }
-
-    private void updateExistingDefaultHomeBookmarkPlace(Long userId, Long bookmarkPlaceId,
-        BookmarkPlaceType type, boolean isDefault) {
-        if (type != BookmarkPlaceType.HOME || !isDefault) {
+    private void validateHomeBookmarkOnly(Long userId, Long bookmarkPlaceId,
+        BookmarkPlaceType type) {
+        if (type != BookmarkPlaceType.HOME) {
             return;
         }
 
-        //- 새 기본 HOME 생성: 기존 기본 HOME이 있으면 해제
-        //- 다른 HOME을 기본 HOME으로 수정: 기존 기본 HOME이 있으면 해제
-        //- 이미 기본 HOME인 같은 북마크를 다시 기본으로 수정: 아무 것도 안 함
-        bookmarkPlaceRepository.findDefaultByUserIdAndType(userId, BookmarkPlaceType.HOME)
-            .filter(bookmarkPlace -> !bookmarkPlace.getId().equals(bookmarkPlaceId))
-            .ifPresent(bookmarkPlace -> bookmarkPlace.changeDefault(false));
+        boolean homeBookmarkExists = bookmarkPlaceId == null
+            ? bookmarkPlaceRepository.existsByUserIdAndType(userId, BookmarkPlaceType.HOME) //생성 요청
+            : bookmarkPlaceRepository.existsByUserIdAndTypeAndIdNot(userId, //수정 요청
+                BookmarkPlaceType.HOME, bookmarkPlaceId);
+
+        if (homeBookmarkExists) {
+            throw new BusinessException(BookmarkPlaceErrorCode.HOME_BOOKMARK_ALREADY_EXISTS);
+        }
     }
 }

@@ -11,7 +11,10 @@ import backend.capstone.integration.kakao.local.dto.LegalDongRegion;
 import backend.capstone.integration.kakao.local.service.KakaoSearchByCoordService;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +74,26 @@ public class VisitedRegionService {
         return visitedRegionRepository.findByDayRouteOrderByTotalStaySecondsDesc(dayRoute).stream()
             .map(visitedRegion -> visitedRegion.getRegion().getDongName())
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<String>> getVisitedRegionDongNames(List<DayRoute> dayRoutes) {
+        Map<Long, List<String>> visitedRegionMap = new LinkedHashMap<>();
+        // LinkedHashMap을 써서 map의 key 순서는 입력 dayRoutes 순서(date 내림차순)를 그대로 유지한다.
+        for (DayRoute dayRoute : dayRoutes) {
+            visitedRegionMap.put(dayRoute.getId(), new ArrayList<>());
+        }
+
+        if (dayRoutes.isEmpty()) {
+            return visitedRegionMap;
+        }
+
+        // 각 dayRoute 내부의 dong 순서는 totalStaySeconds 내림차순이다.
+        visitedRegionRepository.findByDayRouteInOrderByTotalStaySecondsDesc(dayRoutes)
+            .forEach(visitedRegion -> visitedRegionMap.get(visitedRegion.getDayRoute().getId())
+                .add(visitedRegion.getRegion().getDongName()));
+
+        return visitedRegionMap;
     }
 
     private long calculateStaySeconds(Instant startTime, Instant endTime) {
