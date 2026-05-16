@@ -1,6 +1,6 @@
 package backend.capstone.domain.mobility.dayroute.facade;
 
-import backend.capstone.domain.care.sse.service.CareLocationSseEventService;
+import backend.capstone.domain.care.caredependent.sse.service.CareLocationSseEventService;
 import backend.capstone.domain.mobility.analysis.visitedregion.service.VisitedRegionService;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkBatchRequest;
 import backend.capstone.domain.mobility.dayroute.dto.DayRouteBookmarkListResponse;

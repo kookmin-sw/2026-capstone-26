@@ -1,4 +1,4 @@
-package backend.capstone.domain.care.sse.dto;
+package backend.capstone.domain.care.caredependent.sse.dto;
 
 import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.global.util.KstDateTimeUtils;
