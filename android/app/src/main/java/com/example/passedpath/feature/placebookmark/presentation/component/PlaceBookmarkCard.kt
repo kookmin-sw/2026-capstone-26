@@ -236,7 +236,7 @@ private fun PlaceBookmarkCardMenuPreview() {
                     ),
                     MenuActionItem(
                         text = "Delete",
-                        iconResId = R.drawable.ic_trash,
+                        iconResId = R.drawable.ic_delete,
                         onClick = {}
                     )
                 )

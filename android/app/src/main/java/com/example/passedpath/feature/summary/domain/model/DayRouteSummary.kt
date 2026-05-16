@@ -6,5 +6,6 @@ data class DayRouteSummary(
     val enterHomeTime: String?,
     val totalOutingCount: Int,
     val totalOutingSeconds: Long,
-    val totalOutingDurationText: String
+    val totalOutingDurationText: String,
+    val visitedDongNames: List<String> = emptyList()
 )

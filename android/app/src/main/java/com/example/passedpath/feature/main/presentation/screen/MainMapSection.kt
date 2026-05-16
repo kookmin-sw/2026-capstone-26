@@ -87,6 +87,7 @@ internal fun MainMapSection(
     onBookmarkClick: () -> Unit,
     onRouteAction: (RouteUiAction) -> Unit,
     onStatsClick: () -> Unit,
+    onCalendarClick: () -> Unit,
     onMoreClick: () -> Unit,
     onMorePlaceBookmarkClick: () -> Unit = {},
     onMoreDeleteRecordClick: () -> Unit = {},
@@ -252,6 +253,10 @@ internal fun MainMapSection(
             topStartControls = {
                 StatsButton(
                     onClick = onStatsClick,
+                    modifier = Modifier
+                )
+                CalendarButton(
+                    onClick = onCalendarClick,
                     modifier = Modifier
                 )
                 if (BuildConfig.DEBUG) {
@@ -510,7 +515,7 @@ private fun BookmarkMarkerToggleButton(
                 id = if (isVisible) {
                     R.drawable.ic_bookmark_pin_filled
                 } else {
-                    R.drawable.ic_bookmark_other
+                    R.drawable.ic_bookmark_pin_outline
                 }
             ),
             contentDescription = stringResource(R.string.main_toggle_place_bookmark_markers),
@@ -543,6 +548,19 @@ private fun StatsButton(
         onClick = onClick,
         iconResId = R.drawable.ic_stats,
         contentDescriptionResId = R.string.main_stats,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun CalendarButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingCircleIconButton(
+        onClick = onClick,
+        iconResId = R.drawable.ic_calender,
+        contentDescriptionResId = R.string.main_calendar,
         modifier = modifier
     )
 }

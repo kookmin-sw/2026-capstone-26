@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
@@ -37,6 +38,7 @@ class DayRouteSummaryRepositoryImplTest {
         assertEquals(0, result.totalOutingCount)
         assertEquals(0L, result.totalOutingSeconds)
         assertEquals("0\uBD84", result.totalOutingDurationText)
+        assertTrue(result.visitedDongNames.isEmpty())
     }
 
     @Test

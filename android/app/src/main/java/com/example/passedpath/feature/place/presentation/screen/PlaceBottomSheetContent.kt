@@ -31,7 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -67,11 +66,11 @@ import com.example.passedpath.feature.place.presentation.component.PlaceCard
 import com.example.passedpath.feature.place.presentation.state.PlaceListUiState
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.button.BaseButtonVariant
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
 import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray700
@@ -263,7 +262,6 @@ fun PlaceBottomSheetContent(
             item(key = "stale_notice") {
                 Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
                     StalePlaceSection(
-                        message = placeListUiState.errorMessage,
                         onRetryClick = onRetryClick
                     )
                 }
@@ -283,7 +281,6 @@ fun PlaceBottomSheetContent(
                 item(key = "error") {
                     Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
                         ErrorPlaceNotice(
-                            message = placeListUiState.errorMessage,
                             onRetryClick = onRetryClick
                         )
                     }
@@ -381,61 +378,22 @@ private fun PlaceSummarySection(placeCount: Int) {
 
 @Composable
 private fun ErrorPlaceNotice(
-    message: String,
     onRetryClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Gray100, shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 18.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(
-                text = stringResource(R.string.place_sheet_error_title),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Gray400
-            )
-            TextButton(onClick = onRetryClick) {
-                Text(text = stringResource(R.string.route_retry), color = Green500)
-            }
-        }
-    }
+    NetworkFailureBanner(
+        retryText = stringResource(R.string.route_retry),
+        onRetryClick = onRetryClick
+    )
 }
 
 @Composable
 private fun StalePlaceSection(
-    message: String,
     onRetryClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Green50, shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = stringResource(R.string.place_sheet_stale_title),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Gray700,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = Gray400
-            )
-            TextButton(onClick = onRetryClick) {
-                Text(text = stringResource(R.string.route_retry), color = Green500)
-            }
-        }
-    }
+    NetworkFailureBanner(
+        retryText = stringResource(R.string.route_retry),
+        onRetryClick = onRetryClick
+    )
 }
 
 @Composable
@@ -683,7 +641,7 @@ private fun PlaceTimelineItem(
                     ),
                     MenuActionItem(
                         text = deleteMenuText,
-                        iconResId = R.drawable.ic_trash,
+                        iconResId = R.drawable.ic_delete,
                         onClick = onDeletePlaceClick
                     )
                 ),

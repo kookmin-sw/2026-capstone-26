@@ -23,8 +23,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
+import com.example.passedpath.feature.bookmark.presentation.screen.DayRouteBookmarkListRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
+import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
 import com.example.passedpath.feature.friends.presentation.screen.FriendsRoute
+import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelectedEvent
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
 import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
 import com.example.passedpath.feature.main.presentation.screen.PlaceCreatedEvent
@@ -54,6 +57,8 @@ fun AppNavHost(
     var placeBookmarkChangedEventId by remember { mutableStateOf(0) }
     var placeBookmarkSearchResultEvent by remember { mutableStateOf<PlaceBookmarkSearchResultEvent?>(null) }
     var placeBookmarkSearchResultEventId by remember { mutableStateOf(0) }
+    var calendarDateSelectedEvent by remember { mutableStateOf<CalendarDateSelectedEvent?>(null) }
+    var calendarDateSelectedEventId by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         AuthEvent.logoutEvent.collect { event ->
@@ -75,6 +80,7 @@ fun AppNavHost(
             placeCreatedEvent = placeCreatedEvent,
             placeBookmarkChangedEvent = placeBookmarkChangedEvent,
             placeBookmarkSearchResultEvent = placeBookmarkSearchResultEvent,
+            calendarDateSelectedEvent = calendarDateSelectedEvent,
             onPlaceCreatedEventConsumed = { eventId ->
                 if (placeCreatedEvent?.id == eventId) {
                     placeCreatedEvent = null
@@ -88,6 +94,11 @@ fun AppNavHost(
             onPlaceBookmarkChangedEventConsumed = { eventId ->
                 if (placeBookmarkChangedEvent?.id == eventId) {
                     placeBookmarkChangedEvent = null
+                }
+            },
+            onCalendarDateSelectedEventConsumed = { eventId ->
+                if (calendarDateSelectedEvent?.id == eventId) {
+                    calendarDateSelectedEvent = null
                 }
             },
             onLoginToastMessage = { message ->
@@ -118,6 +129,13 @@ fun AppNavHost(
                 placeBookmarkChangedEvent = PlaceBookmarkChangedEvent(
                     id = placeBookmarkChangedEventId,
                     bookmarkPlaceId = bookmarkPlaceId
+                )
+            },
+            onCalendarDateSelected = { dateKey ->
+                calendarDateSelectedEventId++
+                calendarDateSelectedEvent = CalendarDateSelectedEvent(
+                    id = calendarDateSelectedEventId,
+                    dateKey = dateKey
                 )
             },
             modifier = Modifier.fillMaxSize()
@@ -155,14 +173,17 @@ private fun AppNavigationGraph(
     placeCreatedEvent: PlaceCreatedEvent?,
     placeBookmarkChangedEvent: PlaceBookmarkChangedEvent?,
     placeBookmarkSearchResultEvent: PlaceBookmarkSearchResultEvent?,
+    calendarDateSelectedEvent: CalendarDateSelectedEvent?,
     onPlaceCreatedEventConsumed: (Int) -> Unit,
     onPlaceBookmarkSearchResultEventConsumed: (Int) -> Unit,
     onPlaceBookmarkChangedEventConsumed: (Int) -> Unit,
+    onCalendarDateSelectedEventConsumed: (Int) -> Unit,
     onLoginToastMessage: (String) -> Unit,
     onBottomBarReselected: (String) -> Unit,
     onPlaceCreated: (Long) -> Unit,
     onPlaceBookmarkSearchResult: (PlaceSearchResult) -> Unit,
     onPlaceBookmarkChanged: (Long) -> Unit,
+    onCalendarDateSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -225,17 +246,70 @@ private fun AppNavigationGraph(
                         mainTabReselectionEvent = mainTabReselectionEvent,
                         placeCreatedEvent = placeCreatedEvent,
                         placeBookmarkChangedEvent = placeBookmarkChangedEvent,
+                        calendarDateSelectedEvent = calendarDateSelectedEvent,
                         onPlaceCreatedEventConsumed = onPlaceCreatedEventConsumed,
                         onPlaceBookmarkChangedEventConsumed = onPlaceBookmarkChangedEventConsumed,
+                        onCalendarDateSelectedEventConsumed = onCalendarDateSelectedEventConsumed,
                         onNavigateToAddPlace = { dateKey ->
                             navController.navigate(NavRoute.addPlace(dateKey))
                         },
                         onNavigateToPlaceBookmarks = {
                             navController.navigate(NavRoute.PLACE_BOOKMARKS)
+                        },
+                        onNavigateToCalendar = { dateKey ->
+                            navController.navigate(NavRoute.calendar(dateKey))
                         }
                     )
                 }
             }
+        }
+
+        composable(
+            route = NavRoute.CALENDAR_WITH_DATE,
+            arguments = listOf(
+                navArgument(NavRoute.CALENDAR_DATE_KEY) {
+                    type = NavType.StringType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dateKey = backStackEntry.arguments
+                ?.getString(NavRoute.CALENDAR_DATE_KEY)
+                .orEmpty()
+
+            CalendarRoute(
+                initialDateKey = dateKey,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onDateConfirmed = { selectedDateKey ->
+                    onCalendarDateSelected(selectedDateKey)
+                    navController.popBackStack()
+                },
+                onFavoriteListClick = {
+                    navController.navigate(NavRoute.DAY_ROUTE_BOOKMARKS)
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.DAY_ROUTE_BOOKMARKS,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            DayRouteBookmarkListRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onBookmarkClick = { dateKey ->
+                    onCalendarDateSelected(dateKey)
+                    navController.popBackStack(
+                        route = NavRoute.MAIN,
+                        inclusive = false
+                    )
+                }
+            )
         }
 
         composable(

@@ -31,6 +31,7 @@ import com.example.passedpath.R
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.input.BaseInputButton
 import com.example.passedpath.ui.component.input.BaseInputField
+import com.example.passedpath.ui.component.place.PlaceNameMarker
 import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray900
 import com.example.passedpath.ui.theme.Green500
@@ -68,8 +69,16 @@ fun PlaceEditNameBottomSheet(
             modifier = Modifier
                 .navigationBarsPadding()
                 .clickable(onClick = onClearInputFocus)
-                .padding(start = 20.dp, top = 26.dp, end = 20.dp, bottom = 40.dp)
+                .padding(start = 20.dp, top = 34.dp, end = 20.dp, bottom = 40.dp)
         ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                PlaceNameMarker(placeName = originalPlaceName)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(R.string.place_edit_title),

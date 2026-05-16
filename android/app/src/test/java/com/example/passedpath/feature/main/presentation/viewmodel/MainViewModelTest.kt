@@ -1,6 +1,7 @@
 ﻿package com.example.passedpath.feature.main.presentation.viewmodel
 
 import com.example.passedpath.feature.bookmark.domain.model.DayRouteBookmark
+import com.example.passedpath.feature.bookmark.domain.model.DayRouteBookmarkList
 import com.example.passedpath.feature.bookmark.domain.repository.DayRouteBookmarkRepository
 import com.example.passedpath.feature.bookmark.domain.usecase.ToggleDayRouteBookmarkUseCase
 import com.example.passedpath.feature.locationtracking.data.manager.LocationTrackingServiceStateReader
@@ -769,6 +770,19 @@ class MainViewModelTest {
         private val toggleGate: CompletableDeferred<Unit>? = null
     ) : DayRouteBookmarkRepository {
         val toggledDates = mutableListOf<String>()
+        val markedDateBatches = mutableListOf<List<String>>()
+
+        override suspend fun getBookmarkedDayRoutes(
+            cursorDate: String?,
+            size: Int
+        ): DayRouteBookmarkList {
+            return DayRouteBookmarkList(
+                dayRouteCount = 0,
+                hasNext = false,
+                nextCursorDate = null,
+                dayRoutes = emptyList()
+            )
+        }
 
         override suspend fun toggleBookmark(dateKey: String): DayRouteBookmark {
             toggleGate?.await()
@@ -777,6 +791,10 @@ class MainViewModelTest {
             val nextValue = resultByDate[dateKey] ?: true
             resultByDate[dateKey] = nextValue
             return DayRouteBookmark(isBookmarked = nextValue)
+        }
+
+        override suspend fun markBookmarks(dateKeys: List<String>) {
+            markedDateBatches += dateKeys
         }
     }
 

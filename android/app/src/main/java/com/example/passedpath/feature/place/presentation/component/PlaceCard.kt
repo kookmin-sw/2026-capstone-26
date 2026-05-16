@@ -373,7 +373,7 @@ private fun PlaceCardMenuPreview() {
                     ),
                     MenuActionItem(
                         text = "삭제하기",
-                        iconResId = R.drawable.ic_trash,
+                        iconResId = R.drawable.ic_delete,
                         onClick = {}
                     )
                 )
