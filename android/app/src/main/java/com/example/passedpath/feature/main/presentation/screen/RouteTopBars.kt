@@ -46,9 +46,10 @@ private val DateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy
 private val TopBarDateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy.MM.dd. EEE", Locale.KOREAN)
 
+private val RouteTopBarsTopGap = 10.dp
 private val DateNavigationBarHeight = 40.dp
 private val DaySummaryBarHeight = 36.dp
-internal val RouteTopBarsHeight = DateNavigationBarHeight + DaySummaryBarHeight
+internal val RouteTopBarsHeight = RouteTopBarsTopGap + DateNavigationBarHeight + DaySummaryBarHeight
 private val SecondaryTextColor = Color(0xFF4B5563)
 private val RouteTopBarsPreviewBackground = Color(0xFFEFF3F8)
 
@@ -70,6 +71,7 @@ internal fun RouteTopBars(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
+                .padding(top = RouteTopBarsTopGap)
         ) {
             DateNavigationBar(
                 route = route,
