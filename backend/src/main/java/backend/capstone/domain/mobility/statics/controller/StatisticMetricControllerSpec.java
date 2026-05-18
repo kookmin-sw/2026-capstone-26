@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "지표 상세 통계 API")
+@Tag(name = "지표별 상세 통계 API")
 public interface StatisticMetricControllerSpec {
 
     @Operation(
