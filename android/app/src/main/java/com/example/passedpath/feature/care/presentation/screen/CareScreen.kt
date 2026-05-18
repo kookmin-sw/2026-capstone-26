@@ -1,5 +1,6 @@
 package com.example.passedpath.feature.care.presentation.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,10 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,8 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
+import com.example.passedpath.feature.care.presentation.component.CareEmptyDependentsBanner
 import com.example.passedpath.feature.care.presentation.component.CareDependentMapMarker
 import com.example.passedpath.feature.care.presentation.component.CareDependentSelectorRow
+import com.example.passedpath.feature.care.presentation.component.CareInviteBottomSheet
 import com.example.passedpath.feature.care.presentation.component.CareVisitedPlaceMapMarker
 import com.example.passedpath.feature.care.presentation.component.ProtectedPersonBottomSheet
 import com.example.passedpath.feature.care.presentation.component.careDependentAvatarPalette
@@ -37,9 +37,9 @@ import com.example.passedpath.feature.care.presentation.state.CareUiState
 import com.example.passedpath.feature.care.presentation.state.CareVisitedPlaceMarkerUiState
 import com.example.passedpath.ui.component.bottomsheet.BaseAnchoredBottomSheetScaffold
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
-import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
-import com.example.passedpath.ui.theme.Gray500
-import com.example.passedpath.ui.theme.Gray700
+import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureBanner
+import com.example.passedpath.ui.component.modal.PassedPathBottomModal
+import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.White
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -69,42 +69,64 @@ fun CareScreen(
     onMapClick: () -> Unit,
     onPlaceRetryClick: () -> Unit,
     onSummaryRetryClick: () -> Unit,
+    onInviteDismiss: () -> Unit,
+    onInviteRetryClick: () -> Unit,
+    onInviteLinkCopyClick: (String) -> Unit,
+    onInviteLinkShareClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    BaseAnchoredBottomSheetScaffold(
-        modifier = modifier.fillMaxSize(),
-        initialSheetValue = uiState.bottomSheetValue,
-        requestedSheetValue = uiState.requestedSheetValue,
-        onSheetValueChanged = onSheetValueChanged,
-        onSheetCommandConsumed = onSheetCommandConsumed,
-        content = {
-            CareMapContent(
-                uiState = uiState,
-                onDependentSelected = onDependentSelected,
-                onRetryClick = onRetryClick,
-                onInviteClick = onInviteClick,
-                onPlaceMarkerClick = onPlaceMarkerClick,
-                onFocusedPlaceHandled = onFocusedPlaceHandled,
-                onMapClick = onMapClick
-            )
-        },
-        sheet = { sheetModifier ->
-            if (uiState.selectedDependent != null) {
-                ProtectedPersonBottomSheet(
-                    selectedTab = uiState.selectedBottomSheetTab,
-                    onTabSelected = onTabSelected,
-                    placeListUiState = uiState.placeListUiState,
-                    summaryUiState = uiState.summaryUiState,
-                    selectedPlaceId = uiState.selectedPlaceId,
-                    onSelectedPlaceHandled = onSelectedPlaceHandled,
-                    onPlaceClick = onPlaceCardClick,
-                    onPlaceRetryClick = onPlaceRetryClick,
-                    onSummaryRetryClick = onSummaryRetryClick,
-                    modifier = sheetModifier
+    Box(modifier = modifier.fillMaxSize()) {
+        BaseAnchoredBottomSheetScaffold(
+            modifier = Modifier.fillMaxSize(),
+            initialSheetValue = uiState.bottomSheetValue,
+            requestedSheetValue = uiState.requestedSheetValue,
+            onSheetValueChanged = onSheetValueChanged,
+            onSheetCommandConsumed = onSheetCommandConsumed,
+            content = {
+                CareMapContent(
+                    uiState = uiState,
+                    onDependentSelected = onDependentSelected,
+                    onRetryClick = onRetryClick,
+                    onInviteClick = onInviteClick,
+                    onPlaceMarkerClick = onPlaceMarkerClick,
+                    onFocusedPlaceHandled = onFocusedPlaceHandled,
+                    onMapClick = onMapClick
+                )
+            },
+            sheet = { sheetModifier ->
+                if (uiState.selectedDependent != null) {
+                    ProtectedPersonBottomSheet(
+                        selectedTab = uiState.selectedBottomSheetTab,
+                        onTabSelected = onTabSelected,
+                        placeListUiState = uiState.placeListUiState,
+                        summaryUiState = uiState.summaryUiState,
+                        selectedPlaceId = uiState.selectedPlaceId,
+                        onSelectedPlaceHandled = onSelectedPlaceHandled,
+                        onPlaceClick = onPlaceCardClick,
+                        onPlaceRetryClick = onPlaceRetryClick,
+                        onSummaryRetryClick = onSummaryRetryClick,
+                        modifier = sheetModifier
+                    )
+                }
+            }
+        )
+
+        if (uiState.inviteUiState.isVisible) {
+            PassedPathBottomModal(
+                onDimClick = onInviteDismiss,
+                modifier = Modifier.background(Black.copy(alpha = 0.22f)),
+                onBackPress = onInviteDismiss
+            ) {
+                CareInviteBottomSheet(
+                    uiState = uiState.inviteUiState,
+                    onCopyClick = onInviteLinkCopyClick,
+                    onShareClick = onInviteLinkShareClick,
+                    onRetryClick = onInviteRetryClick,
+                    onDismiss = onInviteDismiss
                 )
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -370,42 +392,15 @@ private fun CareMapStatusOverlay(
     ) {
         when {
             uiState.errorMessage != null -> {
-                NetworkFailureBanner(
+                MapOverlayNetworkFailureBanner(
                     retryText = stringResource(R.string.route_retry),
                     onRetryClick = onRetryClick
                 )
             }
 
             uiState.hasLoaded && uiState.dependents.isEmpty() && !uiState.isLoading -> {
-                CareEmptyDependentsNotice()
+                CareEmptyDependentsBanner()
             }
-        }
-    }
-}
-
-@Composable
-private fun CareEmptyDependentsNotice() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = White,
-        shape = RoundedCornerShape(18.dp),
-        shadowElevation = 8.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.care_dependents_empty_title),
-                style = MaterialTheme.typography.bodyLarge,
-                color = Gray700
-            )
-            Text(
-                text = stringResource(R.string.care_dependents_empty_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Gray500
-            )
         }
     }
 }

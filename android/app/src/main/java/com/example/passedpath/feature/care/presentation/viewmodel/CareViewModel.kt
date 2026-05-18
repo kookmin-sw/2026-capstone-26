@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
+import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
@@ -15,6 +16,7 @@ import com.example.passedpath.feature.care.presentation.mapper.toProtectedPerson
 import com.example.passedpath.feature.care.presentation.mapper.toProtectedPersonSummaryContentUiState
 import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBottomSheetTab
 import com.example.passedpath.feature.care.presentation.state.CareUiState
+import com.example.passedpath.feature.care.presentation.state.CareInviteUiState
 import com.example.passedpath.feature.care.presentation.state.ProtectedPersonPlaceListUiState
 import com.example.passedpath.feature.care.presentation.state.ProtectedPersonSummaryUiState
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
@@ -30,12 +32,14 @@ class CareViewModel(
     private val getCareDependentsUseCase: GetCareDependentsUseCase,
     private val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase,
     private val getProtectedPersonDaySummaryUseCase: GetProtectedPersonDaySummaryUseCase,
+    private val createCareRelationshipInviteLinkUseCase: CreateCareRelationshipInviteLinkUseCase,
     private val todayDateKeyProvider: () -> String = ::defaultKstTodayDateKey
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         CareUiState(selectedDateKey = todayDateKeyProvider())
     )
     val uiState: StateFlow<CareUiState> = _uiState.asStateFlow()
+    private var inviteRequestId: Long = 0L
 
     init {
         refreshDependents()
@@ -228,6 +232,32 @@ class CareViewModel(
         }
     }
 
+    fun openInviteModal() {
+        createInviteLink()
+    }
+
+    fun retryCreateInviteLink() {
+        if (_uiState.value.inviteUiState.isLoading) return
+        createInviteLink()
+    }
+
+    fun dismissInviteModal() {
+        inviteRequestId++
+        _uiState.update { state ->
+            state.copy(inviteUiState = CareInviteUiState())
+        }
+    }
+
+    fun onInviteLinkCopied() {
+        _uiState.update { state ->
+            state.copy(
+                inviteUiState = state.inviteUiState.copy(
+                    copyFeedbackEventId = state.inviteUiState.copyFeedbackEventId + 1
+                )
+            )
+        }
+    }
+
     fun retryProtectedPersonPlaces() {
         val state = _uiState.value
         val dependentUserId = state.selectedDependentUserId ?: return
@@ -244,6 +274,52 @@ class CareViewModel(
             dependentUserId = dependentUserId,
             dateKey = state.selectedDateKey
         )
+    }
+
+    private fun createInviteLink() {
+        val requestId = ++inviteRequestId
+        _uiState.update { state ->
+            state.copy(
+                inviteUiState = CareInviteUiState(
+                    isVisible = true,
+                    isLoading = true
+                )
+            )
+        }
+
+        viewModelScope.launch {
+            runCatching {
+                createCareRelationshipInviteLinkUseCase()
+            }.onSuccess { inviteLink ->
+                _uiState.update { state ->
+                    if (requestId != inviteRequestId || !state.inviteUiState.isVisible) {
+                        state
+                    } else {
+                        state.copy(
+                            inviteUiState = state.inviteUiState.copy(
+                                isLoading = false,
+                                inviteLink = inviteLink.inviteLink,
+                                errorMessage = null
+                            )
+                        )
+                    }
+                }
+            }.onFailure {
+                _uiState.update { state ->
+                    if (requestId != inviteRequestId || !state.inviteUiState.isVisible) {
+                        state
+                    } else {
+                        state.copy(
+                            inviteUiState = state.inviteUiState.copy(
+                                isLoading = false,
+                                inviteLink = null,
+                                errorMessage = CareInviteLinkCreateErrorMessage
+                            )
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun loadProtectedPersonDetails(
@@ -379,6 +455,7 @@ class CareViewModel(
             "Failed to load protected person places"
         const val ProtectedPersonSummaryLoadErrorMessage =
             "Failed to load protected person summary"
+        const val CareInviteLinkCreateErrorMessage = "Failed to create invite link"
     }
 }
 
@@ -393,7 +470,9 @@ class CareViewModelFactory(
                 getProtectedPersonVisitedPlacesUseCase =
                     appContainer.getProtectedPersonVisitedPlacesUseCase,
                 getProtectedPersonDaySummaryUseCase =
-                    appContainer.getProtectedPersonDaySummaryUseCase
+                    appContainer.getProtectedPersonDaySummaryUseCase,
+                createCareRelationshipInviteLinkUseCase =
+                    appContainer.createCareRelationshipInviteLinkUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

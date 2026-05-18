@@ -3,15 +3,18 @@ package com.example.passedpath.feature.care.presentation.viewmodel
 import com.example.passedpath.feature.care.domain.model.CareDependentUser
 import com.example.passedpath.feature.care.domain.model.CareDependentUserList
 import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
+import com.example.passedpath.feature.care.domain.model.CareRelationshipInviteLink
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonDaySummary
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonPlaceSourceType
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlace
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlaceList
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
+import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
+import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
@@ -215,11 +218,120 @@ class CareViewModelTest {
         assertEquals(BaseBottomSheetValue.HIDDEN, state.requestedSheetValue)
     }
 
+    @Test
+    fun `openInviteModal opens modal and stores created link`() = runTest {
+        val inviteRepository = FakeCareRelationshipInviteRepository(
+            result = CareRelationshipInviteLink("https://passedpath.site/invite?inviteCode=abc")
+        )
+        val viewModel = createViewModel(
+            dependentRepository = FakeCareDependentRepository(),
+            inviteRepository = inviteRepository
+        )
+        advanceUntilIdle()
+
+        viewModel.openInviteModal()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value.inviteUiState
+        assertEquals(1, inviteRepository.createRequestCount)
+        assertTrue(state.isVisible)
+        assertFalse(state.isLoading)
+        assertEquals("https://passedpath.site/invite?inviteCode=abc", state.inviteLink)
+        assertNull(state.errorMessage)
+    }
+
+    @Test
+    fun `openInviteModal exposes retryable error on failure`() = runTest {
+        val inviteRepository = FakeCareRelationshipInviteRepository(
+            throwable = IllegalStateException("network failed")
+        )
+        val viewModel = createViewModel(
+            dependentRepository = FakeCareDependentRepository(),
+            inviteRepository = inviteRepository
+        )
+        advanceUntilIdle()
+
+        viewModel.openInviteModal()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value.inviteUiState
+        assertTrue(state.isVisible)
+        assertFalse(state.isLoading)
+        assertNull(state.inviteLink)
+        assertNotNull(state.errorMessage)
+    }
+
+    @Test
+    fun `retryCreateInviteLink requests link again in same modal`() = runTest {
+        val inviteRepository = FakeCareRelationshipInviteRepository(
+            throwable = IllegalStateException("network failed")
+        )
+        val viewModel = createViewModel(
+            dependentRepository = FakeCareDependentRepository(),
+            inviteRepository = inviteRepository
+        )
+        advanceUntilIdle()
+
+        viewModel.openInviteModal()
+        advanceUntilIdle()
+        inviteRepository.throwable = null
+        inviteRepository.result = CareRelationshipInviteLink("https://passedpath.site/retry")
+
+        viewModel.retryCreateInviteLink()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value.inviteUiState
+        assertEquals(2, inviteRepository.createRequestCount)
+        assertEquals("https://passedpath.site/retry", state.inviteLink)
+        assertNull(state.errorMessage)
+    }
+
+    @Test
+    fun `dismissInviteModal resets invite state`() = runTest {
+        val viewModel = createViewModel(
+            dependentRepository = FakeCareDependentRepository(),
+            inviteRepository = FakeCareRelationshipInviteRepository()
+        )
+        advanceUntilIdle()
+
+        viewModel.openInviteModal()
+        advanceUntilIdle()
+        viewModel.onInviteLinkCopied()
+        viewModel.dismissInviteModal()
+
+        val state = viewModel.uiState.value.inviteUiState
+        assertFalse(state.isVisible)
+        assertFalse(state.isLoading)
+        assertNull(state.inviteLink)
+        assertNull(state.errorMessage)
+        assertEquals(0L, state.copyFeedbackEventId)
+    }
+
+    @Test
+    fun `invite state changes do not clear selected dependent details`() = runTest {
+        val viewModel = createLoadedViewModel(
+            inviteRepository = FakeCareRelationshipInviteRepository()
+        )
+        viewModel.selectDependent(7L)
+        advanceUntilIdle()
+
+        viewModel.openInviteModal()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(7L, state.selectedDependentUserId)
+        assertTrue(state.placeListUiState.hasLoaded)
+        assertTrue(state.summaryUiState.hasLoaded)
+        assertTrue(state.inviteUiState.isVisible)
+    }
+
     private fun TestScope.createLoadedViewModel(
         placeRepository: ProtectedPersonVisitedPlaceRepository =
             FakeProtectedPersonVisitedPlaceRepository(),
         summaryRepository: ProtectedPersonDaySummaryRepository =
-            FakeProtectedPersonDaySummaryRepository()
+            FakeProtectedPersonDaySummaryRepository(),
+        inviteRepository: CareRelationshipInviteRepository =
+            FakeCareRelationshipInviteRepository()
     ): CareViewModel {
         val viewModel = createViewModel(
             dependentRepository = FakeCareDependentRepository(
@@ -229,7 +341,8 @@ class CareViewModelTest {
                 )
             ),
             placeRepository = placeRepository,
-            summaryRepository = summaryRepository
+            summaryRepository = summaryRepository,
+            inviteRepository = inviteRepository
         )
         advanceUntilIdle()
         return viewModel
@@ -240,7 +353,9 @@ class CareViewModelTest {
         placeRepository: ProtectedPersonVisitedPlaceRepository =
             FakeProtectedPersonVisitedPlaceRepository(),
         summaryRepository: ProtectedPersonDaySummaryRepository =
-            FakeProtectedPersonDaySummaryRepository()
+            FakeProtectedPersonDaySummaryRepository(),
+        inviteRepository: CareRelationshipInviteRepository =
+            FakeCareRelationshipInviteRepository()
     ): CareViewModel {
         return CareViewModel(
             getCareDependentsUseCase = GetCareDependentsUseCase(dependentRepository),
@@ -248,6 +363,8 @@ class CareViewModelTest {
                 GetProtectedPersonVisitedPlacesUseCase(placeRepository),
             getProtectedPersonDaySummaryUseCase =
                 GetProtectedPersonDaySummaryUseCase(summaryRepository),
+            createCareRelationshipInviteLinkUseCase =
+                CreateCareRelationshipInviteLinkUseCase(inviteRepository),
             todayDateKeyProvider = { "2026-05-18" }
         )
     }
@@ -301,6 +418,23 @@ class CareViewModelTest {
             requests += dependentUserId to dateKey
             return result
         }
+    }
+
+    private class FakeCareRelationshipInviteRepository(
+        var result: CareRelationshipInviteLink = CareRelationshipInviteLink(
+            inviteLink = "https://passedpath.site/care-relationship/invite?inviteCode=T5rfCFFy9j"
+        ),
+        var throwable: Throwable? = null
+    ) : CareRelationshipInviteRepository {
+        var createRequestCount: Int = 0
+
+        override suspend fun createInviteLink(): CareRelationshipInviteLink {
+            createRequestCount++
+            throwable?.let { throw it }
+            return result
+        }
+
+        override suspend fun acceptInvite(inviteCode: String) = Unit
     }
 }
 

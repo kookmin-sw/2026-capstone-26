@@ -1,11 +1,16 @@
 package com.example.passedpath.feature.care.presentation.screen
 
+import android.content.ClipData
+import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.passedpath.R
 import com.example.passedpath.app.appContainer
 import com.example.passedpath.feature.care.presentation.viewmodel.CareViewModel
 import com.example.passedpath.feature.care.presentation.viewmodel.CareViewModelFactory
@@ -17,13 +22,15 @@ fun CareRoute(
         factory = CareViewModelFactory(LocalContext.current.appContainer)
     )
 ) {
+    val context = LocalContext.current
+    val shareTitle = stringResource(R.string.care_invite_share_title)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CareScreen(
         uiState = uiState,
         onDependentSelected = viewModel::selectDependent,
         onRetryClick = viewModel::refreshDependents,
-        onInviteClick = {},
+        onInviteClick = viewModel::openInviteModal,
         onSheetValueChanged = viewModel::onSheetValueChanged,
         onSheetCommandConsumed = viewModel::onSheetCommandConsumed,
         onTabSelected = viewModel::selectBottomSheetTab,
@@ -34,6 +41,47 @@ fun CareRoute(
         onMapClick = viewModel::onMapClick,
         onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
+        onInviteDismiss = viewModel::dismissInviteModal,
+        onInviteRetryClick = viewModel::retryCreateInviteLink,
+        onInviteLinkCopyClick = { inviteLink ->
+            copyInviteLink(
+                context = context,
+                inviteLink = inviteLink
+            )
+            viewModel.onInviteLinkCopied()
+        },
+        onInviteLinkShareClick = { inviteLink ->
+            shareInviteLink(
+                context = context,
+                chooserTitle = shareTitle,
+                inviteLink = inviteLink
+            )
+        },
         modifier = modifier
     )
+}
+
+private fun copyInviteLink(
+    context: Context,
+    inviteLink: String
+) {
+    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE)
+        as? android.content.ClipboardManager ?: return
+    clipboardManager.setPrimaryClip(
+        ClipData.newPlainText("care relationship invite link", inviteLink)
+    )
+}
+
+private fun shareInviteLink(
+    context: Context,
+    chooserTitle: String,
+    inviteLink: String
+) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, inviteLink)
+    }
+    runCatching {
+        context.startActivity(Intent.createChooser(shareIntent, chooserTitle))
+    }
 }

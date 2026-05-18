@@ -22,7 +22,7 @@ import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiSt
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
-import com.example.passedpath.ui.component.banner.RequestActionBottomBanner
+import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.theme.Black
 
@@ -84,7 +84,7 @@ internal fun BoxScope.MainMapOverlayContent(
         }
 
         pastRouteErrorMessage != null -> {
-            RequestActionBottomBanner(
+            MapOverlayNetworkFailureBanner(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
@@ -94,11 +94,9 @@ internal fun BoxScope.MainMapOverlayContent(
                         start = RouteErrorBannerStartPadding,
                         end = RouteOverlaySidePadding
                     ),
-                message = pastRouteErrorMessage,
-                actionText = stringResource(R.string.route_retry),
-                onClickAction = { onRouteAction(RouteUiAction.RetryPastRoute) },
-                borderColor = null,
-                shadowElevation = 6.dp
+                retryText = stringResource(R.string.route_retry),
+                onRetryClick = { onRouteAction(RouteUiAction.RetryPastRoute) },
+                message = pastRouteErrorMessage
             )
         }
     }

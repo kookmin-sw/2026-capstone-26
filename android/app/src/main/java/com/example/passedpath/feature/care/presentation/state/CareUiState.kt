@@ -17,6 +17,7 @@ data class CareUiState(
     val requestedSheetValue: BaseBottomSheetValue? = null,
     val selectedPlaceId: Long? = null,
     val focusedPlaceId: Long? = null,
+    val inviteUiState: CareInviteUiState = CareInviteUiState(),
     val isLoading: Boolean = false,
     val hasLoaded: Boolean = false,
     val errorMessage: String? = null
@@ -68,4 +69,13 @@ data class CareVisitedPlaceMarkerUiState(
     val latitude: Double,
     val longitude: Double,
     val displayOrderIndex: Int
+)
+
+@Immutable
+data class CareInviteUiState(
+    val isVisible: Boolean = false,
+    val isLoading: Boolean = false,
+    val inviteLink: String? = null,
+    val errorMessage: String? = null,
+    val copyFeedbackEventId: Long = 0L
 )
