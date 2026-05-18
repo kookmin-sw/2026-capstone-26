@@ -1,7 +1,5 @@
 <div align="center">
 
-# 길벗
-
 ### 당신의 하루를 대신 기억합니다
 
 위치 데이터를 기반으로 사용자의 하루를 자동으로 기록하여  
@@ -24,17 +22,17 @@
 
 <div align="center">
 
-<img src="docs/images/img_1.png" alt="길벗 주요 화면 1" width="90%">
+<img src="docs/images/img_1.png" alt="길벗 주요 화면 1" width="70%">
 
 <br>
 <br>
 
-<img src="docs/images/img_2.png" alt="길벗 주요 화면 2" width="90%">
+<img src="docs/images/img_2.png" alt="길벗 주요 화면 2" width="70%">
 
 <br>
 <br>
 
-<img src="docs/images/img_3.png" alt="길벗 주요 화면 3" width="90%">
+<img src="docs/images/img_3.png" alt="길벗 주요 화면 3" width="70%">
 
 </div>
 
@@ -44,8 +42,7 @@
 
 <div align="center">
 
-<img src="docs/images/img_4.png" alt="시스템 아키텍처" width="90%">
-
+![img.png](docs/images/img_6.png)
 </div>
 
 <br>
