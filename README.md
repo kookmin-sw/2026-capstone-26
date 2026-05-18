@@ -1,77 +1,56 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Lvs6kcL8)
-# Welcome to GitHub
+<div align="center">
 
-캡스톤 팀 생성을 축하합니다.
+### 당신의 하루를 대신 기억합니다
 
-## 팀소개 및 페이지를 꾸며주세요.
+위치 데이터를 기반으로 사용자의 하루를 자동으로 기록하여  
+**기억 보조**와 **안심 확인**을 제공하는 서비스입니다.
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+<br>
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+<img src="docs/images/img.png" alt="길벗 서비스 대표 화면" width="170">
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+</div>
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+<br>
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+## 서비스 소개
 
+길벗은 사용자의 위치 데이터를 기록하여 과거 경로를 확인할 수 있도록 돕고, 체류한 장소와 외출·귀가 시각을 자동으로 기록합니다. 이를 통해 사용자는 자신의 생활 패턴을 쉽게
+확인할 수 있으며, 보호자는 일상 흐름을 안심하고 살펴볼 수 있습니다.
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+<br>
 
-### 1. 프로잭트 소개
+<div align="center">
 
-프로젝트
+<img src="docs/images/img_1.png" alt="길벗 주요 화면 1" width="70%">
 
-### 2. 소개 영상
+<br>
+<br>
 
-프로젝트 소개하는 영상을 추가하세요
+<img src="docs/images/img_2.png" alt="길벗 주요 화면 2" width="70%">
 
-### 3. 팀 소개
+<br>
+<br>
 
-팀을 소개하세요.
+<img src="docs/images/img_3.png" alt="길벗 주요 화면 3" width="70%">
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+</div>
 
-### 4. 사용법
+<br>
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+## 시스템 아키텍처
 
-### 5. 기타
+<div align="center">
 
-추가적인 내용은 자유롭게 작성하세요.
+![img.png](docs/images/img_6.png)
+</div>
 
+<br>
 
-## Markdown을 사용하여 내용꾸미기
+## ERD
 
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
+<div align="center">
 
-```markdown
-Syntax highlighted code block
+<img src="docs/images/img_5.png" alt="ERD" width="70%">
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Support or Contact
-
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+</div>
