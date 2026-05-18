@@ -670,13 +670,37 @@ private fun BoxScope.MainScreenOverlays(
     val dayNoteToastMessage = dayNoteUiState.errorMessage ?: dayNoteUiState.successMessage
     val placeToastMessage = placeUiState.errorMessage ?: placeUiState.successMessage
     val bookmarkToastMessage = uiState.bookmarkToggleUiState.feedbackMessage
+    val shouldSuppressOverlayToasts = uiState.routeModeUiState.routeErrorMessage != null
+
+    LaunchedEffect(
+        shouldSuppressOverlayToasts,
+        dayNoteUiState.feedbackEventId,
+        dayNoteToastMessage,
+        placeUiState.feedbackEventId,
+        placeToastMessage,
+        uiState.bookmarkToggleUiState.feedbackEventId,
+        bookmarkToastMessage
+    ) {
+        if (!shouldSuppressOverlayToasts) return@LaunchedEffect
+
+        if (dayNoteToastMessage != null) {
+            onDayNoteFeedbackDismissed(dayNoteUiState.feedbackEventId)
+        }
+        if (placeToastMessage != null) {
+            onPlaceFeedbackDismissed(placeUiState.feedbackEventId)
+        }
+        if (bookmarkToastMessage != null) {
+            onBookmarkFeedbackDismissed(uiState.bookmarkToggleUiState.feedbackEventId)
+        }
+    }
+
     val shouldShowPastEmptyToast =
         uiState.routeModeUiState is MainRouteModeUiState.Past &&
             uiState.routeModeUiState.isRouteEmpty &&
             uiState.routeModeUiState.routeErrorMessage == null &&
             !uiState.routeModeUiState.isRouteLoading
     val overlayToasts = buildList {
-        if (dayNoteToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && dayNoteToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = dayNoteToastMessage,
@@ -685,7 +709,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (placeToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && placeToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = placeToastMessage,
@@ -694,7 +718,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (bookmarkToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && bookmarkToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = bookmarkToastMessage,
@@ -705,7 +729,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (shouldShowPastEmptyToast) {
+        if (!shouldSuppressOverlayToasts && shouldShowPastEmptyToast) {
             add(
                 ToastOverlayItem(
                     message = stringResource(R.string.route_empty_past_toast),

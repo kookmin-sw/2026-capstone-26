@@ -107,6 +107,9 @@
     <string name="day_route_bookmark_list_empty_title">아직 즐겨찾기한 기록이 없어요</string>
     <string name="day_route_bookmark_list_empty_body">달력에서 간직하고 싶은 날짜를 즐겨찾기로 설정해 보세요</string>
     <string name="network_request_failed_banner">네트워크 요청에 실패했습니다.</string>
+    <string name="network_failure_dialog_title">정보를 불러오지 못했어요</string>
+    <string name="network_failure_dialog_message">네트워크 상태를 확인한 뒤 다시 시도해 주세요</string>
+    <string name="network_failure_dialog_close">닫기</string>
     <string name="main_permission_off_title">위치 권한이 꺼져 있습니다</string>
     <string name="main_permission_off_message">정확한 위치 권한을 허용하면 현재 위치를 지도에서 볼 수 있습니다.</string>
     <string name="main_permission_enabled_background">백그라운드 위치 권한이 허용됨</string>

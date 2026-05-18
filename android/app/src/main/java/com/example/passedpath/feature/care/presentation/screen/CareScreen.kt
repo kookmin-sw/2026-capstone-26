@@ -16,6 +16,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ import com.example.passedpath.feature.care.presentation.state.CareUiState
 import com.example.passedpath.feature.care.presentation.state.CareVisitedPlaceMarkerUiState
 import com.example.passedpath.ui.component.bottomsheet.BaseAnchoredBottomSheetScaffold
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
-import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureBanner
+import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.White
@@ -382,6 +383,14 @@ private fun CareMapStatusOverlay(
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var dismissedErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(uiState.errorMessage, uiState.isLoading) {
+        if (uiState.errorMessage == null || uiState.isLoading) {
+            dismissedErrorMessage = null
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -391,17 +400,22 @@ private fun CareMapStatusOverlay(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when {
-            uiState.errorMessage != null -> {
-                MapOverlayNetworkFailureBanner(
-                    retryText = stringResource(R.string.route_retry),
-                    onRetryClick = onRetryClick
-                )
-            }
-
             uiState.hasLoaded && uiState.dependents.isEmpty() && !uiState.isLoading -> {
                 CareEmptyDependentsBanner()
             }
         }
+    }
+
+    val errorMessage = uiState.errorMessage
+    if (errorMessage != null && dismissedErrorMessage != errorMessage) {
+        MapOverlayNetworkFailureDialog(
+            retryText = stringResource(R.string.route_retry),
+            onDismiss = { dismissedErrorMessage = errorMessage },
+            onRetryClick = {
+                dismissedErrorMessage = errorMessage
+                onRetryClick()
+            }
+        )
     }
 }
 
