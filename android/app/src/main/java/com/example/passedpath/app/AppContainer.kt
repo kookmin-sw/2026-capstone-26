@@ -191,7 +191,7 @@ class AppContainer(
     private val authTokenManager by lazy {
         AuthTokenManager(
             authApi = refreshAuthApi,
-            sessionStorage = authSessionStorage
+            tokenStore = authSessionStorage
         )
     }
 
@@ -199,7 +199,6 @@ class AppContainer(
         RetrofitClient.provideRetrofit(
             sessionStorage = authSessionStorage,
             authenticator = AccessTokenAuthenticator(
-                sessionStorage = authSessionStorage,
                 tokenManager = authTokenManager
             )
         )
@@ -273,7 +272,6 @@ class AppContainer(
         RetrofitClient.provideOkHttpClient(
             sessionStorage = authSessionStorage,
             authenticator = AccessTokenAuthenticator(
-                sessionStorage = authSessionStorage,
                 tokenManager = authTokenManager
             )
         )

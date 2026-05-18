@@ -324,7 +324,9 @@ class LocationTrackingService : Service() {
     private suspend fun uploadPendingPoints(dateKey: String): Boolean {
         return uploadMutex.withLock {
             try {
-                val didUpload = applicationContext.appContainer.uploadGpsPointsBatchUseCase(dateKey)
+                val appContainer = applicationContext.appContainer
+                appContainer.authSessionStorage.warmTokenCacheIfNeeded()
+                val didUpload = appContainer.uploadGpsPointsBatchUseCase(dateKey)
                 if (!didUpload) {
                     Log.d(TAG, "No pending points to upload for dateKey=$dateKey")
                 }
