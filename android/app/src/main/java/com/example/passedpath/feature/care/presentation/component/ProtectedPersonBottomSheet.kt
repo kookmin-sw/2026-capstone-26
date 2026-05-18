@@ -1,20 +1,26 @@
 package com.example.passedpath.feature.care.presentation.component
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,8 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -63,11 +72,14 @@ import com.example.passedpath.ui.theme.Gray400
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray700
+import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green300
 import com.example.passedpath.ui.theme.Green50
 import com.example.passedpath.ui.theme.Green500
+import com.example.passedpath.ui.theme.Green600
 import com.example.passedpath.ui.theme.PassedPathTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProtectedPersonBottomSheet(
@@ -76,6 +88,9 @@ fun ProtectedPersonBottomSheet(
     placeListUiState: ProtectedPersonPlaceListUiState,
     summaryUiState: ProtectedPersonSummaryUiState,
     modifier: Modifier = Modifier,
+    selectedPlaceId: Long? = null,
+    onSelectedPlaceHandled: () -> Unit = {},
+    onPlaceClick: (Long) -> Unit = {},
     onPlaceRetryClick: () -> Unit = {},
     onSummaryRetryClick: () -> Unit = {}
 ) {
@@ -102,7 +117,10 @@ fun ProtectedPersonBottomSheet(
         when (selectedTab) {
             ProtectedPersonBottomSheetTab.PLACE -> ProtectedPersonPlaceListContent(
                 uiState = placeListUiState,
+                selectedPlaceId = selectedPlaceId,
+                onSelectedPlaceHandled = onSelectedPlaceHandled,
                 onRetryClick = onPlaceRetryClick,
+                onPlaceClick = onPlaceClick,
                 onScrollStateChanged = { isContentScrolled = it },
                 modifier = Modifier
                     .fillMaxSize()
@@ -124,10 +142,14 @@ fun ProtectedPersonBottomSheet(
 @Composable
 fun ProtectedPersonPlaceListContent(
     uiState: ProtectedPersonPlaceListUiState,
+    selectedPlaceId: Long?,
+    onSelectedPlaceHandled: () -> Unit,
     onRetryClick: () -> Unit,
+    onPlaceClick: (Long) -> Unit,
     onScrollStateChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var animatedPlaceId by remember { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
     val isContentScrolled by remember {
         derivedStateOf {
@@ -135,58 +157,78 @@ fun ProtectedPersonPlaceListContent(
                 listState.firstVisibleItemScrollOffset > 0
         }
     }
+    val places = uiState.places.sortedBy(ProtectedPersonPlaceUiState::orderIndex)
+    val placeSectionStartIndex = 2
 
     LaunchedEffect(isContentScrolled) {
         onScrollStateChanged(isContentScrolled)
     }
 
+    LaunchedEffect(selectedPlaceId, places) {
+        val placeId = selectedPlaceId ?: return@LaunchedEffect
+        val selectedIndex = places.indexOfFirst { place -> place.placeId == placeId }
+        if (selectedIndex < 0) return@LaunchedEffect
+
+        listState.animateScrollToItem(placeSectionStartIndex + selectedIndex)
+        animatedPlaceId = placeId
+        delay(1_700)
+        animatedPlaceId = null
+        onSelectedPlaceHandled()
+    }
+
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         item {
-            Spacer(modifier = Modifier.height(2.dp))
+            Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                ProtectedPersonPlaceSummarySection(placeCount = uiState.placeCount)
+            }
         }
         item {
-            ProtectedPersonPlaceSummarySection(placeCount = uiState.placeCount)
-        }
-        item {
-            ProtectedPersonPlaceInfoBanner()
+            Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                ProtectedPersonPlaceInfoBanner()
+            }
         }
 
         when {
             uiState.errorMessage != null -> {
                 item {
-                    ProtectedPersonPlaceErrorNotice(onRetryClick = onRetryClick)
+                    Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                        ProtectedPersonPlaceErrorNotice(onRetryClick = onRetryClick)
+                    }
                 }
             }
 
             uiState.isLoading || !uiState.hasLoaded -> {
                 item(key = "protected_person_place_skeleton") {
-                    ProtectedPersonPlaceSkeletonList()
+                    Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                        ProtectedPersonPlaceSkeletonList()
+                    }
                 }
             }
 
-            uiState.places.isEmpty() -> {
+            places.isEmpty() -> {
                 item {
-                    ProtectedPersonEmptyPlaceNotice()
+                    Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                        ProtectedPersonEmptyPlaceNotice()
+                    }
                 }
             }
 
             else -> {
-                items(
-                    items = uiState.places,
-                    key = ProtectedPersonPlaceUiState::placeId
-                ) { place ->
-                    PlaceCard(
-                        name = place.placeName,
-                        address = place.roadAddress,
-                        startTimeText = place.startTimeText,
-                        endTimeText = place.endTimeText,
-                        isFavoritePlace = place.isFavoritePlace,
-                        showMoreButton = false,
-                        onClick = null
+                itemsIndexed(
+                    items = places,
+                    key = { _, place -> place.placeId }
+                ) { index, place ->
+                    ProtectedPersonPlaceTimelineItem(
+                        place = place,
+                        shouldAnimate = place.placeId == animatedPlaceId,
+                        isFirst = index == 0,
+                        isLast = index == places.lastIndex,
+                        displayOrderIndex = index + 1,
+                        onPlaceClick = { onPlaceClick(place.placeId) }
                     )
                 }
             }
@@ -360,59 +402,265 @@ private fun ProtectedPersonEmptyPlaceNotice() {
 }
 
 @Composable
-private fun ProtectedPersonPlaceSkeletonList() {
-    val skeletonBrush = rememberBaseSkeletonBrush()
+private fun ProtectedPersonPlaceTimelineItem(
+    place: ProtectedPersonPlaceUiState,
+    shouldAnimate: Boolean,
+    isFirst: Boolean,
+    isLast: Boolean,
+    displayOrderIndex: Int,
+    onPlaceClick: () -> Unit
+) {
+    val highlightProgress = remember(place.placeId) { Animatable(0f) }
+    val bottomSpacing = if (isLast) 0.dp else PlaceTimelineItemSpacing
 
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        repeat(3) {
-            ProtectedPersonPlaceCardSkeleton(shimmerBrush = skeletonBrush)
+    LaunchedEffect(shouldAnimate) {
+        if (!shouldAnimate) {
+            highlightProgress.snapTo(0f)
+            return@LaunchedEffect
+        }
+
+        highlightProgress.snapTo(0f)
+        highlightProgress.animateTo(1f, animationSpec = tween(durationMillis = 350))
+        delay(500)
+        highlightProgress.animateTo(0f, animationSpec = tween(durationMillis = 850))
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        TimelineDecoration(
+            orderIndex = displayOrderIndex,
+            isFirst = isFirst,
+            isLast = isLast
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = bottomSpacing)
+        ) {
+            PlaceCard(
+                name = place.placeName.ifBlank {
+                    stringResource(R.string.route_place_fallback_title, displayOrderIndex)
+                },
+                address = place.roadAddress.ifBlank {
+                    stringResource(
+                        R.string.place_card_coordinate,
+                        place.latitude,
+                        place.longitude
+                    )
+                },
+                startTimeText = place.startTimeText,
+                endTimeText = place.endTimeText,
+                isFavoritePlace = place.isFavoritePlace,
+                showMoreButton = false,
+                onClick = onPlaceClick,
+                highlightProgress = highlightProgress.value,
+                modifier = Modifier.fillMaxWidth(),
+                isCompact = true
+            )
         }
     }
 }
 
 @Composable
-private fun ProtectedPersonPlaceCardSkeleton(
+private fun TimelineDecoration(
+    orderIndex: Int,
+    isFirst: Boolean,
+    isLast: Boolean
+) {
+    Box(
+        modifier = Modifier
+            .width(22.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val centerX = size.width / 2f
+            val pointCenterY = PlaceTimelinePointCenterY.toPx()
+            val pointRadius = 8.dp.toPx()
+            val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 14f), 0f)
+            val dashColor = Green500.copy(alpha = 0.24f)
+            val strokeWidth = 1.dp.toPx()
+            val gap = 4.dp.toPx()
+
+            if (!isFirst) {
+                drawLine(
+                    color = dashColor,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, pointCenterY - pointRadius - gap),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round,
+                    pathEffect = dashEffect
+                )
+            }
+            if (!isLast) {
+                drawLine(
+                    color = dashColor,
+                    start = Offset(centerX, pointCenterY + pointRadius + gap),
+                    end = Offset(centerX, size.height),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round,
+                    pathEffect = dashEffect
+                )
+            }
+            drawCircle(
+                color = Green50,
+                radius = pointRadius,
+                center = Offset(centerX, pointCenterY)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .padding(top = PlaceTimelinePointCenterY - 11.dp)
+                .size(22.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = orderIndex.toString(),
+                style = MaterialTheme.typography.labelSmall,
+                color = Green600,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProtectedPersonPlaceSkeletonList() {
+    val skeletonBrush = rememberBaseSkeletonBrush()
+
+    Column(verticalArrangement = Arrangement.spacedBy(PlaceTimelineItemSpacing)) {
+        repeat(2) { index ->
+            ProtectedPersonPlaceTimelineSkeletonItem(
+                shimmerBrush = skeletonBrush,
+                isFirst = index == 0,
+                isLast = index == 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProtectedPersonPlaceTimelineSkeletonItem(
+    shimmerBrush: Brush,
+    isFirst: Boolean,
+    isLast: Boolean
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        SkeletonTimelineDecoration(
+            shimmerBrush = shimmerBrush,
+            isFirst = isFirst,
+            isLast = isLast
+        )
+        SkeletonPlaceCard(
+            shimmerBrush = shimmerBrush,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun SkeletonPlaceCard(
     shimmerBrush: Brush,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .height(92.dp)
-            .background(Gray50, RoundedCornerShape(24.dp))
-            .padding(horizontal = 20.dp, vertical = 18.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+            .height(PlaceTimelineCardHeight)
+            .background(Gray50, RoundedCornerShape(20.dp))
+            .padding(start = 20.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(9.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             BaseSkeletonBlock(
                 brush = shimmerBrush,
                 modifier = Modifier
-                    .fillMaxWidth(0.62f)
-                    .height(18.dp),
-                shape = RoundedCornerShape(9.dp)
+                    .fillMaxWidth(0.58f)
+                    .height(16.dp)
             )
             BaseSkeletonBlock(
                 brush = shimmerBrush,
                 modifier = Modifier
                     .fillMaxWidth(0.82f)
-                    .height(14.dp)
-            )
-            BaseSkeletonBlock(
-                brush = shimmerBrush,
-                modifier = Modifier
-                    .fillMaxWidth(0.44f)
-                    .height(14.dp)
+                    .height(13.dp)
             )
         }
         BaseSkeletonBlock(
             brush = shimmerBrush,
-            modifier = Modifier.size(34.dp),
+            modifier = Modifier.size(36.dp),
             shape = CircleShape
         )
+    }
+}
+
+@Composable
+private fun SkeletonTimelineDecoration(
+    shimmerBrush: Brush,
+    isFirst: Boolean,
+    isLast: Boolean
+) {
+    val decorationHeight = PlaceTimelineCardHeight + if (isLast) {
+        0.dp
+    } else {
+        PlaceTimelineItemSpacing
+    }
+
+    Box(
+        modifier = Modifier.size(width = 22.dp, height = decorationHeight),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val centerX = size.width / 2f
+            val pointCenterY = PlaceTimelinePointCenterY.toPx()
+            val pointRadius = 8.dp.toPx()
+            val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 14f), 0f)
+            val strokeWidth = 1.dp.toPx()
+            val gap = 4.dp.toPx()
+
+            if (!isFirst) {
+                drawLine(
+                    color = Gray100,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, pointCenterY - pointRadius - gap),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round,
+                    pathEffect = dashEffect
+                )
+            }
+            if (!isLast) {
+                drawLine(
+                    color = Gray100,
+                    start = Offset(centerX, pointCenterY + pointRadius + gap),
+                    end = Offset(centerX, size.height),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round,
+                    pathEffect = dashEffect
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .padding(top = PlaceTimelinePointCenterY - 8.dp)
+                .size(16.dp)
+        ) {
+            BaseSkeletonBlock(
+                brush = shimmerBrush,
+                modifier = Modifier.matchParentSize(),
+                shape = RoundedCornerShape(8.dp)
+            )
+        }
     }
 }
 
@@ -450,6 +698,10 @@ private fun ProtectedPersonBottomSheetTab.toBaseTabItem():
         iconResId = iconResId()
     )
 }
+
+private val PlaceTimelineCardHeight = 78.dp
+private val PlaceTimelineItemSpacing = 16.dp
+private val PlaceTimelinePointCenterY = 34.dp
 
 @Preview(showBackground = true, heightDp = 720, name = "Protected Person - Places")
 @Composable
@@ -522,6 +774,9 @@ private val SampleProtectedPersonPlaceListUiState = ProtectedPersonPlaceListUiSt
             placeId = 1L,
             placeName = "Maison Akai Hyehwa",
             roadAddress = "34 Daemyeong-gil, Jongno-gu, Seoul",
+            latitude = 37.5839,
+            longitude = 127.0008,
+            orderIndex = 1,
             startTimeText = "10:12 AM",
             endTimeText = "11:08 AM"
         ),
@@ -529,6 +784,9 @@ private val SampleProtectedPersonPlaceListUiState = ProtectedPersonPlaceListUiSt
             placeId = 2L,
             placeName = "National University Welfare Center",
             roadAddress = "77 Jeongneung-ro, Seongbuk-gu, Seoul",
+            latitude = 37.6109,
+            longitude = 126.9970,
+            orderIndex = 2,
             startTimeText = "12:30 PM",
             endTimeText = "1:15 PM",
             isFavoritePlace = true
@@ -537,6 +795,9 @@ private val SampleProtectedPersonPlaceListUiState = ProtectedPersonPlaceListUiSt
             placeId = 3L,
             placeName = "Cheonggye Plaza",
             roadAddress = "Taepyeong-ro 1-ga, Jung-gu, Seoul",
+            latitude = 37.5704,
+            longitude = 126.9789,
+            orderIndex = 3,
             startTimeText = "4:20 PM",
             endTimeText = "5:05 PM"
         )

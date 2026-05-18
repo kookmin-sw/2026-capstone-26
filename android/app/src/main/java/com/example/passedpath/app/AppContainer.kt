@@ -162,6 +162,7 @@ class AppContainer(
         )
             .addMigrations(PassedPathDatabase.MIGRATION_1_2)
             .addMigrations(PassedPathDatabase.MIGRATION_2_3)
+            .addMigrations(PassedPathDatabase.MIGRATION_3_4)
             .build()
     }
 

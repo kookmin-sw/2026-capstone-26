@@ -28,9 +28,15 @@ import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
 import com.example.passedpath.feature.care.presentation.component.CareDependentMapMarker
 import com.example.passedpath.feature.care.presentation.component.CareDependentSelectorRow
+import com.example.passedpath.feature.care.presentation.component.CareVisitedPlaceMapMarker
+import com.example.passedpath.feature.care.presentation.component.ProtectedPersonBottomSheet
 import com.example.passedpath.feature.care.presentation.component.careDependentAvatarPalette
+import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBottomSheetTab
 import com.example.passedpath.feature.care.presentation.state.CareDependentMapMarkerUiState
 import com.example.passedpath.feature.care.presentation.state.CareUiState
+import com.example.passedpath.feature.care.presentation.state.CareVisitedPlaceMarkerUiState
+import com.example.passedpath.ui.component.bottomsheet.BaseAnchoredBottomSheetScaffold
+import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray700
@@ -53,6 +59,63 @@ fun CareScreen(
     onDependentSelected: (Long?) -> Unit,
     onRetryClick: () -> Unit,
     onInviteClick: () -> Unit,
+    onSheetValueChanged: (BaseBottomSheetValue) -> Unit,
+    onSheetCommandConsumed: (BaseBottomSheetValue) -> Unit,
+    onTabSelected: (ProtectedPersonBottomSheetTab) -> Unit,
+    onPlaceMarkerClick: (Long) -> Unit,
+    onPlaceCardClick: (Long) -> Unit,
+    onSelectedPlaceHandled: () -> Unit,
+    onFocusedPlaceHandled: () -> Unit,
+    onMapClick: () -> Unit,
+    onPlaceRetryClick: () -> Unit,
+    onSummaryRetryClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BaseAnchoredBottomSheetScaffold(
+        modifier = modifier.fillMaxSize(),
+        initialSheetValue = uiState.bottomSheetValue,
+        requestedSheetValue = uiState.requestedSheetValue,
+        onSheetValueChanged = onSheetValueChanged,
+        onSheetCommandConsumed = onSheetCommandConsumed,
+        content = {
+            CareMapContent(
+                uiState = uiState,
+                onDependentSelected = onDependentSelected,
+                onRetryClick = onRetryClick,
+                onInviteClick = onInviteClick,
+                onPlaceMarkerClick = onPlaceMarkerClick,
+                onFocusedPlaceHandled = onFocusedPlaceHandled,
+                onMapClick = onMapClick
+            )
+        },
+        sheet = { sheetModifier ->
+            if (uiState.selectedDependent != null) {
+                ProtectedPersonBottomSheet(
+                    selectedTab = uiState.selectedBottomSheetTab,
+                    onTabSelected = onTabSelected,
+                    placeListUiState = uiState.placeListUiState,
+                    summaryUiState = uiState.summaryUiState,
+                    selectedPlaceId = uiState.selectedPlaceId,
+                    onSelectedPlaceHandled = onSelectedPlaceHandled,
+                    onPlaceClick = onPlaceCardClick,
+                    onPlaceRetryClick = onPlaceRetryClick,
+                    onSummaryRetryClick = onSummaryRetryClick,
+                    modifier = sheetModifier
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun CareMapContent(
+    uiState: CareUiState,
+    onDependentSelected: (Long?) -> Unit,
+    onRetryClick: () -> Unit,
+    onInviteClick: () -> Unit,
+    onPlaceMarkerClick: (Long) -> Unit,
+    onFocusedPlaceHandled: () -> Unit,
+    onMapClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -67,6 +130,11 @@ fun CareScreen(
         )
     }
     val markerDependents = uiState.mapMarkers
+    val visitedPlaceMarkers = if (uiState.selectedDependentUserId == null) {
+        emptyList()
+    } else {
+        uiState.visitedPlaceMarkers
+    }
     val initialCameraTarget = markerDependents.firstOrNull()?.toLatLng() ?: SeoulFallbackLatLng
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(initialCameraTarget, InitialCareMapZoom)
@@ -94,6 +162,21 @@ fun CareScreen(
         )
     }
 
+    LaunchedEffect(isMapLoaded, uiState.focusedPlaceId, visitedPlaceMarkers) {
+        val placeId = uiState.focusedPlaceId ?: return@LaunchedEffect
+        if (!isMapLoaded) return@LaunchedEffect
+
+        val target = visitedPlaceMarkers
+            .firstOrNull { marker -> marker.placeId == placeId }
+            ?.toLatLng()
+        if (target != null) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(target, FocusedPlaceMapZoom)
+            )
+        }
+        onFocusedPlaceHandled()
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -104,56 +187,42 @@ fun CareScreen(
             ),
             uiSettings = mapUiSettings,
             onMapLoaded = { isMapLoaded = true },
-            onMapClick = { onDependentSelected(null) }
+            onMapClick = { onMapClick() }
         ) {
             markerDependents.forEachIndexed { index, dependent ->
-                key(dependent.dependentUserId) {
-                    val position = remember(
-                        dependent.dependentUserId,
-                        dependent.latitude,
-                        dependent.longitude
-                    ) {
-                        dependent.toLatLng()
-                    }
-                    val markerState = rememberMarkerState(
-                        key = "care-dependent:${dependent.dependentUserId}",
-                        position = position
-                    )
-
-                    LaunchedEffect(position) {
-                        markerState.position = position
-                    }
-
-                    MarkerComposable(
-                        state = markerState,
-                        title = dependent.nickname,
-                        anchor = Offset(0.5f, 0.92f),
-                        zIndex = if (uiState.selectedDependentUserId == dependent.dependentUserId) {
-                            SelectedDependentMarkerZIndex
-                        } else {
-                            DependentMarkerZIndex
-                        },
-                        onClick = {
-                            onDependentSelected(dependent.dependentUserId)
-                            coroutineScope.launch {
-                                cameraPositionState.animate(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                        position,
-                                        SelectedCareMapZoom
-                                    )
+                CareDependentMarker(
+                    dependent = dependent,
+                    paletteIndex = index,
+                    selected = uiState.selectedDependentUserId == dependent.dependentUserId,
+                    onClick = {
+                        onDependentSelected(dependent.dependentUserId)
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    dependent.toLatLng(),
+                                    SelectedCareMapZoom
                                 )
-                            }
-                            true
+                            )
                         }
-                    ) {
-                        CareDependentMapMarker(
-                            nickname = dependent.nickname,
-                            profileImageUrl = dependent.profileImageUrl,
-                            palette = careDependentAvatarPalette(index),
-                            selected = uiState.selectedDependentUserId == dependent.dependentUserId
-                        )
                     }
-                }
+                )
+            }
+
+            visitedPlaceMarkers.forEach { marker ->
+                CareVisitedPlaceMarker(
+                    marker = marker,
+                    onClick = {
+                        onPlaceMarkerClick(marker.placeId)
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    marker.toLatLng(),
+                                    FocusedPlaceMapZoom
+                                )
+                            )
+                        }
+                    }
+                )
             }
         }
 
@@ -169,6 +238,87 @@ fun CareScreen(
             onRetryClick = onRetryClick,
             modifier = Modifier.align(Alignment.TopCenter)
         )
+    }
+}
+
+@Composable
+private fun CareDependentMarker(
+    dependent: CareDependentMapMarkerUiState,
+    paletteIndex: Int,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    key(dependent.dependentUserId) {
+        val position = remember(
+            dependent.dependentUserId,
+            dependent.latitude,
+            dependent.longitude
+        ) {
+            dependent.toLatLng()
+        }
+        val markerState = rememberMarkerState(
+            key = "care-dependent:${dependent.dependentUserId}",
+            position = position
+        )
+
+        LaunchedEffect(position) {
+            markerState.position = position
+        }
+
+        MarkerComposable(
+            state = markerState,
+            title = dependent.nickname,
+            anchor = Offset(0.5f, 0.92f),
+            zIndex = if (selected) {
+                SelectedDependentMarkerZIndex
+            } else {
+                DependentMarkerZIndex
+            },
+            onClick = {
+                onClick()
+                true
+            }
+        ) {
+            CareDependentMapMarker(
+                nickname = dependent.nickname,
+                profileImageUrl = dependent.profileImageUrl,
+                palette = careDependentAvatarPalette(paletteIndex),
+                selected = selected
+            )
+        }
+    }
+}
+
+@Composable
+private fun CareVisitedPlaceMarker(
+    marker: CareVisitedPlaceMarkerUiState,
+    onClick: () -> Unit
+) {
+    val position = remember(marker.placeId, marker.latitude, marker.longitude) {
+        marker.toLatLng()
+    }
+    val markerState = rememberMarkerState(
+        key = "care-place:${marker.placeId}:${marker.latitude}:${marker.longitude}",
+        position = position
+    )
+
+    LaunchedEffect(position) {
+        markerState.position = position
+    }
+
+    MarkerComposable(
+        marker.placeId,
+        marker.displayOrderIndex,
+        state = markerState,
+        title = marker.placeName,
+        anchor = Offset(0.5f, 0.5f),
+        zIndex = VisitedPlaceMarkerZIndex,
+        onClick = {
+            onClick()
+            true
+        }
+    ) {
+        CareVisitedPlaceMapMarker(orderIndex = marker.displayOrderIndex)
     }
 }
 
@@ -261,15 +411,18 @@ private fun CareEmptyDependentsNotice() {
 }
 
 private fun CareDependentMapMarkerUiState.toLatLng(): LatLng {
-    return LatLng(
-        latitude,
-        longitude
-    )
+    return LatLng(latitude, longitude)
+}
+
+private fun CareVisitedPlaceMarkerUiState.toLatLng(): LatLng {
+    return LatLng(latitude, longitude)
 }
 
 private val SeoulFallbackLatLng = LatLng(37.5662952, 126.9779451)
 private val CareStatusTopPadding = 128.dp
 private const val InitialCareMapZoom = 13f
 private const val SelectedCareMapZoom = 16f
+private const val FocusedPlaceMapZoom = 17f
 private const val DependentMarkerZIndex = 0f
 private const val SelectedDependentMarkerZIndex = 1f
+private const val VisitedPlaceMarkerZIndex = 2f

@@ -16,6 +16,9 @@ data class ProtectedPersonPlaceUiState(
     val placeId: Long,
     val placeName: String,
     val roadAddress: String,
+    val latitude: Double,
+    val longitude: Double,
+    val orderIndex: Int,
     val startTimeText: String? = null,
     val endTimeText: String? = null,
     val isFavoritePlace: Boolean = false

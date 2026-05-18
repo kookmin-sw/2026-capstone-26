@@ -30,7 +30,7 @@ interface GpsPointDao {
         ORDER BY recordedAtEpochMillis ASC
         """
     )
-    fun observeRoutePointProjectionsByDate(dateKey: String): Flow<List<GpsPointRouteProjection>>
+    suspend fun getRoutePointProjectionsByDate(dateKey: String): List<GpsPointRouteProjection>
 
     @Query(
         """

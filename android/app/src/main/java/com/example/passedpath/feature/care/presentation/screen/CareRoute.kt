@@ -24,6 +24,16 @@ fun CareRoute(
         onDependentSelected = viewModel::selectDependent,
         onRetryClick = viewModel::refreshDependents,
         onInviteClick = {},
+        onSheetValueChanged = viewModel::onSheetValueChanged,
+        onSheetCommandConsumed = viewModel::onSheetCommandConsumed,
+        onTabSelected = viewModel::selectBottomSheetTab,
+        onPlaceMarkerClick = viewModel::onPlaceMarkerClick,
+        onPlaceCardClick = viewModel::onPlaceCardClick,
+        onSelectedPlaceHandled = viewModel::onSelectedPlaceHandled,
+        onFocusedPlaceHandled = viewModel::onFocusedPlaceHandled,
+        onMapClick = viewModel::onMapClick,
+        onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
+        onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
         modifier = modifier
     )
 }
