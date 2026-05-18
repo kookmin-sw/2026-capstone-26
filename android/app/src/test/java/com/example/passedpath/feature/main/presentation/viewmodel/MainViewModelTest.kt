@@ -179,14 +179,46 @@ class MainViewModelTest {
         )
         advanceUntilIdle()
 
-        viewModel.updateCurrentLocation(
-            CoordinateUiState(latitude = 37.1, longitude = 127.1)
-        )
+        val currentLocation = CoordinateUiState(latitude = 37.1, longitude = 127.1)
+        viewModel.updateCurrentLocation(currentLocation)
 
+        assertEquals(currentLocation, viewModel.currentLocationState.value)
         assertEquals(
             MainCameraIntent.CenterCurrentLocation,
             viewModel.uiState.value.pendingCameraIntent
         )
+    }
+
+    @Test
+    fun `current location ui state updates only after minimum distance and interval`() = runTest {
+        var nowMillis = 1_000L
+        val viewModel = createViewModel(
+            repository = FakeDayRouteRepository(),
+            initialDateKey = "2026-03-31",
+            todayDateKey = "2026-03-31",
+            backgroundGranted = true,
+            currentTimeMillis = { nowMillis }
+        )
+        advanceUntilIdle()
+
+        val firstLocation = CoordinateUiState(latitude = 37.0, longitude = 127.0)
+        val farLocationBeforeInterval = CoordinateUiState(latitude = 37.0002, longitude = 127.0)
+        val nearLocationAfterInterval = CoordinateUiState(latitude = 37.00001, longitude = 127.0)
+        val farLocationAfterInterval = CoordinateUiState(latitude = 37.0002, longitude = 127.0)
+
+        viewModel.updateCurrentLocation(firstLocation)
+        assertEquals(firstLocation, viewModel.currentLocationState.value)
+
+        nowMillis = 4_000L
+        viewModel.updateCurrentLocation(farLocationBeforeInterval)
+        assertEquals(firstLocation, viewModel.currentLocationState.value)
+
+        nowMillis = 7_000L
+        viewModel.updateCurrentLocation(nearLocationAfterInterval)
+        assertEquals(firstLocation, viewModel.currentLocationState.value)
+
+        viewModel.updateCurrentLocation(farLocationAfterInterval)
+        assertEquals(farLocationAfterInterval, viewModel.currentLocationState.value)
     }
 
     @Test
@@ -278,8 +310,8 @@ class MainViewModelTest {
     @Test
     fun `denied permission shows overlay and clears current location`() = runTest {
         val permissionReader = MutableLocationPermissionStatusReader(
-            foregroundGranted = false,
-            backgroundGranted = false
+            foregroundGranted = true,
+            backgroundGranted = true
         )
         val viewModel = createViewModel(
             repository = FakeDayRouteRepository(),
@@ -289,9 +321,21 @@ class MainViewModelTest {
         )
         advanceUntilIdle()
 
+        viewModel.updateCurrentLocation(CoordinateUiState(latitude = 37.1, longitude = 127.1))
+        assertNotNull(viewModel.currentLocationState.value)
+        assertEquals(MainCameraIntent.CenterCurrentLocation, viewModel.uiState.value.pendingCameraIntent)
+
+        permissionReader.foregroundGranted = false
+        permissionReader.backgroundGranted = false
+        viewModel.refreshPermissionState()
+
         assertEquals(LocationPermissionUiState.DENIED, viewModel.uiState.value.permissionState)
         assertNotNull(createPermissionOverlayUiModel(viewModel.uiState.value.permissionState, viewModel.uiState.value.isLocationServiceEnabled))
-        assertNull(viewModel.uiState.value.currentLocation)
+        assertNull(viewModel.currentLocationState.value)
+        assertNull(viewModel.uiState.value.pendingCameraIntent)
+
+        viewModel.updateCurrentLocation(CoordinateUiState(latitude = 37.2, longitude = 127.2))
+        assertNull(viewModel.currentLocationState.value)
     }
 
     @Test
@@ -685,7 +729,8 @@ class MainViewModelTest {
             FakeLocationPermissionStatusReader(backgroundGranted = backgroundGranted),
         locationServiceReader: LocationServiceStatusReader =
             MutableLocationServiceStatusReader(isEnabled = isLocationServiceEnabled),
-        bookmarkRepository: DayRouteBookmarkRepository = FakeDayRouteBookmarkRepository()
+        bookmarkRepository: DayRouteBookmarkRepository = FakeDayRouteBookmarkRepository(),
+        currentTimeMillis: () -> Long = { 0L }
     ): MainViewModel {
         return MainViewModel(
             locationAccessStateResolver = LocationAccessStateResolver(
@@ -701,7 +746,8 @@ class MainViewModelTest {
             observeRecentTrackingEvents = FakeObserveRecentTrackingEventsUseCase(),
             trackingServiceStateReader = FakeLocationTrackingServiceStateReader(trackingState),
             startTracking = onStartTracking,
-            stopTracking = onStopTracking
+            stopTracking = onStopTracking,
+            currentTimeMillis = currentTimeMillis
         )
     }
 

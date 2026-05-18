@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,7 @@ import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
+import com.example.passedpath.ui.state.CoordinateUiState
 
 data class PlaceCreatedEvent(
     val id: Int,
@@ -80,6 +82,7 @@ fun MainScreen(
     dayNoteUiState: DayNoteUiState,
     daySummaryUiState: DaySummaryUiState,
     placeUiState: PlaceUiState,
+    currentLocationState: State<CoordinateUiState?>,
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
     onCameraIntentConsumed: () -> Unit,
@@ -328,6 +331,7 @@ fun MainScreen(
             dayNoteUiState = dayNoteUiState,
             daySummaryUiState = daySummaryUiState,
             placeUiState = placeUiState,
+            currentLocationState = currentLocationState,
             markerPlaces = markerPlaces,
             bookmarkMarkers = bookmarkMarkers,
             localUiState = localUiState,
@@ -521,6 +525,7 @@ private fun MainScreenScaffoldContent(
     dayNoteUiState: DayNoteUiState,
     daySummaryUiState: DaySummaryUiState,
     placeUiState: PlaceUiState,
+    currentLocationState: State<CoordinateUiState?>,
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
     localUiState: MainScreenLocalUiState,
@@ -567,6 +572,7 @@ private fun MainScreenScaffoldContent(
                 markerPlaces = markerPlaces,
                 bookmarkMarkers = bookmarkMarkers,
                 focusedPlaceId = localUiState.focusedPlaceId,
+                currentLocationState = currentLocationState,
                 isBookmarkMarkersVisible = isBookmarkMarkersVisible,
                 currentLocationCameraRequestKey = currentLocationCameraRequestKey,
                 onFocusedPlaceHandled = onFocusedPlaceHandled,
@@ -589,6 +595,7 @@ private fun MainScreenScaffoldContent(
             Box(modifier = Modifier.fillMaxSize()) {
                 MainMapBottomOverlayContent(
                     uiState = uiState,
+                    currentLocationState = currentLocationState,
                     floatingBottomPadding = floatingBottomPadding,
                     isBookmarkMarkersVisible = isBookmarkMarkersVisible,
                     showCurrentLocationButton = shouldShowCurrentLocationButton(

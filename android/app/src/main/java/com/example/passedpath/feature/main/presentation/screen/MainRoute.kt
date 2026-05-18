@@ -44,6 +44,7 @@ fun MainRoute(
     val context = LocalContext.current
     val appContainer = context.appContainer
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentLocationState = viewModel.currentLocationState.collectAsStateWithLifecycle()
     val dayNoteViewModel: DayNoteViewModel = viewModel(
         factory = DayNoteViewModelFactory(
             appContainer = appContainer,
@@ -153,7 +154,7 @@ fun MainRoute(
     MainRouteEffects(
         permissionState = uiState.permissionState,
         isLocationServiceEnabled = uiState.isLocationServiceEnabled,
-        currentLocation = uiState.currentLocation,
+        currentLocationState = currentLocationState,
         isTrackingActive = uiState.isTrackingActive,
         onRefreshPermissionState = viewModel::refreshPermissionState,
         onRefreshLocationServiceState = viewModel::refreshLocationServiceState,
@@ -173,6 +174,7 @@ fun MainRoute(
         dayNoteUiState = dayNoteUiState,
         daySummaryUiState = daySummaryUiState,
         placeUiState = placeUiState,
+        currentLocationState = currentLocationState,
         markerPlaces = markerPlaces,
         bookmarkMarkers = placeBookmarkMapMarkerUiState.bookmarkPlaces,
         onCameraIntentConsumed = viewModel::consumeCameraIntent,
