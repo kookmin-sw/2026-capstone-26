@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
@@ -26,15 +27,20 @@ import com.example.passedpath.ui.theme.Green100
 @Composable
 fun InfoBottomBanner(
     message: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    borderColor: Color? = Green100,
+    shadowElevation: Dp = 0.dp
 ) {
     BaseBottomBanner(
         modifier = modifier,
         cornerRadius = 13.dp,
-        borderColor = Green100
+        borderColor = borderColor,
+        shadowElevation = shadowElevation
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
