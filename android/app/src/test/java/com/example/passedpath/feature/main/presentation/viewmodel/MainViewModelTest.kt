@@ -90,7 +90,7 @@ class MainViewModelTest {
         assertTrue(state.selectedRoute.hasLocationData)
         assertEquals("Han River", state.selectedRoute.title)
         assertEquals("Windy evening walk", state.selectedRoute.memo)
-        assertEquals(3, state.selectedRoute.polylinePoints.size)
+        assertEquals(3, state.selectedRoute.mapPolylinePoints.size)
         assertEquals(1, state.selectedRoute.places.size)
         assertEquals(listOf("2026-03-29"), repository.requestedRemoteDates)
         assertTrue(repository.observedLocalDates.isEmpty())
@@ -128,7 +128,7 @@ class MainViewModelTest {
         assertFalse(state.isRouteLoading)
         assertFalse(state.isRouteEmpty)
         assertNull(state.routeErrorMessage)
-        assertEquals(2, state.selectedRoute.polylinePoints.size)
+        assertEquals(2, state.selectedRoute.mapPolylinePoints.size)
         assertEquals(1.5, state.selectedRoute.totalDistanceKm, 0.0)
         assertEquals(listOf("2026-03-31"), repository.observedLocalDates)
         assertEquals(listOf("2026-03-31"), repository.requestedRemoteDates)
@@ -165,7 +165,7 @@ class MainViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.isRouteEmpty)
         assertNull(state.routeErrorMessage)
-        assertEquals(3, state.selectedRoute.polylinePoints.size)
+        assertEquals(3, state.selectedRoute.mapPolylinePoints.size)
         assertEquals(2.3, state.selectedRoute.totalDistanceKm, 0.0)
     }
 
@@ -712,7 +712,7 @@ class MainViewModelTest {
         assertEquals("2026-03-31", state.selectedDateKey)
         assertNull(state.routeErrorMessage)
         assertFalse(state.isRouteEmpty)
-        assertEquals(1, state.selectedRoute.polylinePoints.size)
+        assertEquals(1, state.selectedRoute.mapPolylinePoints.size)
         assertEquals(listOf("2026-03-31"), repository.observedLocalDates)
     }
 

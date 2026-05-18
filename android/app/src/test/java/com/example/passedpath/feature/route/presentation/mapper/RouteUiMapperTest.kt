@@ -33,10 +33,9 @@ class RouteUiMapperTest {
         assertEquals("", uiState.title)
         assertEquals("", uiState.memo)
         assertFalse(uiState.isBookmarked)
-        assertEquals(2, uiState.polylinePoints.size)
-        assertEquals(1, uiState.routeSegments.size)
-        assertEquals(1L, uiState.polylinePoints.first().recordedAtEpochMillis)
-        assertEquals(2L, uiState.polylinePoints.last().recordedAtEpochMillis)
+        assertEquals(2, uiState.mapPolylinePoints.size)
+        assertEquals(1L, uiState.mapPolylinePoints.first().recordedAtEpochMillis)
+        assertEquals(2L, uiState.mapPolylinePoints.last().recordedAtEpochMillis)
         assertEquals(2.45, uiState.totalDistanceKm, 0.0)
         assertTrue(uiState.markerPlaces.isEmpty())
         assertTrue(uiState.places.isEmpty())
@@ -68,8 +67,7 @@ class RouteUiMapperTest {
         assertEquals("Spring walk", uiState.title)
         assertEquals("Warm and clear", uiState.memo)
         assertTrue(uiState.isBookmarked)
-        assertEquals(3, uiState.polylinePoints.size)
-        assertEquals(2, uiState.routeSegments.size)
+        assertEquals(3, uiState.mapPolylinePoints.size)
         assertEquals(7.8, uiState.totalDistanceKm, 0.0)
         assertEquals(2, uiState.markerPlaces.size)
         assertEquals(2, uiState.places.size)
@@ -142,11 +140,91 @@ class RouteUiMapperTest {
         assertEquals("Today Title", uiState.title)
         assertEquals("Today Memo", uiState.memo)
         assertTrue(uiState.isBookmarked)
-        assertEquals(2, uiState.polylinePoints.size)
-        assertEquals(1, uiState.routeSegments.size)
-        assertEquals(1L, uiState.polylinePoints.first().recordedAtEpochMillis)
+        assertEquals(2, uiState.mapPolylinePoints.size)
+        assertEquals(1L, uiState.mapPolylinePoints.first().recordedAtEpochMillis)
         assertEquals(2.45, uiState.totalDistanceKm, 0.0)
         assertEquals(1, uiState.markerPlaces.size)
+    }
+
+    @Test
+    fun `map polyline simplifies long straight route while preserving source summary`() {
+        val dailyPath = DailyPath(
+            dateKey = "2026-04-01",
+            points = (0..1000).map { index ->
+                TrackedLocation(
+                    latitude = 37.0 + index * 0.00001,
+                    longitude = 127.0,
+                    accuracyMeters = 5f,
+                    recordedAtEpochMillis = index.toLong()
+                )
+            },
+            totalDistanceMeters = 10_000.0,
+            pathPointCount = 1001
+        )
+
+        val uiState = dailyPath.toSelectedDayRouteUiState()
+
+        assertTrue(uiState.mapPolylinePoints.size < dailyPath.points.size)
+        assertEquals(0L, uiState.mapPolylinePoints.first().recordedAtEpochMillis)
+        assertEquals(1000L, uiState.mapPolylinePoints.last().recordedAtEpochMillis)
+        assertEquals(1001, uiState.pathPointCount)
+        assertEquals(10.0, uiState.totalDistanceKm, 0.0)
+    }
+
+    @Test
+    fun `map polyline keeps major turning point`() {
+        val firstLeg = (0..500).map { index ->
+            TrackedLocation(
+                latitude = 37.0 + index * 0.00001,
+                longitude = 127.0,
+                accuracyMeters = 5f,
+                recordedAtEpochMillis = index.toLong()
+            )
+        }
+        val secondLeg = (1..500).map { offset ->
+            TrackedLocation(
+                latitude = 37.005,
+                longitude = 127.0 + offset * 0.00001,
+                accuracyMeters = 5f,
+                recordedAtEpochMillis = (500 + offset).toLong()
+            )
+        }
+        val dailyPath = DailyPath(
+            dateKey = "2026-04-01",
+            points = firstLeg + secondLeg,
+            totalDistanceMeters = 1_000.0,
+            pathPointCount = firstLeg.size + secondLeg.size
+        )
+
+        val uiState = dailyPath.toSelectedDayRouteUiState()
+
+        assertTrue(uiState.mapPolylinePoints.any { it.recordedAtEpochMillis == 500L })
+        assertEquals(0L, uiState.mapPolylinePoints.first().recordedAtEpochMillis)
+        assertEquals(1000L, uiState.mapPolylinePoints.last().recordedAtEpochMillis)
+    }
+
+    @Test
+    fun `map polyline is capped to render limit for complex route`() {
+        val dailyPath = DailyPath(
+            dateKey = "2026-04-01",
+            points = (0 until 1200).map { index ->
+                TrackedLocation(
+                    latitude = 37.0 + index * 0.00001,
+                    longitude = 127.0 + if (index % 2 == 0) 0.0 else 0.0002,
+                    accuracyMeters = 5f,
+                    recordedAtEpochMillis = index.toLong()
+                )
+            },
+            totalDistanceMeters = 12_000.0,
+            pathPointCount = 1200
+        )
+
+        val uiState = dailyPath.toSelectedDayRouteUiState()
+
+        assertTrue(uiState.mapPolylinePoints.size <= 800)
+        assertEquals(0L, uiState.mapPolylinePoints.first().recordedAtEpochMillis)
+        assertEquals(1199L, uiState.mapPolylinePoints.last().recordedAtEpochMillis)
+        assertEquals(1200, uiState.pathPointCount)
     }
 
     @Test

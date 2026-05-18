@@ -124,8 +124,9 @@ internal fun MainMapSection(
     } else {
         currentLocationState.value
     }
-    val routePoints = remember(uiState.selectedRoute.polylinePoints) {
-        uiState.selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+    val mapPolylinePoints = uiState.selectedRoute.mapPolylinePoints
+    val routePoints = remember(mapPolylinePoints) {
+        mapPolylinePoints.map(CoordinateUiState::toLatLng)
     }
     val initialCameraTarget =
         routePoints.firstOrNull() ?: currentLocation?.toLatLng() ?: fallbackPosition
@@ -213,7 +214,7 @@ internal fun MainMapSection(
             }
 
             RouteMapContent(
-                routeModeUiState = uiState.routeModeUiState,
+                routePoints = routePoints,
                 markerPlaces = markerPlaces,
                 routeAccentColor = routeAccentColor,
                 onPlaceMarkerClick = { placeId ->

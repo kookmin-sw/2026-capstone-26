@@ -78,7 +78,7 @@ class RouteStateCoordinatorTest {
         assertTrue(states[0].routeModeUiState is MainRouteModeUiState.Today)
         assertFalse(states[1].routeModeUiState.isRouteLoading)
         assertTrue(states[1].routeModeUiState is MainRouteModeUiState.Today)
-        assertEquals(2, states[1].routeModeUiState.route.polylinePoints.size)
+        assertEquals(2, states[1].routeModeUiState.route.mapPolylinePoints.size)
         assertEquals("Today Title", states[1].routeModeUiState.route.title)
         assertEquals(1, states[1].routeModeUiState.route.markerPlaces.size)
         assertEquals(listOf("2026-04-01"), repository.observedLocalDates)
@@ -206,7 +206,7 @@ class RouteStateCoordinatorTest {
         assertEquals("Today Title", finalState.route.title)
         assertEquals("Today Memo", finalState.route.memo)
         assertEquals(1, finalState.route.markerPlaces.size)
-        assertTrue(finalState.route.polylinePoints.isEmpty())
+        assertTrue(finalState.route.mapPolylinePoints.isEmpty())
     }
 
     private class FakeDayRouteRepository(
