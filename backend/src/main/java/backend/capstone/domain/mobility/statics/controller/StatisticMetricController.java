@@ -51,4 +51,14 @@ public class StatisticMetricController implements StatisticMetricControllerSpec 
         return statisticMetricService.getTotalOutingSecondsMetric(
             principal.userId(), period, LocalDate.now(KST_ZONE_ID));
     }
+
+    @Override
+    @GetMapping("/total-outing-count")
+    public StatisticMetricResponse getTotalOutingCountMetric(
+        @RequestParam(value = "period", defaultValue = "WEEK") StatisticPeriod period,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return statisticMetricService.getTotalOutingCountMetric(
+            principal.userId(), period, LocalDate.now(KST_ZONE_ID));
+    }
 }

@@ -165,14 +165,75 @@ class StatisticMetricServiceTest {
         var response = statisticMetricService.getTotalOutingSecondsMetric(1L,
             StatisticPeriod.WEEK, today);
 
-        assertThat(response.average().value()).isZero();
+        assertThat(response.average().value()).isEqualTo(0);
         assertThat(response.average().displayText()).isEqualTo("0분");
         assertThat(response.average().sampleSize()).isEqualTo(1);
-        assertThat(response.bars().get(6).value()).isZero();
+        assertThat(response.bars().get(6).value()).isEqualTo(0);
         assertThat(response.bars().get(6).hasValue()).isTrue();
         assertThat(response.bars().get(6).sampleSize()).isEqualTo(1);
         assertThat(response.highlight().previous().value()).isNull();
         assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출시간을 지난주와 비교할 기록이 부족해요.");
+    }
+
+    @Test
+    void 일주일_외출횟수_상세_통계는_totalOutingCount_기준으로_계산한다() {
+        LocalDate today = LocalDate.of(2026, 5, 18);
+        User user = createUser();
+        DayRoute monday = createTotalOutingCountDayRoute(user, LocalDate.of(2026, 5, 18), 2);
+        DayRoute sunday = createTotalOutingCountDayRoute(user, LocalDate.of(2026, 5, 17), 4);
+
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
+            .willReturn(List.of(sunday, monday));
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 5), LocalDate.of(2026, 5, 11)))
+            .willReturn(List.of(createTotalOutingCountDayRoute(user, LocalDate.of(2026, 5, 11),
+                5)));
+
+        var response = statisticMetricService.getTotalOutingCountMetric(1L,
+            StatisticPeriod.WEEK, today);
+
+        assertThat(response.metricType()).isEqualTo("TOTAL_OUTING_COUNT");
+        assertThat(response.period()).isEqualTo(StatisticPeriod.WEEK);
+        assertThat(response.average().value()).isEqualTo(3.0);
+        assertThat(response.average().displayText()).isEqualTo("3.0회");
+        assertThat(response.average().sampleSize()).isEqualTo(2);
+        assertThat(response.bars()).hasSize(7);
+        assertThat(response.bars().get(5).value()).isEqualTo(4.0);
+        assertThat(response.bars().get(5).displayText()).isEqualTo("4.0회");
+        assertThat(response.bars().get(6).value()).isEqualTo(2.0);
+        assertThat(response.bars().get(6).displayText()).isEqualTo("2.0회");
+        assertThat(response.highlight().title()).isEqualTo("이번 주 외출횟수");
+        assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출횟수가 지난주보다 줄었어요.");
+        assertThat(response.highlight().current().value()).isEqualTo(3.0);
+        assertThat(response.highlight().previous().value()).isEqualTo(5.0);
+        assertThat(response.highlight().previous().displayText()).isEqualTo("5.0회");
+    }
+
+    @Test
+    void 외출횟수는_0회도_dayRoute가_있으면_평균에_포함한다() {
+        LocalDate today = LocalDate.of(2026, 5, 18);
+        User user = createUser();
+        DayRoute monday = createTotalOutingCountDayRoute(user, LocalDate.of(2026, 5, 18), 0);
+
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
+            .willReturn(List.of(monday));
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 5), LocalDate.of(2026, 5, 11)))
+            .willReturn(List.of());
+
+        var response = statisticMetricService.getTotalOutingCountMetric(1L,
+            StatisticPeriod.WEEK, today);
+
+        assertThat(response.average().value()).isEqualTo(0.0);
+        assertThat(response.average().displayText()).isEqualTo("0.0회");
+        assertThat(response.average().sampleSize()).isEqualTo(1);
+        assertThat(response.bars().get(6).value()).isEqualTo(0.0);
+        assertThat(response.bars().get(6).hasValue()).isTrue();
+        assertThat(response.bars().get(6).sampleSize()).isEqualTo(1);
+        assertThat(response.highlight().previous().value()).isNull();
+        assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출횟수를 지난주와 비교할 기록이 부족해요.");
     }
 
     @Test
@@ -271,6 +332,18 @@ class StatisticMetricServiceTest {
             .date(date)
             .build();
         dayRoute.addOutingDurationSeconds(totalOutingSeconds);
+        return dayRoute;
+    }
+
+    private DayRoute createTotalOutingCountDayRoute(User user, LocalDate date,
+        int totalOutingCount) {
+        DayRoute dayRoute = DayRoute.builder()
+            .user(user)
+            .date(date)
+            .build();
+        for (int count = 0; count < totalOutingCount; count++) {
+            dayRoute.markOuting(Instant.parse("2026-05-18T00:00:00Z"));
+        }
         return dayRoute;
     }
 }

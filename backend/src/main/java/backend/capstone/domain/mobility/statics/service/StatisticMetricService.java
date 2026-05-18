@@ -11,6 +11,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class StatisticMetricService {
     private static final String OUTING_TIME_METRIC_TYPE = "OUTING_TIME";
     private static final String ENTER_HOME_TIME_METRIC_TYPE = "ENTER_HOME_TIME";
     private static final String TOTAL_OUTING_SECONDS_METRIC_TYPE = "TOTAL_OUTING_SECONDS";
+    private static final String TOTAL_OUTING_COUNT_METRIC_TYPE = "TOTAL_OUTING_COUNT";
     private static final String[] KOREAN_DAY_OF_WEEK_LABELS = {"월", "화", "수", "목", "금", "토", "일"};
 
     private final DayRouteRepository dayRouteRepository;
@@ -34,11 +36,13 @@ public class StatisticMetricService {
         return getMetric(userId, period, today, new MetricConfig(
             OUTING_TIME_METRIC_TYPE,
             "외출",
-            "외출 시간",
+            "외출 시간을",
+            "외출 시간이",
             "빨라졌어요.",
             "늦어졌어요.",
             dayRoute -> TimeFormatUtils.toKstMinutesOfDay(dayRoute.getOutingTime()),
-            value -> TimeFormatUtils.formatHourMinute(value)
+            average -> Math.toIntExact(Math.round(average)),
+            value -> TimeFormatUtils.formatHourMinute(value.intValue())
         ));
     }
 
@@ -48,11 +52,13 @@ public class StatisticMetricService {
         return getMetric(userId, period, today, new MetricConfig(
             ENTER_HOME_TIME_METRIC_TYPE,
             "귀가",
-            "귀가 시각",
+            "귀가 시각을",
+            "귀가 시각이",
             "빨라졌어요.",
             "늦어졌어요.",
             dayRoute -> TimeFormatUtils.toKstMinutesOfDay(dayRoute.getEnterHomeTime()),
-            value -> TimeFormatUtils.formatHourMinute(value)
+            average -> Math.toIntExact(Math.round(average)),
+            value -> TimeFormatUtils.formatHourMinute(value.intValue())
         ));
     }
 
@@ -62,11 +68,29 @@ public class StatisticMetricService {
         return getMetric(userId, period, today, new MetricConfig(
             TOTAL_OUTING_SECONDS_METRIC_TYPE,
             "외출시간",
-            "외출시간",
+            "외출시간을",
+            "외출시간이",
             "줄었어요.",
             "늘었어요.",
             dayRoute -> dayRoute.getTotalOutingSeconds(),
-            value -> DurationFormatUtils.formatOutingDurationText(value)
+            average -> Math.toIntExact(Math.round(average)),
+            value -> DurationFormatUtils.formatOutingDurationText(value.longValue())
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public StatisticMetricResponse getTotalOutingCountMetric(Long userId, StatisticPeriod period,
+        LocalDate today) {
+        return getMetric(userId, period, today, new MetricConfig(
+            TOTAL_OUTING_COUNT_METRIC_TYPE,
+            "외출횟수",
+            "외출횟수를",
+            "외출횟수가",
+            "줄었어요.",
+            "늘었어요.",
+            dayRoute -> (long) dayRoute.getTotalOutingCount(),
+            average -> roundToOneDecimal(average),
+            value -> String.format(Locale.US, "%.1f회", value.doubleValue())
         ));
     }
 
@@ -135,7 +159,7 @@ public class StatisticMetricService {
 
     private StatisticMetricResponse.StatisticMetricAverage createAverage(List<DayRoute> dayRoutes,
         MetricConfig config) {
-        AverageResult averageResult = calculateAverage(dayRoutes, config.valueExtractor());
+        AverageResult averageResult = calculateAverage(dayRoutes, config);
         return new StatisticMetricResponse.StatisticMetricAverage(
             averageResult.value(),
             averageResult.value() == null ? null : config.displayFormatter().apply(
@@ -188,20 +212,21 @@ public class StatisticMetricService {
         StatisticMetricResponse.StatisticMetricAverage previousAverage,
         MetricConfig config) {
         if (currentAverage.value() == null || previousAverage.value() == null) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "을 "
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.objectMetricName() + " "
                 + highlightPeriodInfo.previousCompareWithLabel() + " 비교할 기록이 부족해요.";
         }
 
-        int difference = currentAverage.value() - previousAverage.value();
+        double difference = currentAverage.value().doubleValue()
+            - previousAverage.value().doubleValue();
         if (difference < 0) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.subjectMetricName() + " "
                 + highlightPeriodInfo.previousCompareThanLabel() + " " + config.decreaseMessage();
         }
         if (difference > 0) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.subjectMetricName() + " "
                 + highlightPeriodInfo.previousCompareThanLabel() + " " + config.increaseMessage();
         }
-        return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
+        return highlightPeriodInfo.currentLabel() + " 평균 " + config.subjectMetricName() + " "
             + highlightPeriodInfo.previousCompareWithLabel() + " 같아요.";
     }
 
@@ -221,8 +246,8 @@ public class StatisticMetricService {
         List<StatisticMetricResponse.StatisticMetricBarItem> bars = new ArrayList<>();
         for (StatisticBucket bucket : buckets) {
             List<DayRoute> bucketDayRoutes = findDayRoutesInBucket(bucket, dayRouteMap);
-            AverageResult averageResult = calculateAverage(bucketDayRoutes, config.valueExtractor());
-            Integer value = averageResult.value();
+            AverageResult averageResult = calculateAverage(bucketDayRoutes, config);
+            Number value = averageResult.value();
             bars.add(new StatisticMetricResponse.StatisticMetricBarItem(
                 bucket.label(),
                 bucket.startDate(),
@@ -249,12 +274,11 @@ public class StatisticMetricService {
         return dayRoutes;
     }
 
-    private AverageResult calculateAverage(List<DayRoute> dayRoutes,
-        Function<DayRoute, Long> valueExtractor) {
+    private AverageResult calculateAverage(List<DayRoute> dayRoutes, MetricConfig config) {
         long totalValue = 0L;
         int sampleSize = 0;
         for (DayRoute dayRoute : dayRoutes) {
-            Long value = valueExtractor.apply(dayRoute);
+            Long value = config.valueExtractor().apply(dayRoute);
             if (value == null) {
                 continue;
             }
@@ -262,10 +286,14 @@ public class StatisticMetricService {
             sampleSize++;
         }
 
-        Integer value = sampleSize == 0
+        Number value = sampleSize == 0
             ? null
-            : Math.toIntExact(Math.round((double) totalValue / sampleSize));
+            : config.averageFormatter().apply((double) totalValue / sampleSize);
         return new AverageResult(value, sampleSize);
+    }
+
+    private static double roundToOneDecimal(double value) {
+        return Math.round(value * 10.0) / 10.0;
     }
 
     private String toKoreanDayOfWeekLabel(LocalDate date) {
@@ -278,11 +306,13 @@ public class StatisticMetricService {
     private record MetricConfig(
         String metricType,
         String titleMetricName,
-        String messageMetricName,
+        String objectMetricName,
+        String subjectMetricName,
         String decreaseMessage,
         String increaseMessage,
         Function<DayRoute, Long> valueExtractor,
-        Function<Integer, String> displayFormatter
+        Function<Double, Number> averageFormatter,
+        Function<Number, String> displayFormatter
     ) {
     }
 
@@ -297,6 +327,6 @@ public class StatisticMetricService {
     ) {
     }
 
-    private record AverageResult(Integer value, int sampleSize) {
+    private record AverageResult(Number value, int sampleSize) {
     }
 }

@@ -29,8 +29,8 @@ public record StatisticMetricResponse(
 ) {
 
     public record StatisticMetricAverage(
-        @Schema(example = "552", description = "평균 외출시각을 KST 00:00부터 지난 분으로 환산한 값")
-        Integer value,
+        @Schema(example = "552", description = "지표 평균 값. 시간 지표는 분, 총 외출시간은 초, 외출횟수는 횟수 단위")
+        Number value,
 
         @Schema(example = "09:12", description = "평균 외출시각 표시 문자열")
         String displayText,
@@ -51,8 +51,8 @@ public record StatisticMetricResponse(
         @Schema(example = "2026-05-12", description = "구간 종료일")
         LocalDate endDate,
 
-        @Schema(example = "540", description = "구간 평균 외출시각을 KST 00:00부터 지난 분으로 환산한 값")
-        Integer value,
+        @Schema(example = "540", description = "구간 평균 값. 시간 지표는 분, 총 외출시간은 초, 외출횟수는 횟수 단위")
+        Number value,
 
         @Schema(example = "09:00", description = "구간 평균 외출시각 표시 문자열")
         String displayText,
@@ -86,8 +86,8 @@ public record StatisticMetricResponse(
         @Schema(example = "이번 주", description = "비교 항목 라벨")
         String label,
 
-        @Schema(example = "510", description = "평균 외출시각을 KST 00:00부터 지난 분으로 환산한 값")
-        Integer value,
+        @Schema(example = "510", description = "비교 기간 평균 값. 시간 지표는 분, 총 외출시간은 초, 외출횟수는 횟수 단위")
+        Number value,
 
         @Schema(example = "08:30", description = "평균 외출시각 표시 문자열")
         String displayText,
