@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.presentation.mapper.toCareDependentUserUiState
+import com.example.passedpath.feature.care.presentation.mapper.toCareDependentMapMarkerUiStates
 import com.example.passedpath.feature.care.presentation.state.CareUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,9 +37,11 @@ class CareViewModel(
             }.onSuccess { dependentUserList ->
                 val dependents = dependentUserList.dependentUsers
                     .map { dependent -> dependent.toCareDependentUserUiState() }
+                val mapMarkers = dependents.toCareDependentMapMarkerUiStates()
                 _uiState.update { state ->
                     state.copy(
                         dependents = dependents,
+                        mapMarkers = mapMarkers,
                         selectedDependentUserId = state.selectedDependentUserId
                             ?.takeIf { selectedId ->
                                 dependents.any { dependent ->

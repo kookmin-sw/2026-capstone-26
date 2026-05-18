@@ -97,7 +97,7 @@ class CareViewModelTest {
     }
 
     @Test
-    fun `mapMarkerDependents excludes dependents without latest location`() = runTest {
+    fun `mapMarkers excludes dependents without latest location`() = runTest {
         val viewModel = createViewModel(
             FakeCareDependentRepository(
                 result = CareDependentUserList(
@@ -113,7 +113,11 @@ class CareViewModelTest {
 
         assertEquals(
             listOf(1L),
-            viewModel.uiState.value.mapMarkerDependents.map { it.dependentUserId }
+            viewModel.uiState.value.mapMarkers.map { it.dependentUserId }
+        )
+        assertEquals(
+            listOf(1L, 2L),
+            viewModel.uiState.value.dependents.map { it.dependentUserId }
         )
     }
 
