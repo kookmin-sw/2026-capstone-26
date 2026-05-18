@@ -7,7 +7,7 @@
 
 <br>
 
-<img src="docs/images/img.png" alt="길벗 서비스 대표 화면" width="280">
+<img src="docs/images/img.png" alt="길벗 서비스 대표 화면" width="170">
 
 </div>
 
