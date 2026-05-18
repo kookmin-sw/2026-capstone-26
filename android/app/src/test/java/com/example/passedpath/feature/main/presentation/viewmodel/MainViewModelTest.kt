@@ -8,6 +8,7 @@ import com.example.passedpath.feature.locationtracking.data.manager.LocationTrac
 import com.example.passedpath.feature.locationtracking.domain.model.DailyPath
 import com.example.passedpath.feature.locationtracking.domain.model.DayRouteDetail
 import com.example.passedpath.feature.locationtracking.domain.model.DayRoutePlace
+import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.domain.model.RoutePoint
 import com.example.passedpath.feature.locationtracking.domain.model.TrackedLocation
 import com.example.passedpath.feature.locationtracking.domain.repository.DayRouteRepository
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -131,6 +133,7 @@ class MainViewModelTest {
         assertEquals(2, state.selectedRoute.mapPolylinePoints.size)
         assertEquals(1.5, state.selectedRoute.totalDistanceKm, 0.0)
         assertEquals(listOf("2026-03-31"), repository.observedLocalDates)
+        assertTrue(repository.observedFullLocalDates.isEmpty())
         assertEquals(listOf("2026-03-31"), repository.requestedRemoteDates)
     }
 
@@ -785,10 +788,18 @@ class MainViewModelTest {
     ) : DayRouteRepository {
         val requestedRemoteDates = mutableListOf<String>()
         val observedLocalDates = mutableListOf<String>()
+        val observedFullLocalDates = mutableListOf<String>()
 
         override fun observeLocalDayRoute(dateKey: String): Flow<DailyPath?> {
-            observedLocalDates += dateKey
+            observedFullLocalDates += dateKey
             return localRouteByDate.getOrPut(dateKey) { MutableStateFlow(null) }.asStateFlow()
+        }
+
+        override fun observeLocalRouteSnapshot(dateKey: String): Flow<LocalDayRouteSnapshot?> {
+            observedLocalDates += dateKey
+            return localRouteByDate.getOrPut(dateKey) { MutableStateFlow(null) }
+                .asStateFlow()
+                .map { dailyPath -> dailyPath?.toLocalDayRouteSnapshot() }
         }
 
         override suspend fun getLocalDayRoute(dateKey: String): DailyPath? {
@@ -801,6 +812,15 @@ class MainViewModelTest {
             requestedRemoteDates += dateKey
             return resultByDate[dateKey]
                 ?: RemoteDayRouteResult.Empty
+        }
+
+        private fun DailyPath.toLocalDayRouteSnapshot(): LocalDayRouteSnapshot {
+            return LocalDayRouteSnapshot(
+                dateKey = dateKey,
+                points = points,
+                totalDistanceMeters = totalDistanceMeters,
+                pathPointCount = pathPointCount
+            )
         }
     }
 

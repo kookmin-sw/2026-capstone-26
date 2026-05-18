@@ -5,10 +5,12 @@ import com.example.passedpath.debug.DebugLogTag
 import com.example.passedpath.feature.locationtracking.data.local.dao.DayRouteDao
 import com.example.passedpath.feature.locationtracking.data.local.dao.GpsPointDao
 import com.example.passedpath.feature.locationtracking.data.local.mapper.toDailyPath
+import com.example.passedpath.feature.locationtracking.data.local.mapper.toLocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.data.remote.api.DayRouteApi
 import com.example.passedpath.feature.locationtracking.data.remote.dto.DayRouteErrorResponseDto
 import com.example.passedpath.feature.locationtracking.data.remote.mapper.toDayRouteDetail
 import com.example.passedpath.feature.locationtracking.domain.model.DailyPath
+import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.domain.repository.DayRouteRepository
 import com.example.passedpath.feature.locationtracking.domain.repository.RemoteDayRouteResult
 import com.google.gson.Gson
@@ -29,6 +31,20 @@ class RoomDayRouteRepository(
                     null
                 } else {
                     points.toDailyPath(
+                        dateKey = dateKey,
+                        existingRoute = route
+                    )
+                }
+            }
+    }
+
+    override fun observeLocalRouteSnapshot(dateKey: String): Flow<LocalDayRouteSnapshot?> {
+        return gpsPointDao.observeRoutePointProjectionsByDate(dateKey)
+            .combine(dayRouteDao.observeByDate(dateKey)) { points, route ->
+                if (route == null && points.isEmpty()) {
+                    null
+                } else {
+                    points.toLocalDayRouteSnapshot(
                         dateKey = dateKey,
                         existingRoute = route
                     )

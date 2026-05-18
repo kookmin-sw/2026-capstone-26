@@ -3,8 +3,10 @@ package com.example.passedpath.feature.locationtracking.data.local.mapper
 import android.location.Location
 import com.example.passedpath.feature.locationtracking.data.local.entity.DayRouteEntity
 import com.example.passedpath.feature.locationtracking.data.local.entity.GpsPointEntity
+import com.example.passedpath.feature.locationtracking.data.local.model.GpsPointRouteProjection
 import com.example.passedpath.feature.locationtracking.data.remote.dto.GpsPointRequestDto
 import com.example.passedpath.feature.locationtracking.domain.model.DailyPath
+import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.domain.model.TrackedLocation
 import java.time.Instant
 import java.time.ZoneId
@@ -34,12 +36,37 @@ fun GpsPointEntity.toTrackedLocation(): TrackedLocation {
     )
 }
 
+fun GpsPointRouteProjection.toTrackedLocation(): TrackedLocation {
+    return TrackedLocation(
+        latitude = latitude,
+        longitude = longitude,
+        accuracyMeters = accuracyMeters,
+        recordedAtEpochMillis = recordedAtEpochMillis
+    )
+}
+
 // TrackedLocation 도메인 모델을 업로드용 GpsPointRequestDto로 변환한다.
 fun TrackedLocation.toGpsPointRequestDto(): GpsPointRequestDto {
     return GpsPointRequestDto(
         recordedAt = Instant.ofEpochMilli(recordedAtEpochMillis).toString(),
         latitude = latitude,
         longitude = longitude
+    )
+}
+
+// 날짜별 route 표시용 GPS projection과 요약 정보를 화면 관찰용 snapshot으로 변환한다.
+fun List<GpsPointRouteProjection>.toLocalDayRouteSnapshot(
+    dateKey: String,
+    existingRoute: DayRouteEntity? = null
+): LocalDayRouteSnapshot {
+    val trackedPoints = map(GpsPointRouteProjection::toTrackedLocation)
+
+    return LocalDayRouteSnapshot(
+        dateKey = dateKey,
+        points = trackedPoints,
+        totalDistanceMeters = existingRoute?.totalDistanceMeters
+            ?: trackedPoints.calculateTotalDistanceMeters(),
+        pathPointCount = existingRoute?.pathPointCount ?: trackedPoints.size
     )
 }
 

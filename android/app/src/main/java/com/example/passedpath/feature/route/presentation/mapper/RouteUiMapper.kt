@@ -1,8 +1,8 @@
 ﻿package com.example.passedpath.feature.route.presentation.mapper
 
-import com.example.passedpath.feature.locationtracking.domain.model.DailyPath
 import com.example.passedpath.feature.locationtracking.domain.model.DayRouteDetail
 import com.example.passedpath.feature.locationtracking.domain.model.DayRoutePlace
+import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.domain.model.RoutePoint
 import com.example.passedpath.feature.locationtracking.domain.model.TrackedLocation
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
@@ -91,7 +91,7 @@ internal fun createPastRouteMode(
     )
 }
 
-internal fun DailyPath.toSelectedDayRouteUiState(): SelectedDayRouteUiState {
+internal fun LocalDayRouteSnapshot.toSelectedDayRouteUiState(): SelectedDayRouteUiState {
     return SelectedDayRouteUiState(
         dateKey = dateKey,
         title = "",
@@ -106,7 +106,7 @@ internal fun DailyPath.toSelectedDayRouteUiState(): SelectedDayRouteUiState {
 
 internal fun createTodaySelectedDayRouteUiState(
     dateKey: String,
-    dailyPath: DailyPath?,
+    routeSnapshot: LocalDayRouteSnapshot?,
     remoteRouteDetail: DayRouteDetail?
 ): SelectedDayRouteUiState {
     val remoteRouteUiState = remoteRouteDetail?.toSelectedDayRouteUiState()
@@ -116,9 +116,9 @@ internal fun createTodaySelectedDayRouteUiState(
         title = remoteRouteUiState?.title.orEmpty(),
         memo = remoteRouteUiState?.memo.orEmpty(),
         isBookmarked = remoteRouteUiState?.isBookmarked ?: false,
-        mapPolylinePoints = dailyPath?.points?.toTrackedMapPolylinePoints().orEmpty(),
-        totalDistanceKm = (dailyPath?.totalDistanceMeters ?: 0.0) / 1000.0,
-        pathPointCount = dailyPath?.pathPointCount ?: 0,
+        mapPolylinePoints = routeSnapshot?.points?.toTrackedMapPolylinePoints().orEmpty(),
+        totalDistanceKm = (routeSnapshot?.totalDistanceMeters ?: 0.0) / 1000.0,
+        pathPointCount = routeSnapshot?.pathPointCount ?: 0,
         markerPlaces = remoteRouteUiState?.markerPlaces.orEmpty()
     )
 }
