@@ -74,6 +74,44 @@ class StatisticMetricServiceTest {
     }
 
     @Test
+    void 일주일_귀가시각_상세_통계는_enterHomeTime_기준으로_계산한다() {
+        LocalDate today = LocalDate.of(2026, 5, 18);
+        User user = createUser();
+        DayRoute monday = createReturnedHomeDayRoute(user, LocalDate.of(2026, 5, 18),
+            Instant.parse("2026-05-18T14:15:00Z"));
+        DayRoute sunday = createReturnedHomeDayRoute(user, LocalDate.of(2026, 5, 17),
+            Instant.parse("2026-05-17T14:45:00Z"));
+
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
+            .willReturn(List.of(sunday, monday));
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 5), LocalDate.of(2026, 5, 11)))
+            .willReturn(List.of(createReturnedHomeDayRoute(user, LocalDate.of(2026, 5, 11),
+                Instant.parse("2026-05-11T13:00:00Z"))));
+
+        var response = statisticMetricService.getEnterHomeTimeMetric(1L, StatisticPeriod.WEEK,
+            today);
+
+        assertThat(response.metricType()).isEqualTo("ENTER_HOME_TIME");
+        assertThat(response.period()).isEqualTo(StatisticPeriod.WEEK);
+        assertThat(response.average().value()).isEqualTo(1410);
+        assertThat(response.average().displayText()).isEqualTo("23:30");
+        assertThat(response.average().sampleSize()).isEqualTo(2);
+        assertThat(response.bars()).hasSize(7);
+        assertThat(response.bars().get(5).value()).isEqualTo(1425);
+        assertThat(response.bars().get(5).displayText()).isEqualTo("23:45");
+        assertThat(response.bars().get(6).value()).isEqualTo(1395);
+        assertThat(response.bars().get(6).displayText()).isEqualTo("23:15");
+        assertThat(response.highlight().title()).isEqualTo("이번 주 귀가");
+        assertThat(response.highlight().message()).isEqualTo("이번 주 평균 귀가 시각이 지난주보다 늦어졌어요.");
+        assertThat(response.highlight().current().label()).isEqualTo("이번 주");
+        assertThat(response.highlight().previous().label()).isEqualTo("지난주");
+        assertThat(response.highlight().previous().value()).isEqualTo(1320);
+        assertThat(response.highlight().previous().displayText()).isEqualTo("22:00");
+    }
+
+    @Test
     void 한달_외출시각_상세_통계는_일별_30개_막대를_반환한다() {
         LocalDate today = LocalDate.of(2026, 5, 18);
         given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
@@ -150,6 +188,15 @@ class StatisticMetricServiceTest {
             .date(date)
             .build();
         dayRoute.markOuting(outingTime);
+        return dayRoute;
+    }
+
+    private DayRoute createReturnedHomeDayRoute(User user, LocalDate date, Instant enterHomeTime) {
+        DayRoute dayRoute = DayRoute.builder()
+            .user(user)
+            .date(date)
+            .build();
+        dayRoute.markReturnedHome(enterHomeTime);
         return dayRoute;
     }
 }

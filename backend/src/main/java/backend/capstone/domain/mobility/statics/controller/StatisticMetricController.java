@@ -31,4 +31,14 @@ public class StatisticMetricController implements StatisticMetricControllerSpec 
         return statisticMetricService.getOutingTimeMetric(
             principal.userId(), period, LocalDate.now(KST_ZONE_ID));
     }
+
+    @Override
+    @GetMapping("/enter-home-time")
+    public StatisticMetricResponse getEnterHomeTimeMetric(
+        @RequestParam(value = "period", defaultValue = "WEEK") StatisticPeriod period,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return statisticMetricService.getEnterHomeTimeMetric(
+            principal.userId(), period, LocalDate.now(KST_ZONE_ID));
+    }
 }

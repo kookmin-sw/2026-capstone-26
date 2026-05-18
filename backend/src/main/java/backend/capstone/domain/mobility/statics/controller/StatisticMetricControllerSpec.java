@@ -55,4 +55,20 @@ public interface StatisticMetricControllerSpec {
         @Parameter(example = "WEEK") StatisticPeriod period,
         UserPrincipal principal
     );
+
+    @Operation(
+        summary = "귀가시각 상세 통계 조회 API",
+        description = """
+            귀가시각 지표를 기간별 막대 그래프 데이터로 반환합니다.<br>
+            기간별 막대 개수, 평균 계산 방식, null 응답 조건, 하이라이트 비교 범위는 외출시각 상세 통계와 동일합니다.<br>
+            평균은 enterHomeTime이 기록된 dayRoute만 대상으로 계산합니다. enterHomeTime이 null인 dayRoute는 제외됩니다.<br>
+            value는 평균 귀가시각을 KST 00:00부터 지난 분으로 환산한 값입니다. 예: 23:15 = 1395<br>
+            displayText는 value를 HH:mm 형식으로 변환한 값입니다.<br>
+            하이라이트 문구는 현재 기간과 직전 기간의 평균 귀가시각을 비교해 기록 부족, 빨라짐, 늦어짐, 같음 중 하나로 반환합니다.
+            """
+    )
+    StatisticMetricResponse getEnterHomeTimeMetric(
+        @Parameter(example = "WEEK") StatisticPeriod period,
+        UserPrincipal principal
+    );
 }
