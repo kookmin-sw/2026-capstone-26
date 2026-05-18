@@ -5,12 +5,11 @@ import com.example.passedpath.feature.locationtracking.domain.model.DayRoutePlac
 import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRouteSnapshot
 import com.example.passedpath.feature.locationtracking.domain.model.RoutePoint
 import com.example.passedpath.feature.locationtracking.domain.model.TrackedLocation
+import com.example.passedpath.feature.locationtracking.domain.policy.MapPolylineSimplificationPolicy
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.SelectedDayRouteUiState
 import com.example.passedpath.ui.state.CoordinateUiState
-import kotlin.math.cos
-import kotlin.math.hypot
 
 internal fun createInitialRouteMode(dateKey: String, isToday: Boolean): MainRouteModeUiState {
     val route = SelectedDayRouteUiState(dateKey = dateKey)
@@ -172,7 +171,7 @@ private fun MainRouteModeUiState.updateRouteSnapshot(
 }
 
 private fun List<TrackedLocation>.toTrackedMapPolylinePoints(): List<CoordinateUiState> {
-    val indexes = simplifyMapPolylineIndexes(
+    val indexes = MapPolylineSimplificationPolicy.simplifyIndexes(
         size = size,
         latitudeAt = { index -> this[index].latitude },
         longitudeAt = { index -> this[index].longitude }
@@ -181,145 +180,12 @@ private fun List<TrackedLocation>.toTrackedMapPolylinePoints(): List<CoordinateU
 }
 
 private fun List<RoutePoint>.toRouteMapPolylinePoints(): List<CoordinateUiState> {
-    val indexes = simplifyMapPolylineIndexes(
+    val indexes = MapPolylineSimplificationPolicy.simplifyIndexes(
         size = size,
         latitudeAt = { index -> this[index].latitude },
         longitudeAt = { index -> this[index].longitude }
     )
     return indexes.map { index -> this[index].toCoordinateUiState() }
-}
-
-private fun simplifyMapPolylineIndexes(
-    size: Int,
-    latitudeAt: (Int) -> Double,
-    longitudeAt: (Int) -> Double
-): List<Int> {
-    if (size <= MaxMapPolylinePoints) return List(size) { it }
-    if (size <= 2) return List(size) { it }
-
-    var lowToleranceMeters = 0.0
-    var highToleranceMeters = InitialPolylineSimplificationToleranceMeters
-    var bestIndexes = emptyList<Int>()
-
-    while (highToleranceMeters <= MaxPolylineSimplificationToleranceMeters) {
-        val indexes = ramerDouglasPeuckerIndexes(
-            size = size,
-            latitudeAt = latitudeAt,
-            longitudeAt = longitudeAt,
-            toleranceMeters = highToleranceMeters
-        )
-        if (indexes.size <= MaxMapPolylinePoints) {
-            bestIndexes = indexes
-            break
-        }
-        lowToleranceMeters = highToleranceMeters
-        highToleranceMeters *= 2
-    }
-
-    repeat(PolylineSimplificationSearchIterations) {
-        if (bestIndexes.isEmpty()) return@repeat
-        val midToleranceMeters = (lowToleranceMeters + highToleranceMeters) / 2
-        val indexes = ramerDouglasPeuckerIndexes(
-            size = size,
-            latitudeAt = latitudeAt,
-            longitudeAt = longitudeAt,
-            toleranceMeters = midToleranceMeters
-        )
-        if (indexes.size <= MaxMapPolylinePoints) {
-            bestIndexes = indexes
-            highToleranceMeters = midToleranceMeters
-        } else {
-            lowToleranceMeters = midToleranceMeters
-        }
-    }
-
-    return if (bestIndexes.isEmpty()) {
-        evenlyCapIndexes(List(size) { it }, MaxMapPolylinePoints)
-    } else {
-        evenlyCapIndexes(bestIndexes, MaxMapPolylinePoints)
-    }
-}
-
-private fun ramerDouglasPeuckerIndexes(
-    size: Int,
-    latitudeAt: (Int) -> Double,
-    longitudeAt: (Int) -> Double,
-    toleranceMeters: Double
-): List<Int> {
-    val keep = BooleanArray(size)
-    keep[0] = true
-    keep[size - 1] = true
-
-    val ranges = ArrayDeque<Pair<Int, Int>>()
-    ranges.add(0 to size - 1)
-
-    while (ranges.isNotEmpty()) {
-        val (startIndex, endIndex) = ranges.removeLast()
-        if (endIndex <= startIndex + 1) continue
-
-        var farthestIndex = -1
-        var farthestDistanceMeters = 0.0
-        for (index in startIndex + 1 until endIndex) {
-            val distanceMeters = perpendicularDistanceMeters(
-                latitude = latitudeAt(index),
-                longitude = longitudeAt(index),
-                startLatitude = latitudeAt(startIndex),
-                startLongitude = longitudeAt(startIndex),
-                endLatitude = latitudeAt(endIndex),
-                endLongitude = longitudeAt(endIndex)
-            )
-            if (distanceMeters > farthestDistanceMeters) {
-                farthestDistanceMeters = distanceMeters
-                farthestIndex = index
-            }
-        }
-
-        if (farthestDistanceMeters > toleranceMeters && farthestIndex != -1) {
-            keep[farthestIndex] = true
-            ranges.add(startIndex to farthestIndex)
-            ranges.add(farthestIndex to endIndex)
-        }
-    }
-
-    return buildList {
-        keep.forEachIndexed { index, shouldKeep ->
-            if (shouldKeep) add(index)
-        }
-    }
-}
-
-private fun perpendicularDistanceMeters(
-    latitude: Double,
-    longitude: Double,
-    startLatitude: Double,
-    startLongitude: Double,
-    endLatitude: Double,
-    endLongitude: Double
-): Double {
-    val meanLatitudeRadians = Math.toRadians((latitude + startLatitude + endLatitude) / 3.0)
-    val pointX = Math.toRadians(longitude - startLongitude) * cos(meanLatitudeRadians) * EarthRadiusMeters
-    val pointY = Math.toRadians(latitude - startLatitude) * EarthRadiusMeters
-    val endX = Math.toRadians(endLongitude - startLongitude) * cos(meanLatitudeRadians) * EarthRadiusMeters
-    val endY = Math.toRadians(endLatitude - startLatitude) * EarthRadiusMeters
-    val segmentLengthSquared = endX * endX + endY * endY
-
-    if (segmentLengthSquared == 0.0) return hypot(pointX, pointY)
-
-    val projectionRatio = ((pointX * endX + pointY * endY) / segmentLengthSquared).coerceIn(0.0, 1.0)
-    val projectedX = projectionRatio * endX
-    val projectedY = projectionRatio * endY
-    return hypot(pointX - projectedX, pointY - projectedY)
-}
-
-private fun evenlyCapIndexes(indexes: List<Int>, maxSize: Int): List<Int> {
-    if (indexes.size <= maxSize) return indexes
-    if (maxSize <= 2) return listOf(indexes.first(), indexes.last()).distinct()
-
-    val lastResultIndex = maxSize - 1
-    val lastSourceIndex = indexes.lastIndex
-    return List(maxSize) { resultIndex ->
-        indexes[(resultIndex * lastSourceIndex) / lastResultIndex]
-    }.distinct()
 }
 
 private fun TrackedLocation.toCoordinateUiState(): CoordinateUiState {
@@ -329,12 +195,6 @@ private fun TrackedLocation.toCoordinateUiState(): CoordinateUiState {
         recordedAtEpochMillis = recordedAtEpochMillis
     )
 }
-
-private const val MaxMapPolylinePoints = 800
-private const val InitialPolylineSimplificationToleranceMeters = 2.0
-private const val MaxPolylineSimplificationToleranceMeters = 10_000.0
-private const val PolylineSimplificationSearchIterations = 12
-private const val EarthRadiusMeters = 6_371_000.0
 
 private fun RoutePoint.toCoordinateUiState(): CoordinateUiState {
     return CoordinateUiState(
