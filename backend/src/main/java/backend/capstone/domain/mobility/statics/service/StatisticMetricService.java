@@ -4,8 +4,8 @@ import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.mobility.dayroute.repository.DayRouteRepository;
 import backend.capstone.domain.mobility.statics.dto.StatisticMetricResponse;
 import backend.capstone.domain.mobility.statics.type.StatisticPeriod;
+import backend.capstone.global.util.DurationFormatUtils;
 import backend.capstone.global.util.TimeFormatUtils;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ public class StatisticMetricService {
 
     private static final String OUTING_TIME_METRIC_TYPE = "OUTING_TIME";
     private static final String ENTER_HOME_TIME_METRIC_TYPE = "ENTER_HOME_TIME";
+    private static final String TOTAL_OUTING_SECONDS_METRIC_TYPE = "TOTAL_OUTING_SECONDS";
     private static final String[] KOREAN_DAY_OF_WEEK_LABELS = {"월", "화", "수", "목", "금", "토", "일"};
 
     private final DayRouteRepository dayRouteRepository;
@@ -30,34 +31,54 @@ public class StatisticMetricService {
     @Transactional(readOnly = true)
     public StatisticMetricResponse getOutingTimeMetric(Long userId, StatisticPeriod period,
         LocalDate today) {
-        return getTimeMetric(userId, period, today, new TimeMetricConfig(
+        return getMetric(userId, period, today, new MetricConfig(
             OUTING_TIME_METRIC_TYPE,
             "외출",
             "외출 시간",
-            DayRoute::getOutingTime
+            "빨라졌어요.",
+            "늦어졌어요.",
+            dayRoute -> TimeFormatUtils.toKstMinutesOfDay(dayRoute.getOutingTime()),
+            value -> TimeFormatUtils.formatHourMinute(value)
         ));
     }
 
     @Transactional(readOnly = true)
     public StatisticMetricResponse getEnterHomeTimeMetric(Long userId, StatisticPeriod period,
         LocalDate today) {
-        return getTimeMetric(userId, period, today, new TimeMetricConfig(
+        return getMetric(userId, period, today, new MetricConfig(
             ENTER_HOME_TIME_METRIC_TYPE,
             "귀가",
             "귀가 시각",
-            DayRoute::getEnterHomeTime
+            "빨라졌어요.",
+            "늦어졌어요.",
+            dayRoute -> TimeFormatUtils.toKstMinutesOfDay(dayRoute.getEnterHomeTime()),
+            value -> TimeFormatUtils.formatHourMinute(value)
         ));
     }
 
-    private StatisticMetricResponse getTimeMetric(Long userId, StatisticPeriod period,
-        LocalDate today, TimeMetricConfig config) {
+    @Transactional(readOnly = true)
+    public StatisticMetricResponse getTotalOutingSecondsMetric(Long userId, StatisticPeriod period,
+        LocalDate today) {
+        return getMetric(userId, period, today, new MetricConfig(
+            TOTAL_OUTING_SECONDS_METRIC_TYPE,
+            "외출시간",
+            "외출시간",
+            "줄었어요.",
+            "늘었어요.",
+            dayRoute -> dayRoute.getTotalOutingSeconds(),
+            value -> DurationFormatUtils.formatOutingDurationText(value)
+        ));
+    }
+
+    private StatisticMetricResponse getMetric(Long userId, StatisticPeriod period, LocalDate today,
+        MetricConfig config) {
         List<StatisticBucket> buckets = createBuckets(period, today);
         LocalDate startDate = buckets.getFirst().startDate();
         LocalDate endDate = buckets.getLast().endDate();
         List<DayRoute> dayRoutes = dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(
             userId, startDate, endDate);
         StatisticMetricResponse.StatisticMetricAverage average = createAverage(dayRoutes,
-            config.timeExtractor());
+            config);
 
         return new StatisticMetricResponse(
             config.metricType(),
@@ -65,7 +86,7 @@ public class StatisticMetricService {
             startDate,
             endDate,
             average,
-            createBars(buckets, groupByDate(dayRoutes), config.timeExtractor()),
+            createBars(buckets, groupByDate(dayRoutes), config),
             createHighlight(userId, period, startDate, average, config)
         );
     }
@@ -113,11 +134,11 @@ public class StatisticMetricService {
     }
 
     private StatisticMetricResponse.StatisticMetricAverage createAverage(List<DayRoute> dayRoutes,
-        Function<DayRoute, Instant> timeExtractor) {
-        AverageResult averageResult = calculateAverageMinutes(dayRoutes, timeExtractor);
+        MetricConfig config) {
+        AverageResult averageResult = calculateAverage(dayRoutes, config.valueExtractor());
         return new StatisticMetricResponse.StatisticMetricAverage(
             averageResult.value(),
-            averageResult.value() == null ? null : TimeFormatUtils.formatHourMinute(
+            averageResult.value() == null ? null : config.displayFormatter().apply(
                 averageResult.value()),
             averageResult.sampleSize()
         );
@@ -125,18 +146,18 @@ public class StatisticMetricService {
 
     private StatisticMetricResponse.StatisticMetricHighlight createHighlight(Long userId,
         StatisticPeriod period, LocalDate startDate,
-        StatisticMetricResponse.StatisticMetricAverage currentAverage, TimeMetricConfig config) {
+        StatisticMetricResponse.StatisticMetricAverage currentAverage, MetricConfig config) {
         HighlightPeriodInfo highlightPeriodInfo = createHighlightPeriodInfo(period, startDate,
             config.titleMetricName());
         List<DayRoute> previousDayRoutes = dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(
             userId, highlightPeriodInfo.previousStartDate(), highlightPeriodInfo.previousEndDate());
         StatisticMetricResponse.StatisticMetricAverage previousAverage = createAverage(
-            previousDayRoutes, config.timeExtractor());
+            previousDayRoutes, config);
 
         return new StatisticMetricResponse.StatisticMetricHighlight(
             highlightPeriodInfo.title(),
             createHighlightMessage(highlightPeriodInfo, currentAverage, previousAverage,
-                config.messageMetricName()),
+                config),
             toHighlightMetricValue(highlightPeriodInfo.currentLabel(), currentAverage),
             toHighlightMetricValue(highlightPeriodInfo.previousLabel(), previousAverage)
         );
@@ -165,22 +186,22 @@ public class StatisticMetricService {
         HighlightPeriodInfo highlightPeriodInfo,
         StatisticMetricResponse.StatisticMetricAverage currentAverage,
         StatisticMetricResponse.StatisticMetricAverage previousAverage,
-        String messageMetricName) {
+        MetricConfig config) {
         if (currentAverage.value() == null || previousAverage.value() == null) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + messageMetricName + "을 "
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "을 "
                 + highlightPeriodInfo.previousCompareWithLabel() + " 비교할 기록이 부족해요.";
         }
 
         int difference = currentAverage.value() - previousAverage.value();
         if (difference < 0) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + messageMetricName + "이 "
-                + highlightPeriodInfo.previousCompareThanLabel() + " 빨라졌어요.";
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
+                + highlightPeriodInfo.previousCompareThanLabel() + " " + config.decreaseMessage();
         }
         if (difference > 0) {
-            return highlightPeriodInfo.currentLabel() + " 평균 " + messageMetricName + "이 "
-                + highlightPeriodInfo.previousCompareThanLabel() + " 늦어졌어요.";
+            return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
+                + highlightPeriodInfo.previousCompareThanLabel() + " " + config.increaseMessage();
         }
-        return highlightPeriodInfo.currentLabel() + " 평균 " + messageMetricName + "이 "
+        return highlightPeriodInfo.currentLabel() + " 평균 " + config.messageMetricName() + "이 "
             + highlightPeriodInfo.previousCompareWithLabel() + " 같아요.";
     }
 
@@ -195,20 +216,19 @@ public class StatisticMetricService {
     }
 
     private List<StatisticMetricResponse.StatisticMetricBarItem> createBars(
-        List<StatisticBucket> buckets, Map<LocalDate, DayRoute> dayRouteMap,
-        Function<DayRoute, Instant> timeExtractor
+        List<StatisticBucket> buckets, Map<LocalDate, DayRoute> dayRouteMap, MetricConfig config
     ) {
         List<StatisticMetricResponse.StatisticMetricBarItem> bars = new ArrayList<>();
         for (StatisticBucket bucket : buckets) {
             List<DayRoute> bucketDayRoutes = findDayRoutesInBucket(bucket, dayRouteMap);
-            AverageResult averageResult = calculateAverageMinutes(bucketDayRoutes, timeExtractor);
+            AverageResult averageResult = calculateAverage(bucketDayRoutes, config.valueExtractor());
             Integer value = averageResult.value();
             bars.add(new StatisticMetricResponse.StatisticMetricBarItem(
                 bucket.label(),
                 bucket.startDate(),
                 bucket.endDate(),
                 value,
-                value == null ? null : TimeFormatUtils.formatHourMinute(value),
+                value == null ? null : config.displayFormatter().apply(value),
                 value != null,
                 averageResult.sampleSize()
             ));
@@ -229,22 +249,22 @@ public class StatisticMetricService {
         return dayRoutes;
     }
 
-    private AverageResult calculateAverageMinutes(List<DayRoute> dayRoutes,
-        Function<DayRoute, Instant> timeExtractor) {
-        long totalMinutes = 0L;
+    private AverageResult calculateAverage(List<DayRoute> dayRoutes,
+        Function<DayRoute, Long> valueExtractor) {
+        long totalValue = 0L;
         int sampleSize = 0;
         for (DayRoute dayRoute : dayRoutes) {
-            Long minutesOfDay = TimeFormatUtils.toKstMinutesOfDay(timeExtractor.apply(dayRoute));
-            if (minutesOfDay == null) {
+            Long value = valueExtractor.apply(dayRoute);
+            if (value == null) {
                 continue;
             }
-            totalMinutes += minutesOfDay;
+            totalValue += value;
             sampleSize++;
         }
 
         Integer value = sampleSize == 0
             ? null
-            : Math.toIntExact(Math.round((double) totalMinutes / sampleSize));
+            : Math.toIntExact(Math.round((double) totalValue / sampleSize));
         return new AverageResult(value, sampleSize);
     }
 
@@ -255,11 +275,14 @@ public class StatisticMetricService {
     private record StatisticBucket(String label, LocalDate startDate, LocalDate endDate) {
     }
 
-    private record TimeMetricConfig(
+    private record MetricConfig(
         String metricType,
         String titleMetricName,
         String messageMetricName,
-        Function<DayRoute, Instant> timeExtractor
+        String decreaseMessage,
+        String increaseMessage,
+        Function<DayRoute, Long> valueExtractor,
+        Function<Integer, String> displayFormatter
     ) {
     }
 

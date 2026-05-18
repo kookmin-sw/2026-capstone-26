@@ -112,6 +112,70 @@ class StatisticMetricServiceTest {
     }
 
     @Test
+    void 일주일_총외출시간_상세_통계는_totalOutingSeconds_기준으로_계산한다() {
+        LocalDate today = LocalDate.of(2026, 5, 18);
+        User user = createUser();
+        DayRoute monday = createTotalOutingSecondsDayRoute(user, LocalDate.of(2026, 5, 18),
+            7200L);
+        DayRoute sunday = createTotalOutingSecondsDayRoute(user, LocalDate.of(2026, 5, 17),
+            10800L);
+
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
+            .willReturn(List.of(sunday, monday));
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 5), LocalDate.of(2026, 5, 11)))
+            .willReturn(List.of(createTotalOutingSecondsDayRoute(user, LocalDate.of(2026, 5, 11),
+                14400L)));
+
+        var response = statisticMetricService.getTotalOutingSecondsMetric(1L,
+            StatisticPeriod.WEEK, today);
+
+        assertThat(response.metricType()).isEqualTo("TOTAL_OUTING_SECONDS");
+        assertThat(response.period()).isEqualTo(StatisticPeriod.WEEK);
+        assertThat(response.average().value()).isEqualTo(9000);
+        assertThat(response.average().displayText()).isEqualTo("2시간 30분");
+        assertThat(response.average().sampleSize()).isEqualTo(2);
+        assertThat(response.bars()).hasSize(7);
+        assertThat(response.bars().get(5).value()).isEqualTo(10800);
+        assertThat(response.bars().get(5).displayText()).isEqualTo("3시간");
+        assertThat(response.bars().get(6).value()).isEqualTo(7200);
+        assertThat(response.bars().get(6).displayText()).isEqualTo("2시간");
+        assertThat(response.highlight().title()).isEqualTo("이번 주 외출시간");
+        assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출시간이 지난주보다 줄었어요.");
+        assertThat(response.highlight().current().value()).isEqualTo(9000);
+        assertThat(response.highlight().previous().value()).isEqualTo(14400);
+        assertThat(response.highlight().previous().displayText()).isEqualTo("4시간");
+    }
+
+    @Test
+    void 총외출시간은_0초도_dayRoute가_있으면_평균에_포함한다() {
+        LocalDate today = LocalDate.of(2026, 5, 18);
+        User user = createUser();
+        DayRoute monday = createTotalOutingSecondsDayRoute(user, LocalDate.of(2026, 5, 18),
+            0L);
+
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
+            .willReturn(List.of(monday));
+        given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
+            LocalDate.of(2026, 5, 5), LocalDate.of(2026, 5, 11)))
+            .willReturn(List.of());
+
+        var response = statisticMetricService.getTotalOutingSecondsMetric(1L,
+            StatisticPeriod.WEEK, today);
+
+        assertThat(response.average().value()).isZero();
+        assertThat(response.average().displayText()).isEqualTo("0분");
+        assertThat(response.average().sampleSize()).isEqualTo(1);
+        assertThat(response.bars().get(6).value()).isZero();
+        assertThat(response.bars().get(6).hasValue()).isTrue();
+        assertThat(response.bars().get(6).sampleSize()).isEqualTo(1);
+        assertThat(response.highlight().previous().value()).isNull();
+        assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출시간을 지난주와 비교할 기록이 부족해요.");
+    }
+
+    @Test
     void 한달_외출시각_상세_통계는_일별_30개_막대를_반환한다() {
         LocalDate today = LocalDate.of(2026, 5, 18);
         given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
@@ -197,6 +261,16 @@ class StatisticMetricServiceTest {
             .date(date)
             .build();
         dayRoute.markReturnedHome(enterHomeTime);
+        return dayRoute;
+    }
+
+    private DayRoute createTotalOutingSecondsDayRoute(User user, LocalDate date,
+        long totalOutingSeconds) {
+        DayRoute dayRoute = DayRoute.builder()
+            .user(user)
+            .date(date)
+            .build();
+        dayRoute.addOutingDurationSeconds(totalOutingSeconds);
         return dayRoute;
     }
 }

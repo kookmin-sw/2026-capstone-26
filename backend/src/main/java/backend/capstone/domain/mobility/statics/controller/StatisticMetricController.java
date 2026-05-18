@@ -41,4 +41,14 @@ public class StatisticMetricController implements StatisticMetricControllerSpec 
         return statisticMetricService.getEnterHomeTimeMetric(
             principal.userId(), period, LocalDate.now(KST_ZONE_ID));
     }
+
+    @Override
+    @GetMapping("/total-outing-seconds")
+    public StatisticMetricResponse getTotalOutingSecondsMetric(
+        @RequestParam(value = "period", defaultValue = "WEEK") StatisticPeriod period,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return statisticMetricService.getTotalOutingSecondsMetric(
+            principal.userId(), period, LocalDate.now(KST_ZONE_ID));
+    }
 }

@@ -71,4 +71,22 @@ public interface StatisticMetricControllerSpec {
         @Parameter(example = "WEEK") StatisticPeriod period,
         UserPrincipal principal
     );
+
+    @Operation(
+        summary = "총 외출시간 상세 통계 조회 API",
+        description = """
+            총 외출시간 지표를 기간별 막대 그래프 데이터로 반환합니다.<br>
+            기간별 막대 개수와 하이라이트 비교 범위는 외출시각 상세 통계와 동일합니다.<br>
+            평균은 dayRoute가 생성된 날짜의 totalOutingSeconds를 대상으로 계산합니다.<br>
+            totalOutingSeconds가 0이어도 dayRoute가 있으면 평균 계산에 포함됩니다.<br>
+            value는 평균 총 외출시간을 초 단위로 환산한 값입니다. 예: 12600 = 3시간 30분<br>
+            displayText는 value를 "n시간 n분" 형식으로 변환한 값입니다.<br>
+            조회 기간 또는 특정 막대 구간에 dayRoute가 없으면 value와 displayText는 null이고 sampleSize는 0입니다.<br>
+            하이라이트 문구는 현재 기간과 직전 기간의 평균 총 외출시간을 비교해 기록 부족, 줄어듦, 늘어남, 같음 중 하나로 반환합니다.
+            """
+    )
+    StatisticMetricResponse getTotalOutingSecondsMetric(
+        @Parameter(example = "WEEK") StatisticPeriod period,
+        UserPrincipal principal
+    );
 }
