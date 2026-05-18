@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passedpath.app.appContainer
+import com.example.passedpath.feature.daynote.presentation.state.DayNoteUiState
 import com.example.passedpath.feature.daynote.presentation.viewmodel.DayNoteViewModel
 import com.example.passedpath.feature.daynote.presentation.viewmodel.DayNoteViewModelFactory
 import com.example.passedpath.feature.main.presentation.coordinator.DateSelectionDecision
@@ -67,69 +68,20 @@ fun MainRoute(
         factory = PlaceBookmarkMapMarkerViewModelFactory(appContainer)
     )
     val placeBookmarkMapMarkerUiState by placeBookmarkMapMarkerViewModel.uiState.collectAsStateWithLifecycle()
-    val markerPlaces = resolveMainMarkerPlaces(
-        placeListUiState = placeUiState.placeList,
-        route = uiState.selectedRoute
-    )
-    val dateSelectionGuardCoordinator = remember { DateSelectionGuardCoordinator() }
-    val dateSelectionGuardState by dateSelectionGuardCoordinator.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.selectedDateKey, uiState.selectedRoute.title, uiState.selectedRoute.memo) {
-        dayNoteViewModel.syncSelectedDay(
-            dateKey = uiState.selectedDateKey,
-            title = uiState.selectedRoute.title,
-            memo = uiState.selectedRoute.memo
+    val placeListUiState = placeUiState.placeList
+    val routeMarkerPlaces = uiState.selectedRoute.markerPlaces
+    val markerPlaces = remember(
+        placeListUiState.hasLoaded,
+        placeListUiState.places,
+        routeMarkerPlaces
+    ) {
+        resolveMainMarkerPlaces(
+            placeListUiState = placeListUiState,
+            route = uiState.selectedRoute
         )
     }
-
-    LaunchedEffect(dayNoteViewModel) {
-        dayNoteViewModel.snapshotPatch.collect { patch ->
-            viewModel.applyDayNoteSnapshotPatch(
-                dateKey = patch.dateKey,
-                title = patch.title,
-                memo = patch.memo,
-                shouldUpdateTitle = patch.shouldUpdateTitle,
-                shouldUpdateMemo = patch.shouldUpdateMemo
-            )
-        }
-    }
-
-    LaunchedEffect(uiState.selectedDateKey) {
-        placeViewModel.updateDateKey(uiState.selectedDateKey)
-        placeViewModel.fetchVisitedPlaces(uiState.selectedDateKey)
-    }
-
-    LaunchedEffect(placeBookmarkMapMarkerViewModel) {
-        placeBookmarkMapMarkerViewModel.fetchPlaceBookmarkMarkers()
-    }
-
-    LaunchedEffect(placeBookmarkChangedEvent?.id) {
-        val event = placeBookmarkChangedEvent ?: return@LaunchedEffect
-        placeBookmarkMapMarkerViewModel.fetchPlaceBookmarkMarkers()
-        onPlaceBookmarkChangedEventConsumed(event.id)
-    }
-
-    LaunchedEffect(placeCreatedEvent?.id) {
-        if (placeCreatedEvent == null) return@LaunchedEffect
-        placeViewModel.fetchVisitedPlaces(uiState.selectedDateKey)
-    }
-
-    LaunchedEffect(
-        dateSelectionGuardState.pendingDateSelection,
-        dayNoteUiState.isSubmitting,
-        dayNoteUiState.isDirty,
-        dayNoteUiState.errorMessage,
-        dayNoteUiState.successMessage
-    ) {
-        val targetDate = dateSelectionGuardCoordinator.consumeDateSelectionAfterSave(
-            isSubmitting = dayNoteUiState.isSubmitting,
-            hasUnsavedDayNoteChanges = dayNoteUiState.isDirty,
-            hasSaveError = dayNoteUiState.errorMessage != null,
-            hasSaveSuccessMessage = dayNoteUiState.successMessage != null
-        ) ?: return@LaunchedEffect
-
-        viewModel.selectDate(targetDate)
-    }
+    val dateSelectionGuardCoordinator = remember { DateSelectionGuardCoordinator() }
+    val dateSelectionGuardState by dateSelectionGuardCoordinator.state.collectAsStateWithLifecycle()
 
     fun requestDateSelection(dateKey: String) {
         when (
@@ -145,11 +97,39 @@ fun MainRoute(
         }
     }
 
-    LaunchedEffect(calendarDateSelectedEvent?.id) {
-        val event = calendarDateSelectedEvent ?: return@LaunchedEffect
-        requestDateSelection(event.dateKey)
-        onCalendarDateSelectedEventConsumed(event.id)
-    }
+    MainDayNoteRouteEffects(
+        selectedDateKey = uiState.selectedDateKey,
+        selectedRouteTitle = uiState.selectedRoute.title,
+        selectedRouteMemo = uiState.selectedRoute.memo,
+        dayNoteViewModel = dayNoteViewModel,
+        onApplyDayNoteSnapshotPatch = viewModel::applyDayNoteSnapshotPatch
+    )
+
+    MainPlaceRouteEffects(
+        selectedDateKey = uiState.selectedDateKey,
+        placeCreatedEvent = placeCreatedEvent,
+        onUpdateDateKey = placeViewModel::updateDateKey,
+        onFetchVisitedPlaces = placeViewModel::fetchVisitedPlaces
+    )
+
+    MainBookmarkMarkerRouteEffects(
+        placeBookmarkChangedEvent = placeBookmarkChangedEvent,
+        placeBookmarkMapMarkerViewModel = placeBookmarkMapMarkerViewModel,
+        onPlaceBookmarkChangedEventConsumed = onPlaceBookmarkChangedEventConsumed
+    )
+
+    MainDateSelectionGuardEffect(
+        pendingDateSelection = dateSelectionGuardState.pendingDateSelection,
+        dayNoteUiState = dayNoteUiState,
+        dateSelectionGuardCoordinator = dateSelectionGuardCoordinator,
+        onDateSelected = viewModel::selectDate
+    )
+
+    MainCalendarDateSelectionEventEffect(
+        calendarDateSelectedEvent = calendarDateSelectedEvent,
+        onDateSelectionRequested = ::requestDateSelection,
+        onCalendarDateSelectedEventConsumed = onCalendarDateSelectedEventConsumed
+    )
 
     MainRouteEffects(
         permissionState = uiState.permissionState,
@@ -238,4 +218,112 @@ fun MainRoute(
             }
         )
     )
+}
+
+@Composable
+private fun MainDayNoteRouteEffects(
+    selectedDateKey: String,
+    selectedRouteTitle: String,
+    selectedRouteMemo: String,
+    dayNoteViewModel: DayNoteViewModel,
+    onApplyDayNoteSnapshotPatch: (
+        dateKey: String,
+        title: String?,
+        memo: String?,
+        shouldUpdateTitle: Boolean,
+        shouldUpdateMemo: Boolean
+    ) -> Unit
+) {
+    LaunchedEffect(selectedDateKey, selectedRouteTitle, selectedRouteMemo) {
+        dayNoteViewModel.syncSelectedDay(
+            dateKey = selectedDateKey,
+            title = selectedRouteTitle,
+            memo = selectedRouteMemo
+        )
+    }
+
+    LaunchedEffect(dayNoteViewModel) {
+        dayNoteViewModel.snapshotPatch.collect { patch ->
+            onApplyDayNoteSnapshotPatch(
+                patch.dateKey,
+                patch.title,
+                patch.memo,
+                patch.shouldUpdateTitle,
+                patch.shouldUpdateMemo
+            )
+        }
+    }
+}
+
+@Composable
+private fun MainPlaceRouteEffects(
+    selectedDateKey: String,
+    placeCreatedEvent: PlaceCreatedEvent?,
+    onUpdateDateKey: (String) -> Unit,
+    onFetchVisitedPlaces: (String) -> Unit
+) {
+    LaunchedEffect(selectedDateKey) {
+        onUpdateDateKey(selectedDateKey)
+        onFetchVisitedPlaces(selectedDateKey)
+    }
+
+    LaunchedEffect(placeCreatedEvent?.id) {
+        if (placeCreatedEvent == null) return@LaunchedEffect
+        onFetchVisitedPlaces(selectedDateKey)
+    }
+}
+
+@Composable
+private fun MainBookmarkMarkerRouteEffects(
+    placeBookmarkChangedEvent: PlaceBookmarkChangedEvent?,
+    placeBookmarkMapMarkerViewModel: PlaceBookmarkMapMarkerViewModel,
+    onPlaceBookmarkChangedEventConsumed: (Int) -> Unit
+) {
+    LaunchedEffect(placeBookmarkMapMarkerViewModel) {
+        placeBookmarkMapMarkerViewModel.fetchPlaceBookmarkMarkers()
+    }
+
+    LaunchedEffect(placeBookmarkChangedEvent?.id) {
+        val event = placeBookmarkChangedEvent ?: return@LaunchedEffect
+        placeBookmarkMapMarkerViewModel.fetchPlaceBookmarkMarkers()
+        onPlaceBookmarkChangedEventConsumed(event.id)
+    }
+}
+
+@Composable
+private fun MainDateSelectionGuardEffect(
+    pendingDateSelection: String?,
+    dayNoteUiState: DayNoteUiState,
+    dateSelectionGuardCoordinator: DateSelectionGuardCoordinator,
+    onDateSelected: (String) -> Unit
+) {
+    LaunchedEffect(
+        pendingDateSelection,
+        dayNoteUiState.isSubmitting,
+        dayNoteUiState.isDirty,
+        dayNoteUiState.errorMessage,
+        dayNoteUiState.successMessage
+    ) {
+        val targetDate = dateSelectionGuardCoordinator.consumeDateSelectionAfterSave(
+            isSubmitting = dayNoteUiState.isSubmitting,
+            hasUnsavedDayNoteChanges = dayNoteUiState.isDirty,
+            hasSaveError = dayNoteUiState.errorMessage != null,
+            hasSaveSuccessMessage = dayNoteUiState.successMessage != null
+        ) ?: return@LaunchedEffect
+
+        onDateSelected(targetDate)
+    }
+}
+
+@Composable
+private fun MainCalendarDateSelectionEventEffect(
+    calendarDateSelectedEvent: CalendarDateSelectedEvent?,
+    onDateSelectionRequested: (String) -> Unit,
+    onCalendarDateSelectedEventConsumed: (Int) -> Unit
+) {
+    LaunchedEffect(calendarDateSelectedEvent?.id) {
+        val event = calendarDateSelectedEvent ?: return@LaunchedEffect
+        onDateSelectionRequested(event.dateKey)
+        onCalendarDateSelectedEventConsumed(event.id)
+    }
 }
