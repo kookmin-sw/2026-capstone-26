@@ -2,6 +2,7 @@ package backend.capstone.domain.mobility.statics.controller;
 
 import backend.capstone.auth.dto.UserPrincipal;
 import backend.capstone.domain.mobility.statics.dto.StatisticMetricResponse;
+import backend.capstone.domain.mobility.statics.dto.VisitStatisticsResponse;
 import backend.capstone.domain.mobility.statics.type.StatisticPeriod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -194,6 +195,39 @@ public interface StatisticMetricControllerSpec {
             """
     )
     StatisticMetricResponse getTotalOutingCountMetric(
+        @Parameter(example = "WEEK") StatisticPeriod period,
+        UserPrincipal principal
+    );
+
+    @Operation(
+        summary = "방문 동네 및 장소 통계 조회 API",
+        description = """
+            사용자가 방문한 동네 분포와 가장 많이 방문한 장소 랭킹을 기간별로 반환합니다.<br>
+            <br>
+            <b>기간 기준</b><br>
+            - WEEK: 오늘 포함 최근 7일입니다.<br>
+            - MONTH: 오늘 포함 최근 30일입니다.<br>
+            - SIX_MONTHS: 현재 월 포함 최근 6개월입니다.<br>
+            - YEAR: 현재 월 포함 최근 12개월입니다.<br>
+            <br>
+            <b>방문 동네 통계</b><br>
+            - visitedRegions.totalVisitCount는 기간 내 방문 동네 집계에 포함된 전체 방문 수입니다.<br>
+            - visitedRegions.items는 상위 3개 동네와 그 외 항목을 반환합니다.<br>
+            - 같은 날짜의 같은 동네는 visitedRegion 1건으로 계산합니다.<br>
+            - ratio는 전체 방문 수 대비 비율이며 소수점 한 자리까지 반환합니다.<br>
+            - displayRatio는 ratio를 반올림한 정수 퍼센트 문자열입니다. 예: "43%"<br>
+            - 방문 동네 기록이 없으면 totalVisitCount는 0, items는 빈 배열입니다.<br>
+            <br>
+            <b>방문 장소 통계</b><br>
+            - places.totalVisitCount는 기간 내 장소 방문 전체 횟수입니다.<br>
+            - places.items는 방문 횟수가 많은 장소를 최대 5개까지 반환합니다.<br>
+            - 현재는 placeName + roadAddress가 같으면 같은 장소로 집계합니다.<br>
+            - visitCount는 해당 장소 방문 횟수입니다.<br>
+            - displayVisitCount는 visitCount를 "n회" 형식으로 변환한 문자열입니다. 예: "8회"<br>
+            - 방문 장소 기록이 없으면 totalVisitCount는 0, items는 빈 배열입니다.
+            """
+    )
+    VisitStatisticsResponse getVisitStatistics(
         @Parameter(example = "WEEK") StatisticPeriod period,
         UserPrincipal principal
     );
