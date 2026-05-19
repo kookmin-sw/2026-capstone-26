@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,6 +18,7 @@ import com.example.passedpath.feature.care.presentation.viewmodel.CareViewModelF
 
 @Composable
 fun CareRoute(
+    refreshEventId: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: CareViewModel = viewModel(
         factory = CareViewModelFactory(LocalContext.current.appContainer)
@@ -25,6 +27,12 @@ fun CareRoute(
     val context = LocalContext.current
     val shareTitle = stringResource(R.string.care_invite_share_title)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(refreshEventId) {
+        if (refreshEventId > 0) {
+            viewModel.refreshDependents()
+        }
+    }
 
     CareScreen(
         uiState = uiState,

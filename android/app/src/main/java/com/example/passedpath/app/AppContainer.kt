@@ -105,9 +105,13 @@ import com.example.passedpath.feature.placebookmark.domain.usecase.DeletePlaceBo
 import com.example.passedpath.feature.placebookmark.domain.usecase.GetPlaceBookmarksUseCase
 import com.example.passedpath.feature.placebookmark.domain.usecase.UpdatePlaceBookmarkUseCase
 import com.example.passedpath.feature.summary.data.remote.api.DayRouteSummaryApi
+import com.example.passedpath.feature.summary.data.remote.api.WeeklyStatisticsApi
 import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.WeeklyStatisticsRepositoryImpl
 import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
+import com.example.passedpath.feature.summary.domain.repository.WeeklyStatisticsRepository
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetWeeklyStatisticsUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
 import java.util.concurrent.TimeUnit
 import java.time.LocalTime
@@ -221,6 +225,10 @@ class AppContainer(
         retrofit.create(DayRouteSummaryApi::class.java)
     }
 
+    private val weeklyStatisticsApi by lazy {
+        retrofit.create(WeeklyStatisticsApi::class.java)
+    }
+
     private val calendarMonthlyRouteApi by lazy {
         retrofit.create(CalendarMonthlyRouteApi::class.java)
     }
@@ -330,6 +338,10 @@ class AppContainer(
 
     val dayRouteSummaryRepository: DayRouteSummaryRepository by lazy {
         DayRouteSummaryRepositoryImpl(dayRouteSummaryApi = dayRouteSummaryApi)
+    }
+
+    val weeklyStatisticsRepository: WeeklyStatisticsRepository by lazy {
+        WeeklyStatisticsRepositoryImpl(weeklyStatisticsApi = weeklyStatisticsApi)
     }
 
     val calendarMonthlyRouteRepository: CalendarMonthlyRouteRepository by lazy {
@@ -456,6 +468,10 @@ class AppContainer(
 
     val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {
         GetDayRouteSummaryUseCase(dayRouteSummaryRepository = dayRouteSummaryRepository)
+    }
+
+    val getWeeklyStatisticsUseCase: GetWeeklyStatisticsUseCase by lazy {
+        GetWeeklyStatisticsUseCase(weeklyStatisticsRepository = weeklyStatisticsRepository)
     }
 
     val getCalendarMonthlyRouteUseCase: GetCalendarMonthlyRouteUseCase by lazy {

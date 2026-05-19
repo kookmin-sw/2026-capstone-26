@@ -16,17 +16,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.passedpath.R
+import com.example.passedpath.app.appContainer
 import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
 import com.example.passedpath.feature.bookmark.presentation.screen.DayRouteBookmarkListRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
+import com.example.passedpath.feature.care.presentation.component.CareInviteAcceptDialog
 import com.example.passedpath.feature.care.presentation.screen.CareRoute
+import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModel
+import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModelFactory
 import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelectedEvent
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
 import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
@@ -44,13 +55,27 @@ import com.example.passedpath.ui.component.toast.ToastOverlayItem
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    appEntryViewModel: AppEntryViewModel
+    appEntryViewModel: AppEntryViewModel,
+    pendingCareInviteCode: String? = null,
+    onCareInviteCodeConsumed: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val careInviteAcceptViewModel: CareInviteAcceptViewModel = viewModel(
+        factory = CareInviteAcceptViewModelFactory(context.appContainer)
+    )
+    val careInviteAcceptUiState by careInviteAcceptViewModel.uiState
+        .collectAsStateWithLifecycle()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val inviteAcceptSuccessMessage = stringResource(R.string.care_invite_accept_success)
     var logoutToastMessage by remember { mutableStateOf<String?>(null) }
     var logoutToastTrigger by remember { mutableStateOf(0) }
     var loginToastMessage by remember { mutableStateOf<String?>(null) }
     var loginToastTrigger by remember { mutableStateOf(0) }
+    var inviteAcceptToastTrigger by remember { mutableStateOf(0) }
+    var handledInviteAcceptSuccessEventId by remember { mutableStateOf(0L) }
     var mainTabReselectionEvent by remember { mutableStateOf(0) }
+    var careRefreshEventId by remember { mutableStateOf(0) }
     var placeCreatedEvent by remember { mutableStateOf<PlaceCreatedEvent?>(null) }
     var placeCreatedEventId by remember { mutableStateOf(0) }
     var placeBookmarkChangedEvent by remember { mutableStateOf<PlaceBookmarkChangedEvent?>(null) }
@@ -72,11 +97,42 @@ fun AppNavHost(
         }
     }
 
+    LaunchedEffect(pendingCareInviteCode, currentRoute) {
+        val inviteCode = pendingCareInviteCode
+            ?.trim()
+            ?.takeIf(String::isNotEmpty) ?: return@LaunchedEffect
+        if (!currentRoute.isCareInviteAcceptReadyRoute()) return@LaunchedEffect
+
+        careInviteAcceptViewModel.openInvite(inviteCode)
+        onCareInviteCodeConsumed(inviteCode)
+    }
+
+    LaunchedEffect(careInviteAcceptUiState.successEventId) {
+        val successEventId = careInviteAcceptUiState.successEventId
+        if (successEventId <= 0L ||
+            successEventId == handledInviteAcceptSuccessEventId
+        ) {
+            return@LaunchedEffect
+        }
+
+        handledInviteAcceptSuccessEventId = successEventId
+        inviteAcceptToastTrigger++
+        careRefreshEventId++
+        navController.navigate(NavRoute.FRIENDS) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AppNavigationGraph(
             navController = navController,
             appEntryViewModel = appEntryViewModel,
             mainTabReselectionEvent = mainTabReselectionEvent,
+            careRefreshEventId = careRefreshEventId,
             placeCreatedEvent = placeCreatedEvent,
             placeBookmarkChangedEvent = placeBookmarkChangedEvent,
             placeBookmarkSearchResultEvent = placeBookmarkSearchResultEvent,
@@ -159,8 +215,22 @@ fun AppNavHost(
                         )
                     )
                 }
+                if (inviteAcceptToastTrigger > 0) {
+                    add(
+                        ToastOverlayItem(
+                            message = inviteAcceptSuccessMessage,
+                            triggerKey = "care-invite-accept:$inviteAcceptToastTrigger"
+                        )
+                    )
+                }
             },
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+
+        CareInviteAcceptDialog(
+            uiState = careInviteAcceptUiState,
+            onDismiss = careInviteAcceptViewModel::dismissInvite,
+            onConfirm = careInviteAcceptViewModel::acceptInvite
         )
     }
 }
@@ -170,6 +240,7 @@ private fun AppNavigationGraph(
     navController: NavHostController,
     appEntryViewModel: AppEntryViewModel,
     mainTabReselectionEvent: Int,
+    careRefreshEventId: Int,
     placeCreatedEvent: PlaceCreatedEvent?,
     placeBookmarkChangedEvent: PlaceBookmarkChangedEvent?,
     placeBookmarkSearchResultEvent: PlaceBookmarkSearchResultEvent?,
@@ -229,7 +300,10 @@ private fun AppNavigationGraph(
                 selectedRoute = NavRoute.FRIENDS,
                 onBottomBarReselected = onBottomBarReselected
             ) { modifier ->
-                CareRoute(modifier = modifier)
+                CareRoute(
+                    refreshEventId = careRefreshEventId,
+                    modifier = modifier
+                )
             }
         }
 
@@ -400,3 +474,10 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.placeSearchPopExit
 
 private const val PlaceSearchEnterTransitionMillis = 250
 private const val PlaceSearchExitTransitionMillis = 230
+
+private fun String?.isCareInviteAcceptReadyRoute(): Boolean {
+    return this != null &&
+        this != NavRoute.ENTRY &&
+        this != NavRoute.LOGIN &&
+        this != NavRoute.PERMISSION_INTRO
+}

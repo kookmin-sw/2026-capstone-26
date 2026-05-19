@@ -34,6 +34,13 @@
     <string name="care_invite_sheet_error">초대 링크를 만들지 못했어요. 잠시 후 다시 시도해 주세요.</string>
     <string name="care_invite_sheet_close">초대 팝업 닫기</string>
     <string name="care_invite_share_title">함께 가는 길 초대</string>
+    <string name="care_invite_accept_title">함께 가는 길 초대를 수락할까요?</string>
+    <string name="care_invite_accept_message">수락하면 함께가는길 연결이 완료돼요.</string>
+    <string name="care_invite_accept_cancel">취소</string>
+    <string name="care_invite_accept_confirm">수락하기</string>
+    <string name="care_invite_accept_submitting">수락 중</string>
+    <string name="care_invite_accept_error">초대를 수락하지 못했어요. 링크가 만료됐거나 이미 연결되어 있을 수 있어요.</string>
+    <string name="care_invite_accept_success">초대를 수락했어요</string>
     <string name="main_title">My Walk Log</string>
     <string name="main_permission_full">Background location is enabled</string>
     <string name="main_permission_limited">Background location is limited</string>

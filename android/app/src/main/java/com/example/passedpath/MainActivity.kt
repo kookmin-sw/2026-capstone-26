@@ -10,18 +10,22 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.example.passedpath.app.appContainer
+import com.example.passedpath.feature.care.presentation.deeplink.CareInviteDeepLinkParser
 import com.example.passedpath.navigation.AppEntryState
 import com.example.passedpath.navigation.AppEntryViewModel
 import com.example.passedpath.navigation.AppEntryViewModelFactory
 import com.example.passedpath.navigation.AppNavHost
 import com.example.passedpath.ui.theme.PassedPathTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class MainActivity : ComponentActivity() {
     private val appEntryViewModel: AppEntryViewModel by viewModels {
         AppEntryViewModelFactory(applicationContext.appContainer)
     }
+    private val pendingCareInviteCode = MutableStateFlow<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition {
@@ -33,17 +37,36 @@ class MainActivity : ComponentActivity() {
         )
 
         super.onCreate(savedInstanceState)
+        publishCareInviteCode(intent)
 
         setContent {
             PassedPathTheme {
                 val navController = rememberNavController()
+                val careInviteCode = pendingCareInviteCode.collectAsStateWithLifecycle().value
 
                 AppNavHost(
                     navController = navController,
-                    appEntryViewModel = appEntryViewModel
+                    appEntryViewModel = appEntryViewModel,
+                    pendingCareInviteCode = careInviteCode,
+                    onCareInviteCodeConsumed = { consumedCode ->
+                        if (pendingCareInviteCode.value == consumedCode) {
+                            pendingCareInviteCode.value = null
+                        }
+                    }
                 )
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        publishCareInviteCode(intent)
+    }
+
+    private fun publishCareInviteCode(intent: Intent?) {
+        val inviteCode = CareInviteDeepLinkParser.extractInviteCode(intent?.data) ?: return
+        pendingCareInviteCode.value = inviteCode
     }
 
     companion object {
