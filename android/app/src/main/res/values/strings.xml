@@ -45,6 +45,8 @@
     <string name="care_location_stream_error">실시간 위치 연결이 끊겼어요</string>
     <string name="care_location_stream_retry">다시 시도</string>
     <string name="care_location_stream_close">닫기</string>
+    <string name="care_protected_person_weekly_summary">보호대상자 주간요약</string>
+    <string name="care_protected_person_past_route">보호대상자 지나온길 조회</string>
     <string name="main_title">My Walk Log</string>
     <string name="main_permission_full">Background location is enabled</string>
     <string name="main_permission_limited">Background location is limited</string>

@@ -29,6 +29,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
@@ -46,12 +47,15 @@ import com.example.passedpath.feature.care.presentation.state.CareVisitedPlaceMa
 import com.example.passedpath.ui.component.bottomsheet.BaseAnchoredBottomSheetScaffold
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureDialog
+import com.example.passedpath.ui.component.floating.FloatingButtonColumn
+import com.example.passedpath.ui.component.floating.FloatingCircleIconButton
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green50
 import com.example.passedpath.ui.theme.Green700
+import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -82,6 +86,8 @@ fun CareScreen(
     onPlaceRetryClick: () -> Unit,
     onPlaceGuideBannerClose: () -> Unit,
     onSummaryRetryClick: () -> Unit,
+    onProtectedPersonWeeklySummaryClick: () -> Unit,
+    onProtectedPersonPastRouteClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
     onInviteDismiss: () -> Unit,
@@ -106,6 +112,8 @@ fun CareScreen(
                     onPlaceMarkerClick = onPlaceMarkerClick,
                     onFocusedPlaceHandled = onFocusedPlaceHandled,
                     onMapClick = onMapClick,
+                    onProtectedPersonWeeklySummaryClick = onProtectedPersonWeeklySummaryClick,
+                    onProtectedPersonPastRouteClick = onProtectedPersonPastRouteClick,
                     onLocationStreamRetryClick = onLocationStreamRetryClick,
                     onLocationStreamErrorDismiss = onLocationStreamErrorDismiss
                 )
@@ -156,6 +164,8 @@ private fun CareMapContent(
     onPlaceMarkerClick: (Long) -> Unit,
     onFocusedPlaceHandled: () -> Unit,
     onMapClick: () -> Unit,
+    onProtectedPersonWeeklySummaryClick: () -> Unit,
+    onProtectedPersonPastRouteClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
     modifier: Modifier = Modifier
@@ -280,8 +290,20 @@ private fun CareMapContent(
             onRetryClick = onRetryClick,
             onLocationStreamRetryClick = onLocationStreamRetryClick,
             onLocationStreamErrorDismiss = onLocationStreamErrorDismiss,
+            avoidTopStartFloatingActions = uiState.selectedDependentUserId != null,
             modifier = Modifier.align(Alignment.TopCenter)
         )
+
+        if (uiState.selectedDependentUserId != null) {
+            CareProtectedPersonFloatingActions(
+                onWeeklySummaryClick = onProtectedPersonWeeklySummaryClick,
+                onPastRouteClick = onProtectedPersonPastRouteClick,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .statusBarsPadding()
+                    .padding(top = CareStatusTopPadding, start = 16.dp)
+            )
+        }
     }
 }
 
@@ -404,6 +426,7 @@ private fun CareMapStatusOverlay(
     onRetryClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
+    avoidTopStartFloatingActions: Boolean,
     modifier: Modifier = Modifier
 ) {
     var dismissedErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
@@ -427,7 +450,15 @@ private fun CareMapStatusOverlay(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(top = CareStatusTopPadding, start = 16.dp, end = 16.dp),
+            .padding(
+                top = if (avoidTopStartFloatingActions) {
+                    CareStatusTopPadding + CareProtectedPersonFloatingActionsHeight + 12.dp
+                } else {
+                    CareStatusTopPadding
+                },
+                start = 16.dp,
+                end = 16.dp
+            ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -511,6 +542,43 @@ private fun CareLocationStreamFailureBanner(
     }
 }
 
+@Composable
+private fun CareProtectedPersonFloatingActions(
+    onWeeklySummaryClick: () -> Unit,
+    onPastRouteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingButtonColumn(modifier = modifier) {
+        FloatingCircleIconButton(
+            onClick = onWeeklySummaryClick,
+            iconResId = R.drawable.ic_stats,
+            contentDescriptionResId = R.string.care_protected_person_weekly_summary
+        )
+        FloatingCircleIconButton(
+            onClick = onPastRouteClick,
+            iconResId = R.drawable.ic_bottom_nav_route,
+            contentDescriptionResId = R.string.care_protected_person_past_route
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Care Protected Person Floating Actions")
+@Composable
+private fun CareProtectedPersonFloatingActionsPreview() {
+    PassedPathTheme {
+        Box(
+            modifier = Modifier
+                .background(Green50)
+                .padding(16.dp)
+        ) {
+            CareProtectedPersonFloatingActions(
+                onWeeklySummaryClick = {},
+                onPastRouteClick = {}
+            )
+        }
+    }
+}
+
 private fun CareDependentMapMarkerUiState.toLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }
@@ -521,6 +589,7 @@ private fun CareVisitedPlaceMarkerUiState.toLatLng(): LatLng {
 
 private val SeoulFallbackLatLng = LatLng(37.5662952, 126.9779451)
 private val CareStatusTopPadding = 128.dp
+private val CareProtectedPersonFloatingActionsHeight = 92.dp
 private const val InitialCareMapZoom = 13f
 private const val SelectedCareMapZoom = 16f
 private const val FocusedPlaceMapZoom = 17f

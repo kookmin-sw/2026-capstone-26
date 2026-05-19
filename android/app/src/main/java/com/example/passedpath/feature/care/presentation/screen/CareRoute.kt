@@ -58,6 +58,8 @@ fun CareRoute(
         onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
         onPlaceGuideBannerClose = viewModel::dismissProtectedPersonPlaceGuideBanner,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
+        onProtectedPersonWeeklySummaryClick = {},
+        onProtectedPersonPastRouteClick = {},
         onLocationStreamRetryClick = viewModel::retryLocationStream,
         onLocationStreamErrorDismiss = viewModel::dismissLocationStreamError,
         onInviteDismiss = viewModel::dismissInviteModal,
