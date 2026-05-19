@@ -214,7 +214,7 @@
     <string name="permission_banner_action">[권한 설정하기]</string>
     <string name="gps_off_overlay_message">위치 서비스가 꺼져 있어 기록이 남지 않고 있어요</string>
     <string name="gps_off_overlay_action">위치 서비스 켜기</string>
-    <string name="reorder_guide_banner_message">리스트를 길게 눌러 순서를 자유롭게 변경할 수 있어요</string>
+    <string name="reorder_guide_banner_message">장소를 길게 눌러 순서를 자유롭게 변경할 수 있어요</string>
     <string name="reorder_guide_banner_close">닫기</string>
     <string name="place_sheet_mode_hint">placeId가 비어 있으면 등록, 값이 있으면 수정입니다. 삭제는 placeId만 있어도 가능합니다.</string>
     <string name="place_sheet_reorder_hint">순서 변경은 현재 drag UI 대신 쉼표 구분 placeId 목록으로 테스트합니다. 예: 2,1</string>

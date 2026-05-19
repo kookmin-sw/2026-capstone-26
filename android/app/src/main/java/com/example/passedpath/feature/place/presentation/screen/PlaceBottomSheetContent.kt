@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +47,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -63,6 +61,7 @@ import com.example.passedpath.feature.place.domain.model.BookmarkPlaceType
 import com.example.passedpath.feature.place.domain.model.PlaceSourceType
 import com.example.passedpath.feature.place.domain.model.VisitedPlace
 import com.example.passedpath.feature.place.presentation.component.PlaceCard
+import com.example.passedpath.feature.place.presentation.component.ReorderGuideBanner
 import com.example.passedpath.feature.place.presentation.state.PlaceListUiState
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.button.BaseButtonVariant
@@ -73,7 +72,6 @@ import com.example.passedpath.ui.component.menu.MenuActionItem
 import com.example.passedpath.ui.theme.Gray100
 import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
-import com.example.passedpath.ui.theme.Gray700
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green300
 import com.example.passedpath.ui.theme.Green50
@@ -247,7 +245,7 @@ fun PlaceBottomSheetContent(
         if (isBannerVisible) {
             item(key = "banner") {
                 Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
-                    PlaceGuideBanner(onClose = onCloseReorderGuideBanner)
+                    ReorderGuideBanner(onClickClose = onCloseReorderGuideBanner)
                 }
             }
         }
@@ -529,40 +527,6 @@ private fun SkeletonTimelineDecoration(
                 shape = RoundedCornerShape(8.dp)
             )
         }
-    }
-}
-
-@Composable
-private fun PlaceGuideBanner(onClose: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Green50, shape = RoundedCornerShape(14.dp))
-            .padding(start = 14.dp, top = 10.dp, end = 12.dp, bottom = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_information),
-            contentDescription = null,
-            tint = Green500,
-            modifier = Modifier.size(17.dp)
-        )
-        Text(
-            text = stringResource(R.string.place_sheet_banner_title),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodySmall,
-            color = Gray700
-        )
-        Text(
-            text = stringResource(R.string.place_sheet_banner_close),
-            modifier = Modifier
-                .clickable(onClick = onClose)
-                .padding(horizontal = 4.dp, vertical = 2.dp),
-            style = MaterialTheme.typography.bodySmall,
-            color = Green500,
-            fontWeight = FontWeight.SemiBold
-        )
     }
 }
 

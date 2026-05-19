@@ -10,8 +10,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.passedpath.R
-import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Green100
 
 @Composable
 fun InfoActionBottomBanner(
@@ -28,7 +26,7 @@ fun InfoActionBottomBanner(
         iconResId = R.drawable.ic_information,
         cornerRadius = 13.dp,
         iconTint = Color.Unspecified,
-        borderColor = Green100
+        borderColor = null
     )
 }
 
