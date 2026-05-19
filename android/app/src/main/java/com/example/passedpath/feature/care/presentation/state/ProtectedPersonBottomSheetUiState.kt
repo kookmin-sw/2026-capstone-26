@@ -8,7 +8,8 @@ data class ProtectedPersonPlaceListUiState(
     val placeCount: Int = places.size,
     val hasLoaded: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isPlaceGuideBannerVisible: Boolean = false
 )
 
 @Immutable

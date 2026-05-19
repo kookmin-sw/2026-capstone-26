@@ -35,12 +35,14 @@ import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoute
 import com.example.passedpath.feature.care.data.remote.api.CareRelationshipInviteApi
 import com.example.passedpath.feature.care.data.repository.CareDependentLocationStreamRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.CareGuideRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareRelationshipInviteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
+import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
@@ -402,6 +404,10 @@ class AppContainer(
 
     val placeBookmarkRepository: PlaceBookmarkRepository by lazy {
         PlaceBookmarkRepositoryImpl(placeBookmarkApi)
+    }
+
+    val careGuideRepository: CareGuideRepository by lazy {
+        CareGuideRepositoryImpl(appContext)
     }
 
     val careDependentRepository: CareDependentRepository by lazy {

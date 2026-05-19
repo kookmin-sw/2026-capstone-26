@@ -56,6 +56,7 @@ fun CareRoute(
         onFocusedPlaceHandled = viewModel::onFocusedPlaceHandled,
         onMapClick = viewModel::onMapClick,
         onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
+        onPlaceGuideBannerClose = viewModel::dismissProtectedPersonPlaceGuideBanner,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
         onLocationStreamRetryClick = viewModel::retryLocationStream,
         onLocationStreamErrorDismiss = viewModel::dismissLocationStreamError,

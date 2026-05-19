@@ -20,6 +20,7 @@
     <string name="care_all_dependents_content_description">모든 보호 대상자 위치 보기</string>
     <string name="care_invite_content_description">보호 대상자 초대하기</string>
     <string name="protected_person_place_banner">보호 대상자의 방문 장소를 시간순으로 확인할 수 있어요</string>
+    <string name="protected_person_place_banner_close">닫기</string>
     <string name="protected_person_place_empty_title">아직 방문한 장소가 없어요</string>
     <string name="protected_person_place_empty_body">선택한 날짜에 기록된 방문 장소가 있으면 이곳에 표시돼요</string>
     <string name="care_invite_sheet_title">함께 가는 길 초대</string>

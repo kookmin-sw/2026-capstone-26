@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
 import com.example.passedpath.feature.care.domain.model.CareDependentLocationStreamEvent
 import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
+import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
@@ -26,6 +27,7 @@ import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +42,7 @@ class CareViewModel(
     private val createCareRelationshipInviteLinkUseCase: CreateCareRelationshipInviteLinkUseCase,
     private val observeCareDependentLocationStreamUseCase:
         ObserveCareDependentLocationStreamUseCase,
+    private val careGuideRepository: CareGuideRepository = InMemoryCareGuideRepository(),
     private val todayDateKeyProvider: () -> String = ::defaultKstTodayDateKey
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
@@ -48,8 +51,21 @@ class CareViewModel(
     val uiState: StateFlow<CareUiState> = _uiState.asStateFlow()
     private var inviteRequestId: Long = 0L
     private var locationStreamJob: Job? = null
+    private var isProtectedPersonPlaceGuideBannerDismissed = false
+    private var hasRequestedProtectedPersonPlaceGuideBannerDismissal = false
 
     init {
+        viewModelScope.launch {
+            careGuideRepository.isProtectedPersonPlaceGuideBannerDismissed.collect { dismissed ->
+                isProtectedPersonPlaceGuideBannerDismissed =
+                    dismissed || hasRequestedProtectedPersonPlaceGuideBannerDismissal
+                _uiState.update { state ->
+                    state.withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
+                    )
+                }
+            }
+        }
         refreshDependents()
     }
 
@@ -93,6 +109,8 @@ class CareViewModel(
                         isLoading = false,
                         hasLoaded = true,
                         errorMessage = null
+                    ).withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
                     )
                 }
             }.onFailure {
@@ -179,6 +197,8 @@ class CareViewModel(
                 } else {
                     ProtectedPersonSummaryUiState(isLoading = true)
                 }
+            ).withProtectedPersonPlaceGuideBannerVisibility(
+                isProtectedPersonPlaceGuideBannerDismissed
             )
         }
 
@@ -302,6 +322,24 @@ class CareViewModel(
             dependentUserId = dependentUserId,
             dateKey = state.selectedDateKey
         )
+    }
+
+    fun dismissProtectedPersonPlaceGuideBanner() {
+        if (isProtectedPersonPlaceGuideBannerDismissed) return
+
+        hasRequestedProtectedPersonPlaceGuideBannerDismissal = true
+        isProtectedPersonPlaceGuideBannerDismissed = true
+        _uiState.update { state ->
+            state.copy(
+                placeListUiState = state.placeListUiState.copy(
+                    isPlaceGuideBannerVisible = false
+                )
+            )
+        }
+
+        viewModelScope.launch {
+            careGuideRepository.dismissProtectedPersonPlaceGuideBanner()
+        }
     }
 
     fun retryProtectedPersonSummary() {
@@ -439,6 +477,8 @@ class CareViewModel(
                             isLoading = true,
                             errorMessage = null
                         )
+                    ).withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
                     )
                 }
             }
@@ -458,6 +498,8 @@ class CareViewModel(
                         placeListUiState = ProtectedPersonPlaceListUiState(
                             hasLoaded = true
                         )
+                    ).withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
                     )
 
                     is ProtectedPersonVisitedPlaceResult.Error -> state.copy(
@@ -466,10 +508,14 @@ class CareViewModel(
                             hasLoaded = true,
                             errorMessage = ProtectedPersonPlacesLoadErrorMessage
                         )
+                    ).withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
                     )
 
                     is ProtectedPersonVisitedPlaceResult.Success -> state.copy(
                         placeListUiState = result.placeList.toProtectedPersonPlaceListUiState()
+                    ).withProtectedPersonPlaceGuideBannerVisibility(
+                        isProtectedPersonPlaceGuideBannerDismissed
                     )
                 }
             }
@@ -538,6 +584,16 @@ class CareViewModel(
         return selectedDependentUserId == dependentUserId && selectedDateKey == dateKey
     }
 
+    private fun CareUiState.withProtectedPersonPlaceGuideBannerVisibility(
+        isDismissed: Boolean
+    ): CareUiState {
+        return copy(
+            placeListUiState = placeListUiState.copy(
+                isPlaceGuideBannerVisible = selectedDependentUserId != null && !isDismissed
+            )
+        )
+    }
+
     private companion object {
         const val CareDependentsLoadErrorMessage = "Failed to load care dependents"
         const val ProtectedPersonPlacesLoadErrorMessage =
@@ -565,10 +621,21 @@ class CareViewModelFactory(
                 createCareRelationshipInviteLinkUseCase =
                     appContainer.createCareRelationshipInviteLinkUseCase,
                 observeCareDependentLocationStreamUseCase =
-                    appContainer.observeCareDependentLocationStreamUseCase
+                    appContainer.observeCareDependentLocationStreamUseCase,
+                careGuideRepository = appContainer.careGuideRepository
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+    }
+}
+
+private class InMemoryCareGuideRepository : CareGuideRepository {
+    private val dismissed = MutableStateFlow(false)
+
+    override val isProtectedPersonPlaceGuideBannerDismissed: Flow<Boolean> = dismissed
+
+    override suspend fun dismissProtectedPersonPlaceGuideBanner() {
+        dismissed.value = true
     }
 }
 

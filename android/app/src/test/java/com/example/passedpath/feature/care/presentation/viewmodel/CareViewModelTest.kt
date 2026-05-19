@@ -11,6 +11,7 @@ import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPl
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlaceList
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
+import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
@@ -25,11 +26,14 @@ import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBot
 import com.example.passedpath.testutil.MainDispatcherRule
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -182,6 +186,55 @@ class CareViewModelTest {
         assertEquals("09:12", state.summaryUiState.summary.outingTimeText)
         assertEquals(listOf(7L to "2026-05-18"), placeRepository.requests)
         assertEquals(listOf(7L to "2026-05-18"), summaryRepository.requests)
+    }
+
+    @Test
+    fun `selectDependent shows place guide banner while places are loading`() = runTest {
+        val viewModel = createLoadedViewModel(
+            placeRepository = FakeProtectedPersonVisitedPlaceRepository(delayMillis = 1_000L)
+        )
+
+        viewModel.selectDependent(7L)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.placeListUiState.isLoading)
+        assertTrue(state.placeListUiState.isPlaceGuideBannerVisible)
+
+        advanceTimeBy(1_000L)
+        advanceUntilIdle()
+    }
+
+    @Test
+    fun `dismissProtectedPersonPlaceGuideBanner hides banner and persists dismissal`() = runTest {
+        val guideRepository = FakeCareGuideRepository()
+        val viewModel = createLoadedViewModel(careGuideRepository = guideRepository)
+
+        viewModel.selectDependent(7L)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.placeListUiState.isPlaceGuideBannerVisible)
+
+        viewModel.dismissProtectedPersonPlaceGuideBanner()
+        advanceUntilIdle()
+
+        assertTrue(guideRepository.dismissRequested)
+        assertFalse(viewModel.uiState.value.placeListUiState.isPlaceGuideBannerVisible)
+
+        viewModel.retryProtectedPersonPlaces()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.placeListUiState.isPlaceGuideBannerVisible)
+    }
+
+    @Test
+    fun `place guide banner stays hidden when repository has dismissed state`() = runTest {
+        val viewModel = createLoadedViewModel(
+            careGuideRepository = FakeCareGuideRepository(initialDismissed = true)
+        )
+
+        viewModel.selectDependent(7L)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.placeListUiState.isPlaceGuideBannerVisible)
     }
 
     @Test
@@ -492,7 +545,8 @@ class CareViewModelTest {
         inviteRepository: CareRelationshipInviteRepository =
             FakeCareRelationshipInviteRepository(),
         locationStreamRepository: CareDependentLocationStreamRepository =
-            FakeCareDependentLocationStreamRepository()
+            FakeCareDependentLocationStreamRepository(),
+        careGuideRepository: CareGuideRepository = FakeCareGuideRepository()
     ): CareViewModel {
         val viewModel = createViewModel(
             dependentRepository = FakeCareDependentRepository(
@@ -504,7 +558,8 @@ class CareViewModelTest {
             placeRepository = placeRepository,
             summaryRepository = summaryRepository,
             inviteRepository = inviteRepository,
-            locationStreamRepository = locationStreamRepository
+            locationStreamRepository = locationStreamRepository,
+            careGuideRepository = careGuideRepository
         )
         advanceUntilIdle()
         return viewModel
@@ -519,7 +574,8 @@ class CareViewModelTest {
         inviteRepository: CareRelationshipInviteRepository =
             FakeCareRelationshipInviteRepository(),
         locationStreamRepository: CareDependentLocationStreamRepository =
-            FakeCareDependentLocationStreamRepository()
+            FakeCareDependentLocationStreamRepository(),
+        careGuideRepository: CareGuideRepository = FakeCareGuideRepository()
     ): CareViewModel {
         return CareViewModel(
             getCareDependentsUseCase = GetCareDependentsUseCase(dependentRepository),
@@ -531,8 +587,23 @@ class CareViewModelTest {
                 CreateCareRelationshipInviteLinkUseCase(inviteRepository),
             observeCareDependentLocationStreamUseCase =
                 ObserveCareDependentLocationStreamUseCase(locationStreamRepository),
+            careGuideRepository = careGuideRepository,
             todayDateKeyProvider = { "2026-05-18" }
         )
+    }
+
+    private class FakeCareGuideRepository(
+        initialDismissed: Boolean = false
+    ) : CareGuideRepository {
+        private val dismissed = MutableStateFlow(initialDismissed)
+        var dismissRequested: Boolean = false
+
+        override val isProtectedPersonPlaceGuideBannerDismissed: Flow<Boolean> = dismissed
+
+        override suspend fun dismissProtectedPersonPlaceGuideBanner() {
+            dismissRequested = true
+            dismissed.value = true
+        }
     }
 
     private class FakeCareDependentRepository(
@@ -558,7 +629,8 @@ class CareViewModelTest {
                     placeCount = 1,
                     places = listOf(visitedPlace(placeId = 3L, orderIndex = 1))
                 )
-            )
+            ),
+        private val delayMillis: Long = 0L
     ) : ProtectedPersonVisitedPlaceRepository {
         val requests = mutableListOf<Pair<Long, String>>()
 
@@ -567,6 +639,9 @@ class CareViewModelTest {
             dateKey: String
         ): ProtectedPersonVisitedPlaceResult {
             requests += dependentUserId to dateKey
+            if (delayMillis > 0L) {
+                delay(delayMillis)
+            }
             return result
         }
     }

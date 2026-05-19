@@ -80,6 +80,7 @@ fun CareScreen(
     onFocusedPlaceHandled: () -> Unit,
     onMapClick: () -> Unit,
     onPlaceRetryClick: () -> Unit,
+    onPlaceGuideBannerClose: () -> Unit,
     onSummaryRetryClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
@@ -120,6 +121,7 @@ fun CareScreen(
                         onSelectedPlaceHandled = onSelectedPlaceHandled,
                         onPlaceClick = onPlaceCardClick,
                         onPlaceRetryClick = onPlaceRetryClick,
+                        onPlaceGuideBannerClose = onPlaceGuideBannerClose,
                         onSummaryRetryClick = onSummaryRetryClick,
                         modifier = sheetModifier
                     )

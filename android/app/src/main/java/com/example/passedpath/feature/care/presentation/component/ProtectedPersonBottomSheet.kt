@@ -2,10 +2,8 @@ package com.example.passedpath.feature.care.presentation.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +39,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -65,6 +62,7 @@ import com.example.passedpath.feature.summary.presentation.component.DaySummaryV
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetContainer
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetTabItem
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetTabRow
+import com.example.passedpath.ui.component.banner.InfoActionBottomBanner
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
@@ -73,7 +71,6 @@ import com.example.passedpath.ui.theme.Gray50
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Gray700
 import com.example.passedpath.ui.theme.Gray100
-import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green300
 import com.example.passedpath.ui.theme.Green50
 import com.example.passedpath.ui.theme.Green500
@@ -91,6 +88,7 @@ fun ProtectedPersonBottomSheet(
     selectedPlaceId: Long? = null,
     onSelectedPlaceHandled: () -> Unit = {},
     onPlaceClick: (Long) -> Unit = {},
+    onPlaceGuideBannerClose: () -> Unit = {},
     onPlaceRetryClick: () -> Unit = {},
     onSummaryRetryClick: () -> Unit = {}
 ) {
@@ -121,6 +119,7 @@ fun ProtectedPersonBottomSheet(
                 onSelectedPlaceHandled = onSelectedPlaceHandled,
                 onRetryClick = onPlaceRetryClick,
                 onPlaceClick = onPlaceClick,
+                onPlaceGuideBannerClose = onPlaceGuideBannerClose,
                 onScrollStateChanged = { isContentScrolled = it },
                 modifier = Modifier
                     .fillMaxSize()
@@ -146,6 +145,7 @@ fun ProtectedPersonPlaceListContent(
     onSelectedPlaceHandled: () -> Unit,
     onRetryClick: () -> Unit,
     onPlaceClick: (Long) -> Unit,
+    onPlaceGuideBannerClose: () -> Unit,
     onScrollStateChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -158,7 +158,7 @@ fun ProtectedPersonPlaceListContent(
         }
     }
     val places = uiState.places.sortedBy(ProtectedPersonPlaceUiState::orderIndex)
-    val placeSectionStartIndex = 2
+    val placeSectionStartIndex = (if (uiState.isPlaceGuideBannerVisible) 1 else 0) + 1
 
     LaunchedEffect(isContentScrolled) {
         onScrollStateChanged(isContentScrolled)
@@ -181,14 +181,17 @@ fun ProtectedPersonPlaceListContent(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
+        if (uiState.isPlaceGuideBannerVisible) {
+            item(key = "protected_person_place_guide_banner") {
+                Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
+                    ProtectedPersonPlaceGuideBanner(onClose = onPlaceGuideBannerClose)
+                }
+            }
+        }
+
         item {
             Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
                 ProtectedPersonPlaceSummarySection(placeCount = uiState.placeCount)
-            }
-        }
-        item {
-            Box(modifier = Modifier.padding(bottom = PlaceTimelineItemSpacing)) {
-                ProtectedPersonPlaceInfoBanner()
             }
         }
 
@@ -342,29 +345,12 @@ private fun ProtectedPersonPlaceSummarySection(placeCount: Int) {
 }
 
 @Composable
-private fun ProtectedPersonPlaceInfoBanner() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Green50, RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, Green100), RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 11.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_info_circle),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp)
-        )
-        Text(
-            text = stringResource(R.string.protected_person_place_banner),
-            style = MaterialTheme.typography.bodySmall,
-            color = Green500,
-            fontWeight = FontWeight.Medium
-        )
-    }
+private fun ProtectedPersonPlaceGuideBanner(onClose: () -> Unit) {
+    InfoActionBottomBanner(
+        message = stringResource(R.string.protected_person_place_banner),
+        actionText = stringResource(R.string.protected_person_place_banner_close),
+        onClickAction = onClose
+    )
 }
 
 @Composable
@@ -728,7 +714,8 @@ private fun ProtectedPersonBottomSheetLoadingPreview() {
         selectedTab = ProtectedPersonBottomSheetTab.PLACE,
         placeListUiState = ProtectedPersonPlaceListUiState(
             placeCount = 0,
-            isLoading = true
+            isLoading = true,
+            isPlaceGuideBannerVisible = true
         )
     )
 }
@@ -740,7 +727,8 @@ private fun ProtectedPersonBottomSheetEmptyPreview() {
         selectedTab = ProtectedPersonBottomSheetTab.PLACE,
         placeListUiState = ProtectedPersonPlaceListUiState(
             placeCount = 0,
-            hasLoaded = true
+            hasLoaded = true,
+            isPlaceGuideBannerVisible = true
         )
     )
 }
@@ -762,6 +750,7 @@ private fun ProtectedPersonBottomSheetPreviewScaffold(
                 onTabSelected = {},
                 placeListUiState = placeListUiState,
                 summaryUiState = summaryUiState,
+                onPlaceGuideBannerClose = {},
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -803,7 +792,8 @@ private val SampleProtectedPersonPlaceListUiState = ProtectedPersonPlaceListUiSt
         )
     ),
     placeCount = 3,
-    hasLoaded = true
+    hasLoaded = true,
+    isPlaceGuideBannerVisible = true
 )
 
 private val SampleProtectedPersonSummaryUiState = ProtectedPersonSummaryUiState(
