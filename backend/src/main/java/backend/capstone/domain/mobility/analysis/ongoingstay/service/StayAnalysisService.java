@@ -28,7 +28,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 public class StayAnalysisService {
 
     private static final int STAY_RADIUS_METER = 50;
-    private static final int STAY_MIN_DURATION_MINUTE = 10;
+    private static final int STAY_MIN_DURATION_MINUTE = 15;
 
     private final OngoingStayRepository ongoingStayRepository;
     private final GpsPointService gpsPointService;
