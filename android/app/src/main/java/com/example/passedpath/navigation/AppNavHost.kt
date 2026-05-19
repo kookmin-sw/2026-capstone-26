@@ -36,6 +36,7 @@ import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
 import com.example.passedpath.feature.care.presentation.component.CareInviteAcceptDialog
 import com.example.passedpath.feature.care.presentation.screen.CareRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteHistoryRoute
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModel
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModelFactory
 import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelectedEvent
@@ -307,6 +308,52 @@ private fun AppNavigationGraph(
             ) { modifier ->
                 CareRoute(
                     refreshEventId = careRefreshEventId,
+                    onNavigateToProtectedPersonRouteHistory = { dependentUserId, nickname ->
+                        navController.navigate(
+                            NavRoute.careRouteHistory(
+                                dependentUserId = dependentUserId,
+                                nickname = nickname
+                            )
+                        )
+                    },
+                    modifier = modifier
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_ROUTE_HISTORY_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_ROUTE_HISTORY_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_ROUTE_HISTORY_NICKNAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_ROUTE_HISTORY_DEPENDENT_USER_ID)
+                ?: return@composable
+            val nickname = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_HISTORY_NICKNAME)
+                .orEmpty()
+
+            BottomBarScaffold(
+                navController = navController,
+                selectedRoute = NavRoute.FRIENDS,
+                onBottomBarReselected = onBottomBarReselected
+            ) { modifier ->
+                ProtectedPersonRouteHistoryRoute(
+                    dependentUserId = dependentUserId,
+                    dependentNickname = nickname,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onRouteDateClick = {},
                     modifier = modifier
                 )
             }

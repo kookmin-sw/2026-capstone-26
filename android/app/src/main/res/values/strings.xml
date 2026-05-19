@@ -47,6 +47,9 @@
     <string name="care_location_stream_close">닫기</string>
     <string name="care_protected_person_weekly_summary">보호대상자 주간요약</string>
     <string name="care_protected_person_past_route">보호대상자 지나온길 조회</string>
+    <string name="care_route_history_title_suffix">의 지나온 길 조회</string>
+    <string name="care_route_history_empty_title">아직 지나온 길 기록이 없어요</string>
+    <string name="care_route_history_empty_body">보호대상자의 기록이 생기면 이곳에 표시돼요</string>
     <string name="main_title">My Walk Log</string>
     <string name="main_permission_full">Background location is enabled</string>
     <string name="main_permission_limited">Background location is limited</string>

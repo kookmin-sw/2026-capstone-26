@@ -73,7 +73,7 @@ fun ProtectedPersonRouteDateCard(
                     painter = painterResource(id = R.drawable.ic_arrow_right),
                     contentDescription = null,
                     tint = Gray400,
-                    modifier = modifier.size(width = 7.dp, height = 12.dp)
+                    modifier = Modifier.size(width = 7.dp, height = 12.dp)
                 )
             }
 
@@ -84,17 +84,17 @@ fun ProtectedPersonRouteDateCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ProtectedPersonRouteDateMetric(
-                    label = "외출",
+                    label = "\uC678\uCD9C",
                     value = outingTimeText,
                     modifier = Modifier.weight(1f)
                 )
                 ProtectedPersonRouteDateMetric(
-                    label = "귀가",
+                    label = "\uADC0\uAC00",
                     value = enterHomeTimeText,
                     modifier = Modifier.weight(1f)
                 )
                 ProtectedPersonRouteDateMetric(
-                    label = "외출 횟수",
+                    label = "\uC678\uCD9C \uD69F\uC218",
                     value = outingCountText,
                     modifier = Modifier.weight(1f)
                 )
@@ -148,24 +148,24 @@ private fun ProtectedPersonRouteDateCardPreview() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ProtectedPersonRouteDateCard(
-                dateText = "4월 3일",
+                dateText = "4\uC6D4 3\uC77C",
                 outingTimeText = "09:12",
                 enterHomeTimeText = "23:40",
-                outingCountText = "3회",
+                outingCountText = "3\uD68C",
                 onClick = {}
             )
             ProtectedPersonRouteDateCard(
-                dateText = "3월 20일",
+                dateText = "3\uC6D4 20\uC77C",
                 outingTimeText = "09:12",
                 enterHomeTimeText = "23:40",
-                outingCountText = "1회",
+                outingCountText = "1\uD68C",
                 onClick = {}
             )
             ProtectedPersonRouteDateCard(
-                dateText = "3월 16일",
+                dateText = "3\uC6D4 16\uC77C",
                 outingTimeText = "10:05",
                 enterHomeTimeText = "21:30",
-                outingCountText = "2회",
+                outingCountText = "2\uD68C",
                 onClick = {}
             )
         }

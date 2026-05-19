@@ -21,6 +21,7 @@ import com.example.passedpath.feature.care.presentation.viewmodel.CareViewModelF
 fun CareRoute(
     refreshEventId: Int = 0,
     modifier: Modifier = Modifier,
+    onNavigateToProtectedPersonRouteHistory: (Long, String) -> Unit = { _, _ -> },
     viewModel: CareViewModel = viewModel(
         factory = CareViewModelFactory(LocalContext.current.appContainer)
     )
@@ -59,7 +60,14 @@ fun CareRoute(
         onPlaceGuideBannerClose = viewModel::dismissProtectedPersonPlaceGuideBanner,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
         onProtectedPersonWeeklySummaryClick = {},
-        onProtectedPersonPastRouteClick = {},
+        onProtectedPersonPastRouteClick = {
+            uiState.selectedDependent?.let { dependent ->
+                onNavigateToProtectedPersonRouteHistory(
+                    dependent.dependentUserId,
+                    dependent.nickname
+                )
+            }
+        },
         onLocationStreamRetryClick = viewModel::retryLocationStream,
         onLocationStreamErrorDismiss = viewModel::dismissLocationStreamError,
         onInviteDismiss = viewModel::dismissInviteModal,
