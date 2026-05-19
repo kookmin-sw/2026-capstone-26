@@ -149,11 +149,10 @@ class StatisticMetricServiceTest {
     }
 
     @Test
-    void 총외출시간은_0초도_dayRoute가_있으면_평균에_포함한다() {
+    void 총외출시간은_외출기록이_없으면_평균에서_제외한다() {
         LocalDate today = LocalDate.of(2026, 5, 18);
         User user = createUser();
-        DayRoute monday = createTotalOutingSecondsDayRoute(user, LocalDate.of(2026, 5, 18),
-            0L);
+        DayRoute monday = createDayRouteWithoutOutingRecord(user, LocalDate.of(2026, 5, 18));
 
         given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
             LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
@@ -165,12 +164,14 @@ class StatisticMetricServiceTest {
         var response = statisticMetricService.getTotalOutingSecondsMetric(1L,
             StatisticPeriod.WEEK, today);
 
-        assertThat(response.average().value()).isEqualTo(0);
-        assertThat(response.average().displayText()).isEqualTo("0분");
-        assertThat(response.average().sampleSize()).isEqualTo(1);
-        assertThat(response.bars().get(6).value()).isEqualTo(0);
-        assertThat(response.bars().get(6).hasValue()).isTrue();
-        assertThat(response.bars().get(6).sampleSize()).isEqualTo(1);
+        assertThat(response.average().value()).isNull();
+        assertThat(response.average().displayText()).isNull();
+        assertThat(response.average().sampleSize()).isZero();
+        assertThat(response.bars().get(6).value()).isNull();
+        assertThat(response.bars().get(6).displayText()).isNull();
+        assertThat(response.bars().get(6).hasValue()).isFalse();
+        assertThat(response.bars().get(6).sampleSize()).isZero();
+        assertThat(response.highlight().current().value()).isNull();
         assertThat(response.highlight().previous().value()).isNull();
         assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출시간을 지난주와 비교할 기록이 부족해요.");
     }
@@ -211,10 +212,10 @@ class StatisticMetricServiceTest {
     }
 
     @Test
-    void 외출횟수는_0회도_dayRoute가_있으면_평균에_포함한다() {
+    void 외출횟수는_외출기록이_없으면_평균에서_제외한다() {
         LocalDate today = LocalDate.of(2026, 5, 18);
         User user = createUser();
-        DayRoute monday = createTotalOutingCountDayRoute(user, LocalDate.of(2026, 5, 18), 0);
+        DayRoute monday = createDayRouteWithoutOutingRecord(user, LocalDate.of(2026, 5, 18));
 
         given(dayRouteRepository.findByUserIdAndDateBetweenOrderByDate(1L,
             LocalDate.of(2026, 5, 12), LocalDate.of(2026, 5, 18)))
@@ -226,12 +227,14 @@ class StatisticMetricServiceTest {
         var response = statisticMetricService.getTotalOutingCountMetric(1L,
             StatisticPeriod.WEEK, today);
 
-        assertThat(response.average().value()).isEqualTo(0.0);
-        assertThat(response.average().displayText()).isEqualTo("0.0회");
-        assertThat(response.average().sampleSize()).isEqualTo(1);
-        assertThat(response.bars().get(6).value()).isEqualTo(0.0);
-        assertThat(response.bars().get(6).hasValue()).isTrue();
-        assertThat(response.bars().get(6).sampleSize()).isEqualTo(1);
+        assertThat(response.average().value()).isNull();
+        assertThat(response.average().displayText()).isNull();
+        assertThat(response.average().sampleSize()).isZero();
+        assertThat(response.bars().get(6).value()).isNull();
+        assertThat(response.bars().get(6).displayText()).isNull();
+        assertThat(response.bars().get(6).hasValue()).isFalse();
+        assertThat(response.bars().get(6).sampleSize()).isZero();
+        assertThat(response.highlight().current().value()).isNull();
         assertThat(response.highlight().previous().value()).isNull();
         assertThat(response.highlight().message()).isEqualTo("이번 주 평균 외출횟수를 지난주와 비교할 기록이 부족해요.");
     }
@@ -331,6 +334,7 @@ class StatisticMetricServiceTest {
             .user(user)
             .date(date)
             .build();
+        dayRoute.markOuting(Instant.parse("2026-05-18T00:00:00Z"));
         dayRoute.addOutingDurationSeconds(totalOutingSeconds);
         return dayRoute;
     }
@@ -345,5 +349,12 @@ class StatisticMetricServiceTest {
             dayRoute.markOuting(Instant.parse("2026-05-18T00:00:00Z"));
         }
         return dayRoute;
+    }
+
+    private DayRoute createDayRouteWithoutOutingRecord(User user, LocalDate date) {
+        return DayRoute.builder()
+            .user(user)
+            .date(date)
+            .build();
     }
 }

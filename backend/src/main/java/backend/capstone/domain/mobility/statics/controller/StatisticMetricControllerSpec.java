@@ -119,21 +119,22 @@ public interface StatisticMetricControllerSpec {
             <br>
                         
             <b>value/displayText 의미</b><br>
-            평균은 dayRoute가 생성된 날짜의 totalOutingSeconds를 대상으로 계산합니다.<br>
-            totalOutingSeconds가 0이어도 dayRoute가 있으면 평균 계산에 포함됩니다.<br>
+            평균은 outingTime이 기록된 dayRoute의 totalOutingSeconds를 대상으로 계산합니다.<br>
+            outingTime이 null인 dayRoute는 외출 기록이 없는 날로 보고 평균 계산에서 제외됩니다.<br>
+            totalOutingSeconds가 0이어도 outingTime이 있으면 평균 계산에 포함됩니다.<br>
             - value는 평균 총 외출시간을 초 단위로 환산한 정수 값입니다. 예: 12600 = 3시간 30분<br>
             - 평균 계산 결과는 반올림된 정수 초 단위이며 소수점은 응답하지 않습니다.<br>
             - displayText는 value를 "n시간 n분" 형식으로 변환한 값입니다.<br>
             - displayText는 초 단위를 표시하지 않고 분 단위로 내림 처리합니다. 예: 59초 = "0분", 60초 = "1분", 3599초 = "59분"<br>
             - displayText 예시: 0 = "0분", 1800 = "30분", 3600 = "1시간", 5400 = "1시간 30분", 10800 = "3시간"<br>
-            - sampleSize는 평균 계산에 실제 사용된 dayRoute 개수입니다.<br>
+            - sampleSize는 평균 계산에 실제 사용된 외출 기록 개수입니다.<br>
             <br>
                         
             <b>null 응답 조건</b><br>
-            - 조회 기간 전체에 dayRoute가 없으면 average.value와 average.displayText는 null이고 sampleSize는 0입니다.<br>
-            - 특정 막대 구간에 dayRoute가 없으면 해당 bar.value와 bar.displayText는 null, hasValue는 false, sampleSize는 0입니다.<br>
+            - 조회 기간 전체에 평균 계산 가능한 외출 기록이 없으면 average.value와 average.displayText는 null이고 sampleSize는 0입니다.<br>
+            - 특정 막대 구간에 평균 계산 가능한 외출 기록이 없으면 해당 bar.value와 bar.displayText는 null, hasValue는 false, sampleSize는 0입니다.<br>
             - highlight 객체는 모든 period에서 응답합니다.<br>
-            - 다만 highlight.current 또는 highlight.previous에 dayRoute가 없으면 해당 value와 displayText는 null이고 sampleSize는 0입니다.<br>
+            - 다만 highlight.current 또는 highlight.previous에 평균 계산 가능한 외출 기록이 없으면 해당 value와 displayText는 null이고 sampleSize는 0입니다.<br>
             <br>
                         
             <b>하이라이트 비교 범위</b><br>
@@ -144,7 +145,7 @@ public interface StatisticMetricControllerSpec {
             <br>
                         
             <b>하이라이트 문구 규칙</b><br>
-            - 현재 기간 또는 직전 기간 중 하나라도 dayRoute가 없으면 "비교할 기록이 부족해요." 문구를 반환합니다.<br>
+            - 현재 기간 또는 직전 기간 중 하나라도 평균 계산 가능한 외출 기록이 없으면 "비교할 기록이 부족해요." 문구를 반환합니다.<br>
             - 현재 기간 평균 value가 직전 기간 평균 value보다 작으면 총 외출시간이 더 짧아진 것이므로 "줄었어요." 문구를 반환합니다.<br>
             - 현재 기간 평균 value가 직전 기간 평균 value보다 크면 총 외출시간이 더 길어진 것이므로 "늘었어요." 문구를 반환합니다.<br>
             - 두 평균 value가 같으면 "같아요." 문구를 반환합니다.
@@ -169,19 +170,20 @@ public interface StatisticMetricControllerSpec {
             <br>
                         
             <b>value/displayText 의미</b><br>
-            평균은 dayRoute가 생성된 날짜의 totalOutingCount를 대상으로 계산합니다.<br>
-            totalOutingCount가 0이어도 dayRoute가 있으면 평균 계산에 포함됩니다.<br>
+            평균은 outingTime이 기록된 dayRoute의 totalOutingCount를 대상으로 계산합니다.<br>
+            outingTime이 null인 dayRoute는 외출 기록이 없는 날로 보고 평균 계산에서 제외됩니다.<br>
+            totalOutingCount가 0이어도 outingTime이 있으면 평균 계산에 포함됩니다.<br>
             - value는 평균 외출횟수를 소수점 한 자리까지 반영한 값입니다. 예: 1.3<br>
             - 평균 계산 결과는 소수점 둘째 자리에서 반올림해 소수점 한 자리까지 응답합니다.<br>
             - displayText는 value를 "n.n회" 형식으로 변환한 값입니다. 예: 0.0 = "0.0회", 1.3 = "1.3회", 2.0 = "2.0회"<br>
-            - sampleSize는 평균 계산에 실제 사용된 dayRoute 개수입니다.<br>
+            - sampleSize는 평균 계산에 실제 사용된 외출 기록 개수입니다.<br>
             <br>
                         
             <b>null 응답 조건</b><br>
-            - 조회 기간 전체에 dayRoute가 없으면 average.value와 average.displayText는 null이고 sampleSize는 0입니다.<br>
-            - 특정 막대 구간에 dayRoute가 없으면 해당 bar.value와 bar.displayText는 null, hasValue는 false, sampleSize는 0입니다.<br>
+            - 조회 기간 전체에 평균 계산 가능한 외출 기록이 없으면 average.value와 average.displayText는 null이고 sampleSize는 0입니다.<br>
+            - 특정 막대 구간에 평균 계산 가능한 외출 기록이 없으면 해당 bar.value와 bar.displayText는 null, hasValue는 false, sampleSize는 0입니다.<br>
             - highlight 객체는 모든 period에서 응답합니다.<br>
-            - 다만 highlight.current 또는 highlight.previous에 dayRoute가 없으면 해당 value와 displayText는 null이고 sampleSize는 0입니다.<br>
+            - 다만 highlight.current 또는 highlight.previous에 평균 계산 가능한 외출 기록이 없으면 해당 value와 displayText는 null이고 sampleSize는 0입니다.<br>
             <br>
                         
             <b>하이라이트 비교 범위</b><br>
@@ -192,7 +194,7 @@ public interface StatisticMetricControllerSpec {
             <br>
                         
             <b>하이라이트 문구 규칙</b><br>
-            - 현재 기간 또는 직전 기간 중 하나라도 dayRoute가 없으면 "비교할 기록이 부족해요." 문구를 반환합니다.<br>
+            - 현재 기간 또는 직전 기간 중 하나라도 평균 계산 가능한 외출 기록이 없으면 "비교할 기록이 부족해요." 문구를 반환합니다.<br>
             - 현재 기간 평균 value가 직전 기간 평균 value보다 작으면 평균 외출횟수가 더 적어진 것이므로 "줄었어요." 문구를 반환합니다.<br>
             - 현재 기간 평균 value가 직전 기간 평균 value보다 크면 평균 외출횟수가 더 많아진 것이므로 "늘었어요." 문구를 반환합니다.<br>
             - 두 평균 value가 같으면 "같아요." 문구를 반환합니다.
