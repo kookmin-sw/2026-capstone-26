@@ -17,16 +17,22 @@ import com.example.passedpath.feature.locationtracking.domain.model.LocalDayRout
 import com.example.passedpath.feature.locationtracking.domain.repository.DayRouteRepository
 import com.example.passedpath.feature.locationtracking.domain.repository.RemoteDayRouteResult
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
 class RoomDayRouteRepository(
     private val dayRouteDao: DayRouteDao,
     private val gpsPointDao: GpsPointDao,
-    private val dayRouteApi: DayRouteApi
+    private val dayRouteApi: DayRouteApi,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : DayRouteRepository {
 
     override fun observeLocalDayRoute(dateKey: String): Flow<DailyPath?> {
@@ -47,6 +53,7 @@ class RoomDayRouteRepository(
         return dayRouteDao.observeByDate(dateKey)
             .map { route -> loadLocalRouteSnapshot(dateKey, route) }
             .distinctUntilChanged()
+            .flowOn(ioDispatcher)
     }
 
     override suspend fun getLocalDayRoute(dateKey: String): DailyPath? {
@@ -95,25 +102,35 @@ class RoomDayRouteRepository(
         dateKey: String,
         route: DayRouteEntity?
     ): LocalDayRouteSnapshot? {
-        route?.toLocalDayRouteSnapshotFromCache()?.let { snapshot ->
+        withContext(cpuDispatcher) {
+            route?.toLocalDayRouteSnapshotFromCache()
+        }?.let { snapshot ->
             return snapshot
         }
 
-        val points = gpsPointDao.getRoutePointProjectionsByDate(dateKey)
+        val points = withContext(ioDispatcher) {
+            gpsPointDao.getRoutePointProjectionsByDate(dateKey)
+        }
         if (route == null && points.isEmpty()) return null
 
-        val rebuiltRoute = route
-            ?.takeIf { points.size == it.pathPointCount }
-            ?.withRebuiltMapPolylineCache(points)
-
-        if (rebuiltRoute != null) {
-            dayRouteDao.upsert(rebuiltRoute)
+        val rebuiltRoute = withContext(cpuDispatcher) {
+            route
+                ?.takeIf { points.size == it.pathPointCount }
+                ?.withRebuiltMapPolylineCache(points)
         }
 
-        return points.toLocalDayRouteSnapshot(
-            dateKey = dateKey,
-            existingRoute = rebuiltRoute ?: route
-        )
+        if (rebuiltRoute != null) {
+            withContext(ioDispatcher) {
+                dayRouteDao.upsert(rebuiltRoute)
+            }
+        }
+
+        return withContext(cpuDispatcher) {
+            points.toLocalDayRouteSnapshot(
+                dateKey = dateKey,
+                existingRoute = rebuiltRoute ?: route
+            )
+        }
     }
 }
 
