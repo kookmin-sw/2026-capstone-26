@@ -54,6 +54,7 @@ import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiSt
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.PermissionSettingDialog
 import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
@@ -101,6 +102,7 @@ fun MainScreen(
     onNavigateToPlaceBookmarks: () -> Unit,
     onNavigateToCalendar: (String) -> Unit,
     onNavigateToWeeklySummary: () -> Unit,
+    onNavigateToSummaryDetail: (SummaryDetailMetric, String) -> Unit = { _, _ -> },
     onReorderPlaces: (List<Long>) -> Unit,
     onCloseReorderGuideBanner: () -> Unit,
     onUpdatePlace: (Long, String, String, Double, Double) -> Unit,
@@ -348,6 +350,7 @@ fun MainScreen(
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
             onNavigateToWeeklySummary = onNavigateToWeeklySummary,
+            onNavigateToSummaryDetail = onNavigateToSummaryDetail,
             onMapClick = {
                 clearFocus()
                 hideBottomSheet()
@@ -541,6 +544,7 @@ private fun MainScreenScaffoldContent(
     onNavigateToCalendar: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
     onNavigateToWeeklySummary: () -> Unit,
+    onNavigateToSummaryDetail: (SummaryDetailMetric, String) -> Unit,
     onMapClick: () -> Unit,
     onPlaceMarkerClick: (Long) -> Unit,
     onPermissionActionClick: () -> Unit,
@@ -628,6 +632,9 @@ private fun MainScreenScaffoldContent(
                 onDayNoteSaveClick = onDayNoteSaveClick,
                 onDaySummaryLoadRequest = onDaySummaryLoadRequest,
                 onDaySummaryRetryClick = onDaySummaryRetryClick,
+                onDaySummaryMetricClick = { metric ->
+                    onNavigateToSummaryDetail(metric, uiState.selectedDateKey)
+                },
                 selectedTab = localUiState.selectedBottomSheetTab,
                 onTabSelected = onTabSelected,
                 onPlaceRetryClick = onPlaceRetryClick,

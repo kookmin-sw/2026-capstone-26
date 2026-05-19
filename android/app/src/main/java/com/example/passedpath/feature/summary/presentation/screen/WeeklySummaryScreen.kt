@@ -42,6 +42,7 @@ import com.example.passedpath.feature.summary.presentation.state.WeeklySummaryMe
 import com.example.passedpath.feature.summary.presentation.state.WeeklySummaryUiState
 import com.example.passedpath.feature.summary.presentation.state.WeeklySummaryVisitedRegionUiState
 import com.example.passedpath.feature.summary.presentation.state.WeeklySummaryVisitedRegionsCardUiState
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.feature.summary.presentation.viewmodel.WeeklySummaryViewModel
 import com.example.passedpath.feature.summary.presentation.viewmodel.WeeklySummaryViewModelFactory
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
@@ -53,6 +54,7 @@ import com.example.passedpath.ui.theme.White
 @Composable
 fun WeeklySummaryRoute(
     onBackClick: () -> Unit,
+    onMetricClick: (SummaryDetailMetric) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: WeeklySummaryViewModel = viewModel(
         factory = WeeklySummaryViewModelFactory(LocalContext.current.appContainer)
@@ -68,6 +70,7 @@ fun WeeklySummaryRoute(
         uiState = uiState,
         onBackClick = onBackClick,
         onRetryClick = { viewModel.loadWeeklySummary(forceRefresh = true) },
+        onMetricClick = onMetricClick,
         modifier = modifier
     )
 }
@@ -77,6 +80,7 @@ internal fun WeeklySummaryScreen(
     uiState: WeeklySummaryUiState,
     onBackClick: () -> Unit,
     onRetryClick: () -> Unit,
+    onMetricClick: (SummaryDetailMetric) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -109,6 +113,7 @@ internal fun WeeklySummaryScreen(
                 WeeklySummaryLoadedList(
                     uiState = uiState,
                     onRetryClick = onRetryClick,
+                    onMetricClick = onMetricClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -158,6 +163,7 @@ private fun WeeklySummaryTopBar(
 private fun WeeklySummaryLoadedList(
     uiState: WeeklySummaryUiState,
     onRetryClick: () -> Unit,
+    onMetricClick: (SummaryDetailMetric) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -181,7 +187,13 @@ private fun WeeklySummaryLoadedList(
 
         uiState.summary.metricCards.forEachIndexed { index, card ->
             item(key = "weekly_summary_metric_$index") {
-                WeeklySummaryMetricCard(card = card)
+                val metric = SummaryDetailMetric.fromMetricCardIndex(index)
+                WeeklySummaryMetricCard(
+                    card = card,
+                    onClick = metric?.let { summaryDetailMetric ->
+                        { onMetricClick(summaryDetailMetric) }
+                    }
+                )
             }
         }
 

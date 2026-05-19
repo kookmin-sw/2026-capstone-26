@@ -49,9 +49,13 @@ import com.example.passedpath.feature.place.presentation.screen.AddPlaceScreen
 import com.example.passedpath.feature.place.presentation.screen.PlaceBookmarkSearchScreen
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkRoute
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkSearchResultEvent
+import com.example.passedpath.feature.summary.presentation.screen.SummaryDetailRoute
 import com.example.passedpath.feature.summary.presentation.screen.WeeklySummaryRoute
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun AppNavHost(
@@ -334,6 +338,14 @@ private fun AppNavigationGraph(
                         },
                         onNavigateToWeeklySummary = {
                             navController.navigate(NavRoute.WEEKLY_SUMMARY)
+                        },
+                        onNavigateToSummaryDetail = { metric, dateKey ->
+                            navController.navigate(
+                                NavRoute.summaryDetail(
+                                    metric = metric.routeValue,
+                                    dateKey = dateKey
+                                )
+                            )
                         }
                     )
                 }
@@ -346,6 +358,43 @@ private fun AppNavigationGraph(
             popExitTransition = { placeSearchPopExitTransition() }
         ) {
             WeeklySummaryRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onMetricClick = { metric ->
+                    navController.navigate(
+                        NavRoute.summaryDetail(
+                            metric = metric.routeValue,
+                            dateKey = currentSummaryDetailDateKey()
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.SUMMARY_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.SUMMARY_DETAIL_METRIC_KEY) {
+                    type = NavType.StringType
+                },
+                navArgument(NavRoute.SUMMARY_DETAIL_DATE_KEY) {
+                    type = NavType.StringType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val metric = SummaryDetailMetric.fromRouteValue(
+                backStackEntry.arguments?.getString(NavRoute.SUMMARY_DETAIL_METRIC_KEY)
+            )
+            val dateKey = backStackEntry.arguments
+                ?.getString(NavRoute.SUMMARY_DETAIL_DATE_KEY)
+                .orEmpty()
+
+            SummaryDetailRoute(
+                metric = metric,
+                dateKey = dateKey,
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -490,6 +539,11 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.placeSearchPopExit
 
 private const val PlaceSearchEnterTransitionMillis = 250
 private const val PlaceSearchExitTransitionMillis = 230
+private const val SummaryDetailZoneId = "Asia/Seoul"
+
+private fun currentSummaryDetailDateKey(): String {
+    return LocalDate.now(ZoneId.of(SummaryDetailZoneId)).toString()
+}
 
 private fun String?.isCareInviteAcceptReadyRoute(): Boolean {
     return this != null &&

@@ -26,6 +26,7 @@ import com.example.passedpath.feature.summary.presentation.component.DaySummaryV
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryNoDataText
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.PassedPathTheme
@@ -37,6 +38,7 @@ fun DaySummaryBottomSheetContent(
     onLoadSummary: (String) -> Unit,
     onRetryClick: () -> Unit,
     onScrollStateChanged: (Boolean) -> Unit,
+    onMetricClick: (SummaryDetailMetric) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -88,28 +90,32 @@ fun DaySummaryBottomSheetContent(
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_outing_time),
                         value = uiState.summary.outingTimeText,
-                        isNoDataValue = !uiState.summary.hasOutingTimeData
+                        isNoDataValue = !uiState.summary.hasOutingTimeData,
+                        onClick = { onMetricClick(SummaryDetailMetric.OUTING_TIME) }
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_enter_home_time),
                         value = uiState.summary.enterHomeTimeText,
-                        isNoDataValue = !uiState.summary.hasEnterHomeTimeData
+                        isNoDataValue = !uiState.summary.hasEnterHomeTimeData,
+                        onClick = { onMetricClick(SummaryDetailMetric.ENTER_HOME_TIME) }
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_total_outing_duration),
                         value = uiState.summary.totalOutingDurationText,
-                        isNoDataValue = !uiState.summary.hasTotalOutingDurationData
+                        isNoDataValue = !uiState.summary.hasTotalOutingDurationData,
+                        onClick = { onMetricClick(SummaryDetailMetric.TOTAL_OUTING_DURATION) }
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_total_outing_count),
                         value = uiState.summary.totalOutingCountText,
-                        isNoDataValue = !uiState.summary.hasTotalOutingCountData
+                        isNoDataValue = !uiState.summary.hasTotalOutingCountData,
+                        onClick = { onMetricClick(SummaryDetailMetric.TOTAL_OUTING_COUNT) }
                     )
                 }
                 item {

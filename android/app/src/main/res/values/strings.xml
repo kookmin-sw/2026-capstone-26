@@ -161,6 +161,13 @@
     <string name="day_summary_loading">하루 요약을 불러오는 중입니다.</string>
     <string name="day_summary_error_title">하루 요약을 불러오지 못했어요</string>
     <string name="weekly_summary_title">주간 요약</string>
+    <string name="summary_detail_period_week">1주</string>
+    <string name="summary_detail_period_month">1개월</string>
+    <string name="summary_detail_period_six_months">6개월</string>
+    <string name="summary_detail_period_year">1년</string>
+    <string name="summary_detail_average">평균</string>
+    <string name="summary_detail_highlight">하이라이트</string>
+    <string name="summary_detail_highlight_empty">표시할 하이라이트가 없어요</string>
     <string name="place_sheet_title">방문한 장소</string>
     <string name="place_sheet_placeholder_body">이 날짜에 저장한 장소 목록이 이곳에 표시됩니다. 다음 단계에서 장소 추가와 편집을 연결합니다.</string>
     <string name="place_sheet_selected_date">선택한 날짜 %1$s</string>

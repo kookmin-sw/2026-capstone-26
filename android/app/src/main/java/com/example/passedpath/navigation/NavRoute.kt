@@ -11,6 +11,11 @@ object NavRoute {
     const val CALENDAR_WITH_DATE = "$CALENDAR/{$CALENDAR_DATE_KEY}"
     const val DAY_ROUTE_BOOKMARKS = "day_route_bookmarks"
     const val WEEKLY_SUMMARY = "weekly_summary"
+    const val SUMMARY_DETAIL = "summary_detail"
+    const val SUMMARY_DETAIL_METRIC_KEY = "metric"
+    const val SUMMARY_DETAIL_DATE_KEY = "dateKey"
+    const val SUMMARY_DETAIL_WITH_ARGS =
+        "$SUMMARY_DETAIL/{$SUMMARY_DETAIL_METRIC_KEY}/{$SUMMARY_DETAIL_DATE_KEY}"
     const val ADD_PLACE = "add_place"
     const val ADD_PLACE_DATE_KEY = "dateKey"
     const val ADD_PLACE_WITH_DATE = "$ADD_PLACE/{$ADD_PLACE_DATE_KEY}"
@@ -19,5 +24,6 @@ object NavRoute {
     const val MYPAGE = "mypage"
 
     fun calendar(dateKey: String): String = "$CALENDAR/$dateKey"
+    fun summaryDetail(metric: String, dateKey: String): String = "$SUMMARY_DETAIL/$metric/$dateKey"
     fun addPlace(dateKey: String): String = "$ADD_PLACE/$dateKey"
 }

@@ -1,6 +1,7 @@
 package com.example.passedpath.feature.summary.presentation.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,13 +40,18 @@ fun DaySummaryMetricCard(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    isNoDataValue: Boolean = false
+    isNoDataValue: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardShape = RoundedCornerShape(16.dp)
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(98.dp)
-            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .clip(cardShape)
+            .background(color = Gray50, shape = cardShape)
+            .summaryMetricClickable(onClick)
             .padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -79,6 +86,16 @@ fun DaySummaryMetricCard(
             tint = Gray400,
             modifier = Modifier.size(width = 7.dp, height = 12.dp)
         )
+    }
+}
+
+private fun Modifier.summaryMetricClickable(
+    onClick: (() -> Unit)?
+): Modifier {
+    return if (onClick == null) {
+        this
+    } else {
+        clickable(onClick = onClick)
     }
 }
 

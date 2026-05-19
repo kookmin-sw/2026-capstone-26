@@ -24,6 +24,7 @@ import com.example.passedpath.feature.permission.presentation.policy.PermissionA
 import com.example.passedpath.feature.permission.presentation.policy.resolvePermissionActionTarget
 import com.example.passedpath.feature.summary.presentation.viewmodel.DaySummaryViewModel
 import com.example.passedpath.feature.summary.presentation.viewmodel.DaySummaryViewModelFactory
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.util.AppSettingsNavigator
 
 @Composable
@@ -39,6 +40,7 @@ fun MainRoute(
     onNavigateToPlaceBookmarks: () -> Unit = {},
     onNavigateToCalendar: (String) -> Unit = {},
     onNavigateToWeeklySummary: () -> Unit = {},
+    onNavigateToSummaryDetail: (SummaryDetailMetric, String) -> Unit = { _, _ -> },
     viewModel: MainViewModel = viewModel(
         factory = MainViewModelFactory(LocalContext.current.appContainer)
     )
@@ -181,6 +183,7 @@ fun MainRoute(
         onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
         onNavigateToCalendar = onNavigateToCalendar,
         onNavigateToWeeklySummary = onNavigateToWeeklySummary,
+        onNavigateToSummaryDetail = onNavigateToSummaryDetail,
         onReorderPlaces = placeViewModel::reorderPlaces,
         onCloseReorderGuideBanner = placeViewModel::dismissReorderGuideBanner,
         onUpdatePlace = placeViewModel::updatePlace,

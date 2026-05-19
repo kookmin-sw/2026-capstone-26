@@ -1,6 +1,7 @@
 package com.example.passedpath.feature.summary.presentation.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,13 +45,18 @@ import com.example.passedpath.ui.theme.PassedPathTheme
 @Composable
 fun WeeklySummaryMetricCard(
     card: WeeklySummaryMetricCardUiState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardShape = RoundedCornerShape(16.dp)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(WeeklySummaryCardHeight)
-            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .clip(cardShape)
+            .background(color = Gray50, shape = cardShape)
+            .weeklySummaryCardClickable(onClick)
             .padding(horizontal = WeeklySummaryCardHorizontalPadding)
     ) {
         Column(
@@ -105,6 +112,16 @@ fun WeeklySummaryMetricCard(
                 .align(Alignment.TopEnd)
                 .padding(top = WeeklySummaryArrowTopPadding)
         )
+    }
+}
+
+private fun Modifier.weeklySummaryCardClickable(
+    onClick: (() -> Unit)?
+): Modifier {
+    return if (onClick == null) {
+        this
+    } else {
+        clickable(onClick = onClick)
     }
 }
 
