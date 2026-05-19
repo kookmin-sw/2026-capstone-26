@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -32,7 +29,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,15 +45,14 @@ import com.example.passedpath.ui.theme.Green500
 private data class BottomNavItem(
     val route: String,
     @StringRes val labelResId: Int,
-    val icon: ImageVector? = null,
-    val iconResId: Int? = null
+    val iconResId: Int
 )
 
 private val bottomNavItems = listOf(
     BottomNavItem(
         route = NavRoute.FRIENDS,
         labelResId = R.string.bottom_nav_friends,
-        icon = Icons.Filled.Group
+        iconResId = R.drawable.ic_group
     ),
     BottomNavItem(
         route = NavRoute.MAIN,
@@ -67,7 +62,7 @@ private val bottomNavItems = listOf(
     BottomNavItem(
         route = NavRoute.MYPAGE,
         labelResId = R.string.bottom_nav_profile,
-        icon = Icons.Filled.Person
+        iconResId = R.drawable.ic_person
     )
 )
 
@@ -123,25 +118,12 @@ private fun BottomBarItem(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when {
-            item.icon != null -> {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = contentDescription,
-                    tint = if (selected) BottomBarTokens.selectedColor else BottomBarTokens.unselectedColor,
-                    modifier = Modifier.height(BottomBarTokens.iconSize)
-                )
-            }
-
-            item.iconResId != null -> {
-                Icon(
-                    painter = painterResource(item.iconResId),
-                    contentDescription = contentDescription,
-                    tint = if (selected) BottomBarTokens.selectedColor else BottomBarTokens.unselectedColor,
-                    modifier = Modifier.height(BottomBarTokens.iconSize)
-                )
-            }
-        }
+        Icon(
+            painter = painterResource(item.iconResId),
+            contentDescription = contentDescription,
+            tint = if (selected) BottomBarTokens.selectedColor else BottomBarTokens.unselectedColor,
+            modifier = Modifier.height(BottomBarTokens.iconSize)
+        )
 
         Text(
             text = stringResource(item.labelResId),

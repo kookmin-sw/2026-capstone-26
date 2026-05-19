@@ -686,7 +686,7 @@ private fun ProtectedPersonBottomSheetTab.titleResId(): Int {
 private fun ProtectedPersonBottomSheetTab.iconResId(): Int {
     return when (this) {
         ProtectedPersonBottomSheetTab.PLACE -> R.drawable.ic_bottom_sheet_place
-        ProtectedPersonBottomSheetTab.SUMMARY -> R.drawable.ic_summary_day
+        ProtectedPersonBottomSheetTab.SUMMARY -> R.drawable.ic_day_summary
     }
 }
 

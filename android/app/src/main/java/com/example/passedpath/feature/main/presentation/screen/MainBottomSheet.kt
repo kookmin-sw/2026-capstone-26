@@ -159,7 +159,7 @@ private fun MainBottomSheetTab.iconResId(): Int {
     return when (this) {
         MainBottomSheetTab.PLACE -> R.drawable.ic_bottom_sheet_place
         MainBottomSheetTab.DAYNOTE -> R.drawable.ic_bottom_sheet_memo
-        MainBottomSheetTab.SUMMARY -> R.drawable.ic_summary_day
+        MainBottomSheetTab.SUMMARY -> R.drawable.ic_day_summary
     }
 }
 

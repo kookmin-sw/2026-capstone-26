@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -108,7 +107,7 @@ private fun CareInviteHeader(onDismiss: () -> Unit) {
                 .size(34.dp)
         ) {
             Icon(
-                imageVector = Icons.Rounded.Close,
+                painter = painterResource(id = R.drawable.ic_close),
                 contentDescription = stringResource(R.string.care_invite_sheet_close),
                 tint = Gray400,
                 modifier = Modifier.size(22.dp)
