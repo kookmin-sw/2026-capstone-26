@@ -41,6 +41,9 @@
     <string name="care_invite_accept_submitting">수락 중</string>
     <string name="care_invite_accept_error">초대를 수락하지 못했어요. 링크가 만료됐거나 이미 연결되어 있을 수 있어요.</string>
     <string name="care_invite_accept_success">초대를 수락했어요</string>
+    <string name="care_location_stream_error">실시간 위치 연결이 끊겼어요</string>
+    <string name="care_location_stream_retry">다시 시도</string>
+    <string name="care_location_stream_close">닫기</string>
     <string name="main_title">My Walk Log</string>
     <string name="main_permission_full">Background location is enabled</string>
     <string name="main_permission_limited">Background location is limited</string>

@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +29,13 @@ fun CareRoute(
     val shareTitle = stringResource(R.string.care_invite_share_title)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    DisposableEffect(viewModel) {
+        viewModel.startLocationStream()
+        onDispose {
+            viewModel.stopLocationStream()
+        }
+    }
+
     LaunchedEffect(refreshEventId) {
         if (refreshEventId > 0) {
             viewModel.refreshDependents()
@@ -49,6 +57,8 @@ fun CareRoute(
         onMapClick = viewModel::onMapClick,
         onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
+        onLocationStreamRetryClick = viewModel::retryLocationStream,
+        onLocationStreamErrorDismiss = viewModel::dismissLocationStreamError,
         onInviteDismiss = viewModel::dismissInviteModal,
         onInviteRetryClick = viewModel::retryCreateInviteLink,
         onInviteLinkCopyClick = { inviteLink ->

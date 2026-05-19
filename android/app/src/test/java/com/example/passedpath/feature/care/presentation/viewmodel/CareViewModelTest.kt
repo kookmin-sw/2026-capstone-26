@@ -1,5 +1,6 @@
 package com.example.passedpath.feature.care.presentation.viewmodel
 
+import com.example.passedpath.feature.care.domain.model.CareDependentLocationStreamEvent
 import com.example.passedpath.feature.care.domain.model.CareDependentUser
 import com.example.passedpath.feature.care.domain.model.CareDependentUserList
 import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
@@ -8,6 +9,7 @@ import com.example.passedpath.feature.care.domain.model.ProtectedPersonDaySummar
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonPlaceSourceType
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlace
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlaceList
+import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
@@ -18,10 +20,15 @@ import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationship
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
+import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBottomSheetTab
 import com.example.passedpath.testutil.MainDispatcherRule
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -325,13 +332,167 @@ class CareViewModelTest {
         assertTrue(state.inviteUiState.isVisible)
     }
 
+    @Test
+    fun `location stream updates existing dependent and map marker`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createLoadedViewModel(
+            locationStreamRepository = streamRepository
+        )
+
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+        streamRepository.emitEvent(
+            CareDependentLocationStreamEvent.LocationUpdated(
+                dependentUserId = 7L,
+                latestGpsPoint = latestGpsPoint(
+                    latitude = 37.7,
+                    longitude = 127.1,
+                    recordedAt = "2026-05-19T10:00:00+09:00"
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(37.7, state.dependents.first().latestLatitude ?: 0.0, CoordinateDelta)
+        assertEquals(127.1, state.dependents.first().latestLongitude ?: 0.0, CoordinateDelta)
+        assertEquals("2026-05-19T10:00:00+09:00", state.dependents.first().latestRecordedAt)
+        assertEquals(37.7, state.mapMarkers.first().latitude, CoordinateDelta)
+        assertEquals(127.1, state.mapMarkers.first().longitude, CoordinateDelta)
+        assertNull(state.locationStreamErrorMessage)
+        viewModel.stopLocationStream()
+    }
+
+    @Test
+    fun `location stream adds marker for dependent without latest location`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createViewModel(
+            dependentRepository = FakeCareDependentRepository(
+                result = CareDependentUserList(
+                    dependentUserCount = 1,
+                    dependentUsers = listOf(
+                        dependentUser(dependentUserId = 9L, latestGpsPoint = null)
+                    )
+                )
+            ),
+            locationStreamRepository = streamRepository
+        )
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.mapMarkers.isEmpty())
+
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+        streamRepository.emitEvent(
+            CareDependentLocationStreamEvent.LocationUpdated(
+                dependentUserId = 9L,
+                latestGpsPoint = latestGpsPoint(latitude = 37.9, longitude = 127.3)
+            )
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(9L), state.mapMarkers.map { it.dependentUserId })
+        assertEquals(37.9, state.mapMarkers.first().latitude, CoordinateDelta)
+        assertEquals(127.3, state.mapMarkers.first().longitude, CoordinateDelta)
+        viewModel.stopLocationStream()
+    }
+
+    @Test
+    fun `location stream ignores unknown dependent`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createLoadedViewModel(
+            locationStreamRepository = streamRepository
+        )
+
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+        streamRepository.emitEvent(
+            CareDependentLocationStreamEvent.LocationUpdated(
+                dependentUserId = 999L,
+                latestGpsPoint = latestGpsPoint(latitude = 38.0, longitude = 128.0)
+            )
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(7L), state.dependents.map { it.dependentUserId })
+        assertEquals(37.5665, state.mapMarkers.first().latitude, CoordinateDelta)
+        assertEquals(126.978, state.mapMarkers.first().longitude, CoordinateDelta)
+        viewModel.stopLocationStream()
+    }
+
+    @Test
+    fun `location stream error keeps existing markers and exposes stream error`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createLoadedViewModel(
+            locationStreamRepository = streamRepository
+        )
+
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+        streamRepository.emitEvent(
+            CareDependentLocationStreamEvent.Error(IllegalStateException("stream failed"))
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(7L), state.mapMarkers.map { it.dependentUserId })
+        assertNotNull(state.locationStreamErrorMessage)
+        viewModel.stopLocationStream()
+    }
+
+    @Test
+    fun `stopLocationStream prevents later events from changing state`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createLoadedViewModel(
+            locationStreamRepository = streamRepository
+        )
+
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+        viewModel.stopLocationStream()
+        advanceUntilIdle()
+        streamRepository.emitEvent(
+            CareDependentLocationStreamEvent.LocationUpdated(
+                dependentUserId = 7L,
+                latestGpsPoint = latestGpsPoint(latitude = 37.8, longitude = 127.2)
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            37.5665,
+            viewModel.uiState.value.mapMarkers.first().latitude,
+            CoordinateDelta
+        )
+        assertEquals(0, streamRepository.activeCollectors)
+    }
+
+    @Test
+    fun `startLocationStream does not create duplicate collectors`() = runTest {
+        val streamRepository = FakeCareDependentLocationStreamRepository()
+        val viewModel = createLoadedViewModel(
+            locationStreamRepository = streamRepository
+        )
+
+        viewModel.startLocationStream()
+        viewModel.startLocationStream()
+        advanceUntilIdle()
+
+        assertEquals(1, streamRepository.observeRequestCount)
+        assertEquals(1, streamRepository.activeCollectors)
+        viewModel.stopLocationStream()
+    }
+
     private fun TestScope.createLoadedViewModel(
         placeRepository: ProtectedPersonVisitedPlaceRepository =
             FakeProtectedPersonVisitedPlaceRepository(),
         summaryRepository: ProtectedPersonDaySummaryRepository =
             FakeProtectedPersonDaySummaryRepository(),
         inviteRepository: CareRelationshipInviteRepository =
-            FakeCareRelationshipInviteRepository()
+            FakeCareRelationshipInviteRepository(),
+        locationStreamRepository: CareDependentLocationStreamRepository =
+            FakeCareDependentLocationStreamRepository()
     ): CareViewModel {
         val viewModel = createViewModel(
             dependentRepository = FakeCareDependentRepository(
@@ -342,7 +503,8 @@ class CareViewModelTest {
             ),
             placeRepository = placeRepository,
             summaryRepository = summaryRepository,
-            inviteRepository = inviteRepository
+            inviteRepository = inviteRepository,
+            locationStreamRepository = locationStreamRepository
         )
         advanceUntilIdle()
         return viewModel
@@ -355,7 +517,9 @@ class CareViewModelTest {
         summaryRepository: ProtectedPersonDaySummaryRepository =
             FakeProtectedPersonDaySummaryRepository(),
         inviteRepository: CareRelationshipInviteRepository =
-            FakeCareRelationshipInviteRepository()
+            FakeCareRelationshipInviteRepository(),
+        locationStreamRepository: CareDependentLocationStreamRepository =
+            FakeCareDependentLocationStreamRepository()
     ): CareViewModel {
         return CareViewModel(
             getCareDependentsUseCase = GetCareDependentsUseCase(dependentRepository),
@@ -365,6 +529,8 @@ class CareViewModelTest {
                 GetProtectedPersonDaySummaryUseCase(summaryRepository),
             createCareRelationshipInviteLinkUseCase =
                 CreateCareRelationshipInviteLinkUseCase(inviteRepository),
+            observeCareDependentLocationStreamUseCase =
+                ObserveCareDependentLocationStreamUseCase(locationStreamRepository),
             todayDateKeyProvider = { "2026-05-18" }
         )
     }
@@ -436,6 +602,30 @@ class CareViewModelTest {
 
         override suspend fun acceptInvite(inviteCode: String) = Unit
     }
+
+    private class FakeCareDependentLocationStreamRepository :
+        CareDependentLocationStreamRepository {
+        private val events = MutableSharedFlow<CareDependentLocationStreamEvent>(
+            extraBufferCapacity = 16
+        )
+        var observeRequestCount: Int = 0
+        var activeCollectors: Int = 0
+
+        override fun observeLocationStream(): Flow<CareDependentLocationStreamEvent> {
+            return events
+                .onStart {
+                    observeRequestCount++
+                    activeCollectors++
+                }
+                .onCompletion {
+                    activeCollectors--
+                }
+        }
+
+        fun emitEvent(event: CareDependentLocationStreamEvent) {
+            events.tryEmit(event)
+        }
+    }
 }
 
 private fun dependentUser(
@@ -451,11 +641,15 @@ private fun dependentUser(
     )
 }
 
-private fun latestGpsPoint(): CareLatestGpsPoint {
+private fun latestGpsPoint(
+    latitude: Double = 37.5665,
+    longitude: Double = 126.978,
+    recordedAt: String = "2026-05-11T09:00:00+09:00"
+): CareLatestGpsPoint {
     return CareLatestGpsPoint(
-        latitude = 37.5665,
-        longitude = 126.978,
-        recordedAt = "2026-05-11T09:00:00+09:00",
+        latitude = latitude,
+        longitude = longitude,
+        recordedAt = recordedAt,
         recordedAtEpochMillis = 1_746_925_200_000L
     )
 }
@@ -488,3 +682,5 @@ private fun daySummary(): ProtectedPersonDaySummary {
         visitedDongNames = listOf("혜화동", "정릉동")
     )
 }
+
+private const val CoordinateDelta = 0.000001

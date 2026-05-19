@@ -1,14 +1,19 @@
 package com.example.passedpath.feature.care.presentation.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.passedpath.R
 import com.example.passedpath.feature.care.presentation.component.CareEmptyDependentsBanner
 import com.example.passedpath.feature.care.presentation.component.CareDependentMapMarker
@@ -41,6 +48,10 @@ import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.theme.Black
+import com.example.passedpath.ui.theme.Gray500
+import com.example.passedpath.ui.theme.Green100
+import com.example.passedpath.ui.theme.Green50
+import com.example.passedpath.ui.theme.Green700
 import com.example.passedpath.ui.theme.White
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -70,6 +81,8 @@ fun CareScreen(
     onMapClick: () -> Unit,
     onPlaceRetryClick: () -> Unit,
     onSummaryRetryClick: () -> Unit,
+    onLocationStreamRetryClick: () -> Unit,
+    onLocationStreamErrorDismiss: () -> Unit,
     onInviteDismiss: () -> Unit,
     onInviteRetryClick: () -> Unit,
     onInviteLinkCopyClick: (String) -> Unit,
@@ -91,7 +104,9 @@ fun CareScreen(
                     onInviteClick = onInviteClick,
                     onPlaceMarkerClick = onPlaceMarkerClick,
                     onFocusedPlaceHandled = onFocusedPlaceHandled,
-                    onMapClick = onMapClick
+                    onMapClick = onMapClick,
+                    onLocationStreamRetryClick = onLocationStreamRetryClick,
+                    onLocationStreamErrorDismiss = onLocationStreamErrorDismiss
                 )
             },
             sheet = { sheetModifier ->
@@ -139,6 +154,8 @@ private fun CareMapContent(
     onPlaceMarkerClick: (Long) -> Unit,
     onFocusedPlaceHandled: () -> Unit,
     onMapClick: () -> Unit,
+    onLocationStreamRetryClick: () -> Unit,
+    onLocationStreamErrorDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -165,7 +182,7 @@ private fun CareMapContent(
     val coroutineScope = rememberCoroutineScope()
     var isMapLoaded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isMapLoaded, uiState.selectedDependentUserId, markerDependents) {
+    LaunchedEffect(isMapLoaded, uiState.selectedDependentUserId, uiState.hasLoaded) {
         if (!isMapLoaded) return@LaunchedEffect
         val targetDependent = uiState.selectedDependentUserId
             ?.let { selectedId ->
@@ -259,6 +276,8 @@ private fun CareMapContent(
         CareMapStatusOverlay(
             uiState = uiState,
             onRetryClick = onRetryClick,
+            onLocationStreamRetryClick = onLocationStreamRetryClick,
+            onLocationStreamErrorDismiss = onLocationStreamErrorDismiss,
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
@@ -381,13 +400,24 @@ private fun CareTopSelectorSurface(
 private fun CareMapStatusOverlay(
     uiState: CareUiState,
     onRetryClick: () -> Unit,
+    onLocationStreamRetryClick: () -> Unit,
+    onLocationStreamErrorDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var dismissedErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var dismissedLocationStreamErrorMessage by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
 
     LaunchedEffect(uiState.errorMessage, uiState.isLoading) {
         if (uiState.errorMessage == null || uiState.isLoading) {
             dismissedErrorMessage = null
+        }
+    }
+
+    LaunchedEffect(uiState.locationStreamErrorMessage) {
+        if (uiState.locationStreamErrorMessage == null) {
+            dismissedLocationStreamErrorMessage = null
         }
     }
 
@@ -399,6 +429,22 @@ private fun CareMapStatusOverlay(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val locationStreamErrorMessage = uiState.locationStreamErrorMessage
+        if (locationStreamErrorMessage != null &&
+            dismissedLocationStreamErrorMessage != locationStreamErrorMessage
+        ) {
+            CareLocationStreamFailureBanner(
+                onRetryClick = {
+                    dismissedLocationStreamErrorMessage = locationStreamErrorMessage
+                    onLocationStreamRetryClick()
+                },
+                onDismiss = {
+                    dismissedLocationStreamErrorMessage = locationStreamErrorMessage
+                    onLocationStreamErrorDismiss()
+                }
+            )
+        }
+
         when {
             uiState.hasLoaded && uiState.dependents.isEmpty() && !uiState.isLoading -> {
                 CareEmptyDependentsBanner()
@@ -416,6 +462,50 @@ private fun CareMapStatusOverlay(
                 onRetryClick()
             }
         )
+    }
+}
+
+@Composable
+private fun CareLocationStreamFailureBanner(
+    onRetryClick: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = Green50,
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, Green100),
+        shadowElevation = 6.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.care_location_stream_error),
+                modifier = Modifier.weight(1f),
+                color = Gray500,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+            TextButton(onClick = onRetryClick) {
+                Text(
+                    text = stringResource(R.string.care_location_stream_retry),
+                    color = Green700,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(R.string.care_location_stream_close),
+                    color = Gray500,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 

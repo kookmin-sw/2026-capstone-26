@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
+import com.example.passedpath.feature.care.domain.model.CareDependentLocationStreamEvent
+import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
+import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.care.presentation.mapper.toCareDependentMapMarkerUiStates
 import com.example.passedpath.feature.care.presentation.mapper.toCareDependentUserUiState
 import com.example.passedpath.feature.care.presentation.mapper.toProtectedPersonPlaceListUiState
@@ -22,9 +25,11 @@ import com.example.passedpath.feature.care.presentation.state.ProtectedPersonSum
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -33,6 +38,8 @@ class CareViewModel(
     private val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase,
     private val getProtectedPersonDaySummaryUseCase: GetProtectedPersonDaySummaryUseCase,
     private val createCareRelationshipInviteLinkUseCase: CreateCareRelationshipInviteLinkUseCase,
+    private val observeCareDependentLocationStreamUseCase:
+        ObserveCareDependentLocationStreamUseCase,
     private val todayDateKeyProvider: () -> String = ::defaultKstTodayDateKey
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
@@ -40,6 +47,7 @@ class CareViewModel(
     )
     val uiState: StateFlow<CareUiState> = _uiState.asStateFlow()
     private var inviteRequestId: Long = 0L
+    private var locationStreamJob: Job? = null
 
     init {
         refreshDependents()
@@ -96,6 +104,35 @@ class CareViewModel(
                     )
                 }
             }
+        }
+    }
+
+    fun startLocationStream() {
+        if (locationStreamJob?.isActive == true) return
+
+        locationStreamJob = viewModelScope.launch {
+            observeCareDependentLocationStreamUseCase().collect { event ->
+                handleLocationStreamEvent(event)
+            }
+        }
+    }
+
+    fun stopLocationStream() {
+        locationStreamJob?.cancel()
+        locationStreamJob = null
+    }
+
+    fun retryLocationStream() {
+        stopLocationStream()
+        _uiState.update { state ->
+            state.copy(locationStreamErrorMessage = null)
+        }
+        startLocationStream()
+    }
+
+    fun dismissLocationStreamError() {
+        _uiState.update { state ->
+            state.copy(locationStreamErrorMessage = null)
         }
     }
 
@@ -322,6 +359,58 @@ class CareViewModel(
         }
     }
 
+    private fun handleLocationStreamEvent(event: CareDependentLocationStreamEvent) {
+        when (event) {
+            is CareDependentLocationStreamEvent.Connected -> {
+                _uiState.update { state ->
+                    state.copy(locationStreamErrorMessage = null)
+                }
+            }
+
+            is CareDependentLocationStreamEvent.Error -> {
+                _uiState.update { state ->
+                    state.copy(locationStreamErrorMessage = CareLocationStreamErrorMessage)
+                }
+            }
+
+            is CareDependentLocationStreamEvent.LocationUpdated -> {
+                _uiState.update { state ->
+                    state.withUpdatedDependentLocation(
+                        dependentUserId = event.dependentUserId,
+                        latestGpsPoint = event.latestGpsPoint
+                    )
+                }
+            }
+        }
+    }
+
+    private fun CareUiState.withUpdatedDependentLocation(
+        dependentUserId: Long,
+        latestGpsPoint: CareLatestGpsPoint
+    ): CareUiState {
+        if (dependents.none { dependent -> dependent.dependentUserId == dependentUserId }) {
+            return this
+        }
+
+        val updatedDependents = dependents.map { dependent ->
+            if (dependent.dependentUserId == dependentUserId) {
+                dependent.copy(
+                    latestLatitude = latestGpsPoint.latitude,
+                    latestLongitude = latestGpsPoint.longitude,
+                    latestRecordedAt = latestGpsPoint.recordedAt
+                )
+            } else {
+                dependent
+            }
+        }
+
+        return copy(
+            dependents = updatedDependents,
+            mapMarkers = updatedDependents.toCareDependentMapMarkerUiStates(),
+            locationStreamErrorMessage = null
+        )
+    }
+
     private fun loadProtectedPersonDetails(
         dependentUserId: Long,
         dateKey: String
@@ -456,6 +545,8 @@ class CareViewModel(
         const val ProtectedPersonSummaryLoadErrorMessage =
             "Failed to load protected person summary"
         const val CareInviteLinkCreateErrorMessage = "Failed to create invite link"
+        const val CareLocationStreamErrorMessage =
+            "Failed to connect real-time location stream"
     }
 }
 
@@ -472,7 +563,9 @@ class CareViewModelFactory(
                 getProtectedPersonDaySummaryUseCase =
                     appContainer.getProtectedPersonDaySummaryUseCase,
                 createCareRelationshipInviteLinkUseCase =
-                    appContainer.createCareRelationshipInviteLinkUseCase
+                    appContainer.createCareRelationshipInviteLinkUseCase,
+                observeCareDependentLocationStreamUseCase =
+                    appContainer.observeCareDependentLocationStreamUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

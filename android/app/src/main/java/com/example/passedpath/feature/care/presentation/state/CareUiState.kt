@@ -18,6 +18,7 @@ data class CareUiState(
     val selectedPlaceId: Long? = null,
     val focusedPlaceId: Long? = null,
     val inviteUiState: CareInviteUiState = CareInviteUiState(),
+    val locationStreamErrorMessage: String? = null,
     val isLoading: Boolean = false,
     val hasLoaded: Boolean = false,
     val errorMessage: String? = null
