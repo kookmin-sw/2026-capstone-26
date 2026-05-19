@@ -15,6 +15,8 @@ import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import backend.capstone.domain.mobility.place.facade.PlaceFacade;
+import backend.capstone.domain.mobility.statics.dto.WeeklyStatisticsResponse;
+import backend.capstone.domain.mobility.statics.service.WeeklyStatisticsService;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
@@ -37,6 +39,7 @@ public class CareDependentUserService {
 
     private final DayRouteFacade dayRouteFacade;
     private final PlaceFacade placeFacade;
+    private final WeeklyStatisticsService weeklyStatisticsService;
 
     public CareDependentUserListResponse getDependentUsers(Long guardianUserId) {
         List<User> dependentUsers = careRelationshipRepository.findDependentUsersByGuardianUserId(
@@ -76,6 +79,13 @@ public class CareDependentUserService {
     ) {
         validateDependentUserAccess(guardianUserId, dependentUserId);
         return dayRouteFacade.getDayRouteSummary(date, dependentUserId);
+    }
+
+    public WeeklyStatisticsResponse getDependentUserWeeklyStatistics(
+        Long guardianUserId, Long dependentUserId, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return weeklyStatisticsService.getWeeklyStatistics(dependentUserId, today);
     }
 
     public CareDependentDayRouteListResponse getDependentUserDayRoutes(
