@@ -15,8 +15,13 @@ import backend.capstone.domain.mobility.latestgpspoint.entity.LatestGpsPoint;
 import backend.capstone.domain.mobility.latestgpspoint.repository.LatestGpsPointRepository;
 import backend.capstone.domain.mobility.place.dto.PlaceListResponse;
 import backend.capstone.domain.mobility.place.facade.PlaceFacade;
+import backend.capstone.domain.mobility.statics.dto.StatisticMetricResponse;
+import backend.capstone.domain.mobility.statics.dto.VisitStatisticsResponse;
 import backend.capstone.domain.mobility.statics.dto.WeeklyStatisticsResponse;
+import backend.capstone.domain.mobility.statics.service.StatisticMetricService;
+import backend.capstone.domain.mobility.statics.service.VisitStatisticsService;
 import backend.capstone.domain.mobility.statics.service.WeeklyStatisticsService;
+import backend.capstone.domain.mobility.statics.type.StatisticPeriod;
 import backend.capstone.domain.user.entity.User;
 import backend.capstone.global.exception.BusinessException;
 import java.time.LocalDate;
@@ -40,6 +45,8 @@ public class CareDependentUserService {
     private final DayRouteFacade dayRouteFacade;
     private final PlaceFacade placeFacade;
     private final WeeklyStatisticsService weeklyStatisticsService;
+    private final StatisticMetricService statisticMetricService;
+    private final VisitStatisticsService visitStatisticsService;
 
     public CareDependentUserListResponse getDependentUsers(Long guardianUserId) {
         List<User> dependentUsers = careRelationshipRepository.findDependentUsersByGuardianUserId(
@@ -86,6 +93,41 @@ public class CareDependentUserService {
     ) {
         validateDependentUserAccess(guardianUserId, dependentUserId);
         return weeklyStatisticsService.getWeeklyStatistics(dependentUserId, today);
+    }
+
+    public StatisticMetricResponse getDependentUserOutingTimeMetric(
+        Long guardianUserId, Long dependentUserId, StatisticPeriod period, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return statisticMetricService.getOutingTimeMetric(dependentUserId, period, today);
+    }
+
+    public StatisticMetricResponse getDependentUserEnterHomeTimeMetric(
+        Long guardianUserId, Long dependentUserId, StatisticPeriod period, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return statisticMetricService.getEnterHomeTimeMetric(dependentUserId, period, today);
+    }
+
+    public StatisticMetricResponse getDependentUserTotalOutingSecondsMetric(
+        Long guardianUserId, Long dependentUserId, StatisticPeriod period, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return statisticMetricService.getTotalOutingSecondsMetric(dependentUserId, period, today);
+    }
+
+    public StatisticMetricResponse getDependentUserTotalOutingCountMetric(
+        Long guardianUserId, Long dependentUserId, StatisticPeriod period, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return statisticMetricService.getTotalOutingCountMetric(dependentUserId, period, today);
+    }
+
+    public VisitStatisticsResponse getDependentUserVisitStatistics(
+        Long guardianUserId, Long dependentUserId, StatisticPeriod period, LocalDate today
+    ) {
+        validateDependentUserAccess(guardianUserId, dependentUserId);
+        return visitStatisticsService.getVisitStatistics(dependentUserId, period, today);
     }
 
     public CareDependentDayRouteListResponse getDependentUserDayRoutes(
