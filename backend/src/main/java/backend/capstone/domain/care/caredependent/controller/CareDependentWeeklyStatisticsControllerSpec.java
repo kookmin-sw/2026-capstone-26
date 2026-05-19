@@ -5,7 +5,7 @@ import backend.capstone.domain.mobility.statics.dto.WeeklyStatisticsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "함께 가는 길 API")
+@Tag(name = "보호 대상자 주간 요약 API")
 public interface CareDependentWeeklyStatisticsControllerSpec {
 
     @Operation(
