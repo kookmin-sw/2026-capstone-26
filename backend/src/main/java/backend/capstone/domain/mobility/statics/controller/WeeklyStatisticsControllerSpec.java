@@ -12,7 +12,7 @@ public interface WeeklyStatisticsControllerSpec {
         summary = "최근 7일 주간 요약 조회 API",
         description = """
             오늘 날짜를 기준으로 최근 7일간의 통계가 날짜 오름차순으로 반환합니다.<br>
-            최근 7일간 생성된 dayRoute가 없다면 평균을 계산할 수치가 없어 각 필드의 `average`의 `value`와 `displayText`는 nulll이 됩니다. (이때 nulll이 아니라 0이나 "-" 같은 문자열을 받고 싶으면 얘기 바람)
+            최근 7일간 생성된 dayRoute가 없다면 평균을 계산할 수치가 없어 각 필드의 `average`의 `value`와 `displayText`는 nulll이 됩니다.
                         
             - `hasDayRoute`: 해당 날짜에 데이터가 존재하는지 여부<br>
                 - 만약 `hasDayRoute`가 false라면 해당 날짜에 데이터가 존재하지 않아 dayRoute 엔티티가 생성되지 않은 것입니다.<br>

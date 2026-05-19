@@ -114,8 +114,9 @@ public class WeeklyStatisticsService {
         int sampleSize = 0;
 
         for (DailySlot dailySlot : dailySlots) {
-            Integer count = dailySlot.dayRoute() == null ? null : dailySlot.dayRoute()
-                .getTotalOutingCount();
+            Integer count = hasOutingRecord(dailySlot.dayRoute())
+                ? dailySlot.dayRoute().getTotalOutingCount()
+                : null;
             dailyValues.add(new CountMetricSection.CountMetricDailyItem(
                 dailySlot.date(),
                 dailySlot.dayRoute() != null,
@@ -148,8 +149,9 @@ public class WeeklyStatisticsService {
         int sampleSize = 0;
 
         for (DailySlot dailySlot : dailySlots) {
-            Long outingSeconds = dailySlot.dayRoute() == null ? null : dailySlot.dayRoute()
-                .getTotalOutingSeconds();
+            Long outingSeconds = hasOutingRecord(dailySlot.dayRoute())
+                ? dailySlot.dayRoute().getTotalOutingSeconds()
+                : null;
             dailyValues.add(new DurationMetricSection.DurationMetricDailyItem(
                 dailySlot.date(),
                 dailySlot.dayRoute() != null,
@@ -215,6 +217,10 @@ public class WeeklyStatisticsService {
 
         Long minutesOfDay = TimeFormatUtils.toKstMinutesOfDay(extractor.apply(dayRoute));
         return minutesOfDay == null ? null : minutesOfDay.intValue();
+    }
+
+    private boolean hasOutingRecord(DayRoute dayRoute) {
+        return dayRoute != null && dayRoute.getOutingTime() != null;
     }
 
     private String formatCountText(double value) {

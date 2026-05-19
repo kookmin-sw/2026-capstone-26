@@ -62,8 +62,12 @@ class WeeklyStatisticsServiceTest {
         assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 5, 13));
         assertThat(response.outingTime().average().displayText()).isEqualTo("09:15");
         assertThat(response.enterHomeTime().average().displayText()).isEqualTo("23:15");
-        assertThat(response.totalOutingCount().average().displayText()).isEqualTo("1회");
-        assertThat(response.totalOutingSeconds().average().displayText()).isEqualTo("3시간 40분");
+        assertThat(response.totalOutingCount().average().displayText()).isEqualTo("1.5회");
+        assertThat(response.totalOutingSeconds().average().displayText()).isEqualTo("5시간 30분");
+        assertThat(response.totalOutingCount().sevenDays().get(6).value()).isNull();
+        assertThat(response.totalOutingCount().sevenDays().get(6).displayText()).isNull();
+        assertThat(response.totalOutingSeconds().sevenDays().get(6).value()).isNull();
+        assertThat(response.totalOutingSeconds().sevenDays().get(6).displayText()).isNull();
         assertThat(response.visitedRegions().topRegions()).hasSize(2);
         assertThat(response.visitedRegions().topRegions().get(0).regionName()).isEqualTo("성북구");
     }
