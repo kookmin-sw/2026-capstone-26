@@ -53,4 +53,12 @@ public interface AuthControllerSpec {
             """
     )
     TokenPair issueHyewonJwt();
+
+    @Operation(
+        summary = "할머니 전용 토큰 발급",
+        description = """
+            할머니 계정 전용 액세스 토큰과 리프레시 토큰을 발급합니다.
+        """
+    )
+    TokenPair issueUser3Jwt();
 }

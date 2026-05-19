@@ -51,6 +51,12 @@ public class AuthController implements AuthControllerSpec {
         return authService.testIssue(2L);
     }
 
+    @Override
+    @GetMapping("/user3-token/issue")
+    public TokenPair issueUser3Jwt() {
+        return authService.testIssue(3L);
+    }
+
     private String resolveBearerToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header == null) {
