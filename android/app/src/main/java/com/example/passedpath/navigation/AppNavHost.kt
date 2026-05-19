@@ -49,6 +49,7 @@ import com.example.passedpath.feature.place.presentation.screen.AddPlaceScreen
 import com.example.passedpath.feature.place.presentation.screen.PlaceBookmarkSearchScreen
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkRoute
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkSearchResultEvent
+import com.example.passedpath.feature.summary.presentation.screen.WeeklySummaryRoute
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
 
@@ -330,10 +331,25 @@ private fun AppNavigationGraph(
                         },
                         onNavigateToCalendar = { dateKey ->
                             navController.navigate(NavRoute.calendar(dateKey))
+                        },
+                        onNavigateToWeeklySummary = {
+                            navController.navigate(NavRoute.WEEKLY_SUMMARY)
                         }
                     )
                 }
             }
+        }
+
+        composable(
+            route = NavRoute.WEEKLY_SUMMARY,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            WeeklySummaryRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(

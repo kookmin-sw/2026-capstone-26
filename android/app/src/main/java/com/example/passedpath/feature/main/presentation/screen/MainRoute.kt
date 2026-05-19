@@ -38,6 +38,7 @@ fun MainRoute(
     onNavigateToAddPlace: (String) -> Unit = {},
     onNavigateToPlaceBookmarks: () -> Unit = {},
     onNavigateToCalendar: (String) -> Unit = {},
+    onNavigateToWeeklySummary: () -> Unit = {},
     viewModel: MainViewModel = viewModel(
         factory = MainViewModelFactory(LocalContext.current.appContainer)
     )
@@ -179,6 +180,7 @@ fun MainRoute(
         onNavigateToAddPlace = onNavigateToAddPlace,
         onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
         onNavigateToCalendar = onNavigateToCalendar,
+        onNavigateToWeeklySummary = onNavigateToWeeklySummary,
         onReorderPlaces = placeViewModel::reorderPlaces,
         onCloseReorderGuideBanner = placeViewModel::dismissReorderGuideBanner,
         onUpdatePlace = placeViewModel::updatePlace,

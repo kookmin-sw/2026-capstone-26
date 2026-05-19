@@ -100,6 +100,7 @@ fun MainScreen(
     onNavigateToAddPlace: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
     onNavigateToCalendar: (String) -> Unit,
+    onNavigateToWeeklySummary: () -> Unit,
     onReorderPlaces: (List<Long>) -> Unit,
     onCloseReorderGuideBanner: () -> Unit,
     onUpdatePlace: (Long, String, String, Double, Double) -> Unit,
@@ -346,6 +347,7 @@ fun MainScreen(
             onRouteAction = onRouteAction,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
+            onNavigateToWeeklySummary = onNavigateToWeeklySummary,
             onMapClick = {
                 clearFocus()
                 hideBottomSheet()
@@ -538,6 +540,7 @@ private fun MainScreenScaffoldContent(
     onRouteAction: (RouteUiAction) -> Unit,
     onNavigateToCalendar: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
+    onNavigateToWeeklySummary: () -> Unit,
     onMapClick: () -> Unit,
     onPlaceMarkerClick: (Long) -> Unit,
     onPermissionActionClick: () -> Unit,
@@ -580,7 +583,7 @@ private fun MainScreenScaffoldContent(
                 onDateSelected = onDateSelectionRequested,
                 onBookmarkClick = onBookmarkClick,
                 onRouteAction = onRouteAction,
-                onStatsClick = {},
+                onStatsClick = onNavigateToWeeklySummary,
                 onCalendarClick = {
                     onNavigateToCalendar(uiState.selectedDateKey)
                 },
