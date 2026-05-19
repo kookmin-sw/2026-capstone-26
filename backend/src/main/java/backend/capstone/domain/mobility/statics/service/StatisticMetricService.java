@@ -72,7 +72,7 @@ public class StatisticMetricService {
             "외출시간이",
             "줄었어요.",
             "늘었어요.",
-            dayRoute -> dayRoute.getTotalOutingSeconds(),
+            this::extractTotalOutingSecondsIfOutingRecorded,
             average -> Math.toIntExact(Math.round(average)),
             value -> DurationFormatUtils.formatOutingDurationText(value.longValue())
         ));
@@ -88,7 +88,7 @@ public class StatisticMetricService {
             "외출횟수가",
             "줄었어요.",
             "늘었어요.",
-            dayRoute -> (long) dayRoute.getTotalOutingCount(),
+            this::extractTotalOutingCountIfOutingRecorded,
             average -> roundToOneDecimal(average),
             value -> String.format(Locale.US, "%.1f회", value.doubleValue())
         ));
@@ -290,6 +290,24 @@ public class StatisticMetricService {
             ? null
             : config.averageFormatter().apply((double) totalValue / sampleSize);
         return new AverageResult(value, sampleSize);
+    }
+
+    private Long extractTotalOutingSecondsIfOutingRecorded(DayRoute dayRoute) {
+        if (!hasOutingRecord(dayRoute)) {
+            return null;
+        }
+        return dayRoute.getTotalOutingSeconds();
+    }
+
+    private Long extractTotalOutingCountIfOutingRecorded(DayRoute dayRoute) {
+        if (!hasOutingRecord(dayRoute)) {
+            return null;
+        }
+        return (long) dayRoute.getTotalOutingCount();
+    }
+
+    private boolean hasOutingRecord(DayRoute dayRoute) {
+        return dayRoute.getOutingTime() != null;
     }
 
     private static double roundToOneDecimal(double value) {
