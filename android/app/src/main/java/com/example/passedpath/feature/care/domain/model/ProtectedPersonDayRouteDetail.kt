@@ -13,3 +13,17 @@ data class ProtectedPersonDayRouteDetail(
     val pathPointCount: Int,
     val routePoints: List<ProtectedPersonRoutePoint> = emptyList()
 )
+
+data class ProtectedPersonDayRouteList(
+    val dayRouteCount: Int,
+    val hasNext: Boolean,
+    val nextCursorDate: String?,
+    val dayRoutes: List<ProtectedPersonDayRouteListItem>
+)
+
+data class ProtectedPersonDayRouteListItem(
+    val dateKey: String,
+    val outingTime: String?,
+    val enterHomeTime: String?,
+    val totalOutingCount: Int
+)

@@ -50,6 +50,7 @@ import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisi
 import com.example.passedpath.feature.care.domain.usecase.AcceptCareRelationshipInviteUseCase
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteListUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
@@ -540,6 +541,12 @@ class AppContainer(
 
     val getProtectedPersonDayRouteUseCase: GetProtectedPersonDayRouteUseCase by lazy {
         GetProtectedPersonDayRouteUseCase(
+            repository = protectedPersonDayRouteRepository
+        )
+    }
+
+    val getProtectedPersonDayRouteListUseCase: GetProtectedPersonDayRouteListUseCase by lazy {
+        GetProtectedPersonDayRouteListUseCase(
             repository = protectedPersonDayRouteRepository
         )
     }
