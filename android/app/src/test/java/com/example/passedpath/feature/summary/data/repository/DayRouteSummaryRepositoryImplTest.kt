@@ -35,9 +35,9 @@ class DayRouteSummaryRepositoryImplTest {
         assertEquals("2026-05-06", result.dateKey)
         assertNull(result.outingTime)
         assertNull(result.enterHomeTime)
-        assertEquals(0, result.totalOutingCount)
-        assertEquals(0L, result.totalOutingSeconds)
-        assertEquals("0\uBD84", result.totalOutingDurationText)
+        assertNull(result.totalOutingCount)
+        assertNull(result.totalOutingSeconds)
+        assertNull(result.totalOutingDurationText)
         assertTrue(result.visitedDongNames.isEmpty())
     }
 

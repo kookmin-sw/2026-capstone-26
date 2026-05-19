@@ -31,7 +31,7 @@ class DayRouteSummaryRemoteMapperTest {
     }
 
     @Test
-    fun `toDayRouteSummary allows null times and falls back missing count seconds and text`() {
+    fun `toDayRouteSummary preserves null missing metric values`() {
         val response = DayRouteSummaryResponseDto(
             outingTime = null,
             enterHomeTime = " ",
@@ -45,9 +45,9 @@ class DayRouteSummaryRemoteMapperTest {
 
         assertNull(result.outingTime)
         assertNull(result.enterHomeTime)
-        assertEquals(0, result.totalOutingCount)
-        assertEquals(0L, result.totalOutingSeconds)
-        assertEquals("0\uBD84", result.totalOutingDurationText)
+        assertNull(result.totalOutingCount)
+        assertNull(result.totalOutingSeconds)
+        assertNull(result.totalOutingDurationText)
         assertTrue(result.visitedDongNames.isEmpty())
     }
 
@@ -64,5 +64,22 @@ class DayRouteSummaryRemoteMapperTest {
         val result = response.toDayRouteSummary(dateKey = "2026-05-01")
 
         assertEquals("1\uC2DC\uAC04 1\uBD84", result.totalOutingDurationText)
+    }
+
+    @Test
+    fun `toDayRouteSummary derives zero duration text when seconds value is zero`() {
+        val response = DayRouteSummaryResponseDto(
+            outingTime = null,
+            enterHomeTime = null,
+            totalOutingCount = 0,
+            totalOutingSeconds = 0L,
+            totalOutingDurationText = null
+        )
+
+        val result = response.toDayRouteSummary(dateKey = "2026-05-01")
+
+        assertEquals(0, result.totalOutingCount)
+        assertEquals(0L, result.totalOutingSeconds)
+        assertEquals("0\uBD84", result.totalOutingDurationText)
     }
 }

@@ -24,6 +24,7 @@ import com.example.passedpath.feature.summary.presentation.component.DaySummaryM
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryVisitedDongCard
 import com.example.passedpath.feature.summary.presentation.component.DaySummaryVisitedDongCardSkeleton
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryContentUiState
+import com.example.passedpath.feature.summary.presentation.state.DaySummaryNoDataText
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
@@ -86,31 +87,37 @@ fun DaySummaryBottomSheetContent(
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_outing_time),
-                        value = uiState.summary.outingTimeText
+                        value = uiState.summary.outingTimeText,
+                        isNoDataValue = !uiState.summary.hasOutingTimeData
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_enter_home_time),
-                        value = uiState.summary.enterHomeTimeText
+                        value = uiState.summary.enterHomeTimeText,
+                        isNoDataValue = !uiState.summary.hasEnterHomeTimeData
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_total_outing_duration),
-                        value = uiState.summary.totalOutingDurationText
+                        value = uiState.summary.totalOutingDurationText,
+                        isNoDataValue = !uiState.summary.hasTotalOutingDurationData
                     )
                 }
                 item {
                     DaySummaryMetricCard(
                         label = stringResource(R.string.day_summary_total_outing_count),
-                        value = uiState.summary.totalOutingCountText
+                        value = uiState.summary.totalOutingCountText,
+                        isNoDataValue = !uiState.summary.hasTotalOutingCountData
                     )
                 }
                 item {
                     DaySummaryVisitedDongCard(
                         label = stringResource(R.string.day_summary_visited_dong_title),
-                        visitedDongNames = uiState.summary.visitedDongNames
+                        visitedDongNames = uiState.summary.visitedDongNames,
+                        emptyValue = DaySummaryNoDataText,
+                        isEmptyValueNoData = !uiState.summary.hasVisitedDongData
                     )
                 }
             }

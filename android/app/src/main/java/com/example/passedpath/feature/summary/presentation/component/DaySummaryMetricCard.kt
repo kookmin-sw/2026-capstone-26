@@ -37,7 +37,8 @@ import com.example.passedpath.ui.theme.PassedPathTheme
 fun DaySummaryMetricCard(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNoDataValue: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -64,9 +65,9 @@ fun DaySummaryMetricCard(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge,
-                color = Gray900,
+                color = if (isNoDataValue) Gray400 else Gray900,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -126,7 +127,9 @@ fun DaySummaryMetricCardSkeleton(
 fun DaySummaryVisitedDongCard(
     label: String,
     visitedDongNames: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    emptyValue: String = EmptySummaryValue,
+    isEmptyValueNoData: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -147,9 +150,9 @@ fun DaySummaryVisitedDongCard(
 
         if (visitedDongNames.isEmpty()) {
             Text(
-                text = EmptySummaryValue,
+                text = emptyValue,
                 style = MaterialTheme.typography.titleLarge,
-                color = Gray900,
+                color = if (isEmptyValueNoData) Gray400 else Gray900,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
