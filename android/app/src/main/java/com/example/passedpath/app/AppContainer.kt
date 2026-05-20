@@ -33,12 +33,14 @@ import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoute
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoutePlacesApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteSummaryApi
 import com.example.passedpath.feature.care.data.remote.api.CareRelationshipInviteApi
+import com.example.passedpath.feature.care.data.remote.api.ProtectedPersonStatisticsApi
 import com.example.passedpath.feature.care.data.repository.CareDependentLocationStreamRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareGuideRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareRelationshipInviteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.ProtectedPersonStatisticsRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
@@ -46,6 +48,7 @@ import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonStatisticsRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
 import com.example.passedpath.feature.care.domain.usecase.AcceptCareRelationshipInviteUseCase
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
@@ -53,7 +56,10 @@ import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCa
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteListUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonStatisticMetricUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitStatisticsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonWeeklyStatisticsUseCase
 import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
@@ -299,6 +305,10 @@ class AppContainer(
         retrofit.create(CareRelationshipInviteApi::class.java)
     }
 
+    private val protectedPersonStatisticsApi by lazy {
+        retrofit.create(ProtectedPersonStatisticsApi::class.java)
+    }
+
     private val careDependentLocationStreamOkHttpClient by lazy {
         RetrofitClient.provideOkHttpClient(
             sessionStorage = authSessionStorage,
@@ -457,6 +467,12 @@ class AppContainer(
     val protectedPersonVisitedPlaceRepository: ProtectedPersonVisitedPlaceRepository by lazy {
         ProtectedPersonVisitedPlaceRepositoryImpl(
             careDependentDayRoutePlacesApi = careDependentDayRoutePlacesApi
+        )
+    }
+
+    val protectedPersonStatisticsRepository: ProtectedPersonStatisticsRepository by lazy {
+        ProtectedPersonStatisticsRepositoryImpl(
+            protectedPersonStatisticsApi = protectedPersonStatisticsApi
         )
     }
 
@@ -619,6 +635,24 @@ class AppContainer(
     val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase by lazy {
         GetProtectedPersonVisitedPlacesUseCase(
             repository = protectedPersonVisitedPlaceRepository
+        )
+    }
+
+    val getProtectedPersonWeeklyStatisticsUseCase: GetProtectedPersonWeeklyStatisticsUseCase by lazy {
+        GetProtectedPersonWeeklyStatisticsUseCase(
+            repository = protectedPersonStatisticsRepository
+        )
+    }
+
+    val getProtectedPersonVisitStatisticsUseCase: GetProtectedPersonVisitStatisticsUseCase by lazy {
+        GetProtectedPersonVisitStatisticsUseCase(
+            repository = protectedPersonStatisticsRepository
+        )
+    }
+
+    val getProtectedPersonStatisticMetricUseCase: GetProtectedPersonStatisticMetricUseCase by lazy {
+        GetProtectedPersonStatisticMetricUseCase(
+            repository = protectedPersonStatisticsRepository
         )
     }
 

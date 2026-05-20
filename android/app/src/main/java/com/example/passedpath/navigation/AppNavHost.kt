@@ -36,6 +36,9 @@ import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
 import com.example.passedpath.feature.care.presentation.component.CareInviteAcceptDialog
 import com.example.passedpath.feature.care.presentation.screen.CareRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonSummaryDetailRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonVisitStatisticsDetailRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonWeeklySummaryRoute
 import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteHistoryRoute
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModel
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModelFactory
@@ -317,7 +320,80 @@ private fun AppNavigationGraph(
                             )
                         )
                     },
+                    onNavigateToProtectedPersonWeeklySummary = { dependentUserId ->
+                        navController.navigate(
+                            NavRoute.careWeeklySummary(dependentUserId = dependentUserId)
+                        )
+                    },
                     modifier = modifier
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_WEEKLY_SUMMARY_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID)
+                ?: return@composable
+
+            ProtectedPersonWeeklySummaryRoute(
+                dependentUserId = dependentUserId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onMetricClick = { metric ->
+                    navController.navigate(
+                        NavRoute.careSummaryDetail(
+                            dependentUserId = dependentUserId,
+                            metric = metric.routeValue
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.CARE_SUMMARY_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_SUMMARY_DETAIL_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_SUMMARY_DETAIL_METRIC_KEY) {
+                    type = NavType.StringType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_SUMMARY_DETAIL_DEPENDENT_USER_ID)
+                ?: return@composable
+            val metric = SummaryDetailMetric.fromRouteValue(
+                backStackEntry.arguments?.getString(NavRoute.CARE_SUMMARY_DETAIL_METRIC_KEY)
+            )
+
+            if (metric == SummaryDetailMetric.VISITS) {
+                ProtectedPersonVisitStatisticsDetailRoute(
+                    dependentUserId = dependentUserId,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                ProtectedPersonSummaryDetailRoute(
+                    dependentUserId = dependentUserId,
+                    metric = metric,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }
