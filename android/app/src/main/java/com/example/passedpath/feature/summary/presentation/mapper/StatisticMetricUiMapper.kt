@@ -18,7 +18,41 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.roundToLong
+
+internal fun StatisticMetric.toOutingTimeSummaryDetailUiState(): SummaryDetailUiState {
+    val selectedPeriod = period.toSummaryDetailPeriod()
+    val yAxisRange = calculateTimeAxisRange()
+
+    return SummaryDetailUiState(
+        metric = SummaryDetailMetric.OUTING_TIME,
+        selectedPeriod = selectedPeriod,
+        periodOptions = DefaultSummaryDetailPeriodOptions,
+        dateRange = SummaryDetailDateRangeUiState(
+            rangeText = formatMetricDateRange(startDate, endDate),
+            canMovePrevious = false,
+            canMoveNext = false
+        ),
+        chart = SummaryDetailChartUiState(
+            averageLabel = DefaultAverageLabel,
+            averageValueText = average.displayText.normalizedOrNull()
+                ?: average.value?.roundToLong()?.formatTimeText()
+                ?: DaySummaryNoDataText,
+            hasAverageData = average.value != null,
+            yAxisLabels = yAxisRange.toTimeAxisLabels(),
+            bars = bars.mapIndexed { index, bar ->
+                bar.toTimeChartBarUiState(
+                    period = selectedPeriod,
+                    index = index,
+                    lastIndex = bars.lastIndex,
+                    yAxisRange = yAxisRange
+                )
+            }
+        ),
+        highlights = highlight.toTimeHighlightUiStates(selectedPeriod)
+    )
+}
 
 internal fun StatisticMetric.toTotalOutingDurationSummaryDetailUiState(): SummaryDetailUiState {
     val selectedPeriod = period.toSummaryDetailPeriod()
@@ -125,6 +159,31 @@ private fun StatisticMetric.calculateCountAxisMax(): Double {
     return ceil(maxValue).coerceAtLeast(MinimumCountAxisMax)
 }
 
+private fun StatisticMetric.calculateTimeAxisRange(): TimeAxisRange {
+    val values = bars.asSequence()
+        .filter { bar -> bar.hasValue }
+        .mapNotNull { bar -> bar.value }
+        .toList() + listOfNotNull(average.value)
+
+    if (values.isEmpty()) {
+        return TimeAxisRange(minMinutes = DefaultTimeAxisMin, maxMinutes = DefaultTimeAxisMax)
+    }
+
+    val minValue = values.minOrNull()?.coerceAtLeast(0.0) ?: DefaultTimeAxisMin.toDouble()
+    val maxValue = values.maxOrNull()?.coerceAtLeast(0.0) ?: DefaultTimeAxisMax.toDouble()
+    val axisMin = floor(minValue / TimeAxisStepMinutes).toLong() * TimeAxisStepMinutes
+    var axisMax = ceil(maxValue / TimeAxisStepMinutes).toLong() * TimeAxisStepMinutes
+
+    if (axisMax - axisMin < MinimumTimeAxisRangeMinutes) {
+        axisMax = axisMin + MinimumTimeAxisRangeMinutes
+    }
+
+    return TimeAxisRange(
+        minMinutes = axisMin.coerceAtLeast(0L),
+        maxMinutes = axisMax.coerceAtLeast(MinimumTimeAxisRangeMinutes)
+    )
+}
+
 private fun Long.toDurationAxisLabels(): List<String> {
     return listOf(
         formatDurationText(),
@@ -168,6 +227,28 @@ private fun StatisticMetricBarItem.toCountChartBarUiState(
         label = label,
         ratio = if (hasBarData && yAxisMaxCount > 0.0) {
             (safeValue / yAxisMaxCount).toFloat().coerceIn(0f, 1f)
+        } else {
+            0f
+        },
+        hasData = hasBarData,
+        isZeroValue = hasBarData && safeValue == 0.0,
+        showLabel = shouldShowBarLabel(period = period, index = index, lastIndex = lastIndex)
+    )
+}
+
+private fun StatisticMetricBarItem.toTimeChartBarUiState(
+    period: SummaryDetailPeriod,
+    index: Int,
+    lastIndex: Int,
+    yAxisRange: TimeAxisRange
+): SummaryDetailChartBarUiState {
+    val hasBarData = hasValue && value != null
+    val safeValue = value?.coerceAtLeast(0.0) ?: 0.0
+
+    return SummaryDetailChartBarUiState(
+        label = label,
+        ratio = if (hasBarData) {
+            yAxisRange.toRatio(value = safeValue)
         } else {
             0f
         },
@@ -256,6 +337,38 @@ private fun StatisticMetricHighlight.toCountHighlightUiStates(
     )
 }
 
+private fun StatisticMetricHighlight.toTimeHighlightUiStates(
+    period: SummaryDetailPeriod
+): List<SummaryDetailHighlightCardUiState> {
+    if (title.isBlank() && message.isBlank() && current.label.isBlank() && previous.label.isBlank()) {
+        return emptyList()
+    }
+
+    val maxValue = listOfNotNull(current.value, previous.value)
+        .maxOrNull()
+        ?.coerceAtLeast(0.0)
+        ?: 0.0
+
+    return listOf(
+        SummaryDetailHighlightCardUiState(
+            title = title.ifBlank { period.currentHighlightLabel() },
+            description = message,
+            comparisons = listOf(
+                current.toTimeComparisonBarUiState(
+                    fallbackLabel = period.currentHighlightLabel(),
+                    maxValue = maxValue,
+                    isPrimary = true
+                ),
+                previous.toTimeComparisonBarUiState(
+                    fallbackLabel = period.previousHighlightLabel(),
+                    maxValue = maxValue,
+                    isPrimary = false
+                )
+            )
+        )
+    )
+}
+
 private fun HighlightMetricValue.toDurationComparisonBarUiState(
     fallbackLabel: String,
     maxValue: Double,
@@ -286,6 +399,26 @@ private fun HighlightMetricValue.toCountComparisonBarUiState(
         label = label.ifBlank { fallbackLabel },
         valueText = displayText.normalizedOrNull()
             ?: safeValue?.formatCountText()
+            ?: DaySummaryNoDataText,
+        ratio = if (safeValue != null && maxValue > 0.0) {
+            (safeValue / maxValue).toFloat().coerceIn(0f, 1f)
+        } else {
+            0f
+        },
+        isPrimary = isPrimary
+    )
+}
+
+private fun HighlightMetricValue.toTimeComparisonBarUiState(
+    fallbackLabel: String,
+    maxValue: Double,
+    isPrimary: Boolean
+): SummaryDetailComparisonBarUiState {
+    val safeValue = value?.coerceAtLeast(0.0)
+    return SummaryDetailComparisonBarUiState(
+        label = label.ifBlank { fallbackLabel },
+        valueText = displayText.normalizedOrNull()
+            ?: safeValue?.roundToLong()?.formatTimeText()
             ?: DaySummaryNoDataText,
         ratio = if (safeValue != null && maxValue > 0.0) {
             (safeValue / maxValue).toFloat().coerceIn(0f, 1f)
@@ -351,6 +484,27 @@ private fun Double.formatCountAxisLabel(): String {
     }
 }
 
+private fun Long.formatTimeText(): String {
+    val normalizedMinutes = coerceAtLeast(0L)
+    val hours = normalizedMinutes / 60L
+    val minutes = normalizedMinutes % 60L
+    return String.format(Locale.KOREA, "%02d:%02d", hours, minutes)
+}
+
+private fun TimeAxisRange.toTimeAxisLabels(): List<String> {
+    val middle = minMinutes + ((maxMinutes - minMinutes) / 2L)
+    return listOf(
+        maxMinutes.formatTimeText(),
+        middle.formatTimeText(),
+        minMinutes.formatTimeText()
+    )
+}
+
+private fun TimeAxisRange.toRatio(value: Double): Float {
+    val denominator = (maxMinutes - minMinutes).coerceAtLeast(1L).toDouble()
+    return ((value - minMinutes.toDouble()) / denominator).toFloat().coerceIn(0f, 1f)
+}
+
 private fun formatMetricDateRange(
     startDateText: String,
     endDateText: String
@@ -380,6 +534,14 @@ private const val DefaultAverageLabel = "\uD3C9\uADE0"
 private const val ZeroDurationText = "0\uBD84"
 private const val ZeroCountText = "0"
 private const val MinimumCountAxisMax = 1.0
+private const val TimeAxisStepMinutes = 30L
+private const val MinimumTimeAxisRangeMinutes = 60L
+private const val DefaultTimeAxisMin = 540L
+private const val DefaultTimeAxisMax = 600L
+private data class TimeAxisRange(
+    val minMinutes: Long,
+    val maxMinutes: Long
+)
 private val DateRangeStartFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy.MM.dd", Locale.KOREA)
 private val DateRangeEndFormatter: DateTimeFormatter =

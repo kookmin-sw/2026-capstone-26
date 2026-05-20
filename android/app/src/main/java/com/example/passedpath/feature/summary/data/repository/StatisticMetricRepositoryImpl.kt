@@ -9,6 +9,10 @@ import com.example.passedpath.feature.summary.domain.repository.StatisticMetricR
 class StatisticMetricRepositoryImpl(
     private val statisticMetricApi: StatisticMetricApi
 ) : StatisticMetricRepository {
+    override suspend fun getOutingTime(period: StatisticsPeriod): StatisticMetric {
+        return statisticMetricApi.getOutingTime(period = period.apiValue).toStatisticMetric()
+    }
+
     override suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric {
         return statisticMetricApi.getTotalOutingSeconds(period = period.apiValue).toStatisticMetric()
     }

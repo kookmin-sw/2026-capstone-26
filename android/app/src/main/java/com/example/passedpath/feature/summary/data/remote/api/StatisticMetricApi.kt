@@ -5,6 +5,11 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface StatisticMetricApi {
+    @GET("/api/statics/metrics/outing-time")
+    suspend fun getOutingTime(
+        @Query("period") period: String? = null
+    ): StatisticMetricResponseDto
+
     @GET("/api/statics/metrics/total-outing-seconds")
     suspend fun getTotalOutingSeconds(
         @Query("period") period: String? = null

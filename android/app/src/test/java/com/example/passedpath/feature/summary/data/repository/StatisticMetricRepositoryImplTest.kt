@@ -14,6 +14,20 @@ import org.junit.Test
 class StatisticMetricRepositoryImplTest {
 
     @Test
+    fun `getOutingTime passes period query and maps response`() = runTest {
+        val fakeApi = FakeStatisticMetricApi()
+        val repository = StatisticMetricRepositoryImpl(statisticMetricApi = fakeApi)
+
+        val result = repository.getOutingTime(period = StatisticsPeriod.SIX_MONTHS)
+
+        assertEquals("outing-time", fakeApi.requestedEndpoint)
+        assertEquals("SIX_MONTHS", fakeApi.requestedPeriod)
+        assertEquals(StatisticsPeriod.SIX_MONTHS, result.period)
+        assertEquals("2025-12-01", result.startDate)
+        assertEquals("2026-05-20", result.endDate)
+    }
+
+    @Test
     fun `getTotalOutingSeconds passes period query and maps response`() = runTest {
         val fakeApi = FakeStatisticMetricApi()
         val repository = StatisticMetricRepositoryImpl(statisticMetricApi = fakeApi)
@@ -38,6 +52,17 @@ class StatisticMetricRepositoryImplTest {
         assertEquals(StatisticsPeriod.SIX_MONTHS, result.period)
         assertEquals("2025-12-01", result.startDate)
         assertEquals("2026-05-20", result.endDate)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `getOutingTime throws api failures`() = runTest {
+        val repository = StatisticMetricRepositoryImpl(
+            statisticMetricApi = FakeStatisticMetricApi(
+                throwable = RuntimeException("boom")
+            )
+        )
+
+        repository.getOutingTime(period = StatisticsPeriod.WEEK)
     }
 
     @Test(expected = RuntimeException::class)
@@ -67,6 +92,11 @@ class StatisticMetricRepositoryImplTest {
     ) : StatisticMetricApi {
         var requestedEndpoint: String? = null
         var requestedPeriod: String? = null
+
+        override suspend fun getOutingTime(period: String?): StatisticMetricResponseDto {
+            requestedEndpoint = "outing-time"
+            return response(period = period, metricType = "OUTING_TIME")
+        }
 
         override suspend fun getTotalOutingSeconds(period: String?): StatisticMetricResponseDto {
             requestedEndpoint = "total-outing-seconds"

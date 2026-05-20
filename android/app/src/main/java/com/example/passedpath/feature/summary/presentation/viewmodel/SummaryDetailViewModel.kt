@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
+import com.example.passedpath.feature.summary.domain.usecase.GetOutingTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
 import com.example.passedpath.feature.summary.presentation.mapper.toStatisticsPeriod
 import com.example.passedpath.feature.summary.presentation.mapper.toSummaryDetailPeriod
+import com.example.passedpath.feature.summary.presentation.mapper.toOutingTimeSummaryDetailUiState
 import com.example.passedpath.feature.summary.presentation.mapper.toTotalOutingCountSummaryDetailUiState
 import com.example.passedpath.feature.summary.presentation.mapper.toTotalOutingDurationSummaryDetailUiState
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SummaryDetailViewModel(
+    private val getOutingTimeStatisticsUseCase: GetOutingTimeStatisticsUseCase,
     private val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase,
     private val getTotalOutingCountStatisticsUseCase: GetTotalOutingCountStatisticsUseCase
 ) : ViewModel() {
@@ -94,9 +97,12 @@ class SummaryDetailViewModel(
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch {
             _uiState.update { state ->
+                val isChangingMetric = state.metric != metric
                 state.copy(
                     metric = metric,
                     selectedPeriod = period,
+                    content = if (isChangingMetric) null else state.content,
+                    hasLoaded = if (isChangingMetric) false else state.hasLoaded,
                     isLoading = true,
                     errorMessage = null
                 )
@@ -104,13 +110,15 @@ class SummaryDetailViewModel(
 
             runCatching {
                 when (metric) {
+                    SummaryDetailMetric.OUTING_TIME -> {
+                        getOutingTimeStatisticsUseCase(period = period.toStatisticsPeriod())
+                    }
                     SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
                         getTotalOutingSecondsStatisticsUseCase(period = period.toStatisticsPeriod())
                     }
                     SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
                         getTotalOutingCountStatisticsUseCase(period = period.toStatisticsPeriod())
                     }
-                    SummaryDetailMetric.OUTING_TIME,
                     SummaryDetailMetric.ENTER_HOME_TIME,
                     SummaryDetailMetric.VISITS -> error("Unsupported summary detail metric: $metric")
                 }
@@ -120,13 +128,15 @@ class SummaryDetailViewModel(
                         metric = metric,
                         selectedPeriod = statisticMetric.period.toSummaryDetailPeriod(),
                         content = when (metric) {
+                            SummaryDetailMetric.OUTING_TIME -> {
+                                statisticMetric.toOutingTimeSummaryDetailUiState()
+                            }
                             SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
                                 statisticMetric.toTotalOutingDurationSummaryDetailUiState()
                             }
                             SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
                                 statisticMetric.toTotalOutingCountSummaryDetailUiState()
                             }
-                            SummaryDetailMetric.OUTING_TIME,
                             SummaryDetailMetric.ENTER_HOME_TIME,
                             SummaryDetailMetric.VISITS -> null
                         },
@@ -150,7 +160,8 @@ class SummaryDetailViewModel(
 }
 
 private fun SummaryDetailMetric.isApiBackedMetric(): Boolean {
-    return this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
+    return this == SummaryDetailMetric.OUTING_TIME ||
+        this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
         this == SummaryDetailMetric.TOTAL_OUTING_COUNT
 }
 
@@ -161,6 +172,7 @@ class SummaryDetailViewModelFactory(
         if (modelClass.isAssignableFrom(SummaryDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return SummaryDetailViewModel(
+                getOutingTimeStatisticsUseCase = appContainer.getOutingTimeStatisticsUseCase,
                 getTotalOutingSecondsStatisticsUseCase = appContainer.getTotalOutingSecondsStatisticsUseCase,
                 getTotalOutingCountStatisticsUseCase = appContainer.getTotalOutingCountStatisticsUseCase
             ) as T

@@ -317,7 +317,8 @@ private fun SummaryDetailMetric.toEmptySummaryDetailUiState(
 }
 
 private fun SummaryDetailMetric.isApiBackedSummaryDetailMetric(): Boolean {
-    return this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
+    return this == SummaryDetailMetric.OUTING_TIME ||
+        this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
         this == SummaryDetailMetric.TOTAL_OUTING_COUNT
 }
 

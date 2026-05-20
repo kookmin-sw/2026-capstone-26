@@ -5,6 +5,7 @@ import com.example.passedpath.feature.summary.domain.model.StatisticMetric
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricAverage
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricHighlight
 import com.example.passedpath.feature.summary.domain.repository.StatisticMetricRepository
+import com.example.passedpath.feature.summary.domain.usecase.GetOutingTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
@@ -28,6 +29,24 @@ class SummaryDetailViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `loadSummaryDetail requests outing time week and exposes ui state on success`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.loadSummaryDetail(metric = SummaryDetailMetric.OUTING_TIME)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(StatisticsPeriod.WEEK), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.OUTING_TIME), repository.requestedMetrics)
+        assertTrue(state.hasLoaded)
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+        assertEquals(SummaryDetailMetric.OUTING_TIME, state.metric)
+        assertEquals(SummaryDetailMetric.OUTING_TIME, state.content?.metric)
+    }
 
     @Test
     fun `loadTotalOutingDuration requests week and exposes ui state on success`() = runTest {
@@ -63,6 +82,23 @@ class SummaryDetailViewModelTest {
         assertNull(state.errorMessage)
         assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, state.metric)
         assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, state.content?.metric)
+    }
+
+    @Test
+    fun `selectPeriod fetches selected period for outing time`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.selectPeriod(
+            metric = SummaryDetailMetric.OUTING_TIME,
+            period = SummaryDetailPeriod.MONTH
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(StatisticsPeriod.MONTH), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.OUTING_TIME), repository.requestedMetrics)
+        assertEquals(SummaryDetailPeriod.MONTH, viewModel.uiState.value.selectedPeriod)
+        assertEquals(SummaryDetailMetric.OUTING_TIME, viewModel.uiState.value.metric)
     }
 
     @Test
@@ -131,6 +167,7 @@ class SummaryDetailViewModelTest {
         repository: StatisticMetricRepository
     ): SummaryDetailViewModel {
         return SummaryDetailViewModel(
+            getOutingTimeStatisticsUseCase = GetOutingTimeStatisticsUseCase(repository),
             getTotalOutingSecondsStatisticsUseCase = GetTotalOutingSecondsStatisticsUseCase(repository),
             getTotalOutingCountStatisticsUseCase = GetTotalOutingCountStatisticsUseCase(repository)
         )
@@ -142,6 +179,18 @@ private class FakeStatisticMetricRepository(
 ) : StatisticMetricRepository {
     val requestedPeriods = mutableListOf<StatisticsPeriod>()
     val requestedMetrics = mutableListOf<SummaryDetailMetric>()
+
+    override suspend fun getOutingTime(period: StatisticsPeriod): StatisticMetric {
+        requestedMetrics += SummaryDetailMetric.OUTING_TIME
+        requestedPeriods += period
+        failure?.let { throw it }
+        return statisticMetric(
+            metricType = "OUTING_TIME",
+            period = period,
+            value = 552.0,
+            displayText = "09:12"
+        )
+    }
 
     override suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric {
         requestedMetrics += SummaryDetailMetric.TOTAL_OUTING_DURATION
