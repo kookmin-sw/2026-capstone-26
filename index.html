@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="길벗 - 위치 기반 기억 보조 및 보호자 안심 확인 서비스" name="description">
+    <title>길벗</title>
+    <style>
+        :root {
+            --teal: #0f6970;
+            --teal-soft: #1f9ba4;
+            --sky-pale: #e9fbfb;
+            --mint: #c9f3f1;
+            --ink: #173247;
+            --white: #ffffff;
+            --shadow: 0 18px 50px rgba(15, 105, 112, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 10% 38%, rgba(255, 255, 255, 0.7), transparent 24rem),
+            radial-gradient(circle at 86% 28%, rgba(255, 255, 255, 0.66), transparent 20rem),
+            linear-gradient(120deg, #cceff1 0%, #f7ffff 36%, #ffffff 50%, #cbeff1 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 16px 0;
+            background: rgba(255, 255, 255, 0.58);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(15, 105, 112, 0.08);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: min(1120px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--teal);
+            font-weight: 900;
+            letter-spacing: 0;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            color: var(--white);
+            background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+            box-shadow: 0 10px 24px rgba(15, 105, 112, 0.2);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            color: #466172;
+            font-size: 0.94rem;
+            font-weight: 750;
+        }
+
+        .hero {
+            min-height: calc(100vh - 71px);
+            padding: 36px 0 72px;
+            background: transparent;
+        }
+
+        .hero-frame {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        .main-image {
+            display: block;
+            width: auto;
+            max-width: min(100%, 1180px);
+            height: auto;
+            max-height: 54vh;
+            margin: 0 auto;
+            object-fit: contain;
+            object-position: center center;
+            border-radius: 0;
+        }
+
+        @media (max-width: 720px) {
+            .site-header {
+                padding: 12px 0;
+            }
+
+            .nav {
+                width: min(100% - 28px, 1120px);
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                min-height: calc(100vh - 63px);
+                padding: 24px 0 48px;
+            }
+
+            .hero-frame {
+                width: 100%;
+                border-radius: 24px;
+            }
+
+            .main-image {
+                max-width: 100%;
+                max-height: 48vh;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="site-header">
+    <nav aria-label="상단 메뉴" class="nav">
+        <a aria-label="길벗 홈" class="brand" href="./">
+            <span aria-hidden="true" class="brand-mark">길</span>
+            <span>길벗</span>
+        </a>
+        <div aria-label="준비 중인 섹션" class="nav-links">
+            <a href="#service">서비스 소개</a>
+            <a href="#features">주요 기능</a>
+            <a href="#care">보호자 안심</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section aria-label="길벗 메인 이미지" class="hero">
+        <div class="hero-frame">
+            <img alt="길벗 위치 기반 기억 보조 및 보호자 안심 확인 서비스" class="main-image" src="reference/메인3.png">
+        </div>
+    </section>
+</main>
+</body>
+</html>
