@@ -39,6 +39,7 @@ import com.example.passedpath.feature.care.presentation.screen.CareRoute
 import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonSummaryDetailRoute
 import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonVisitStatisticsDetailRoute
 import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonWeeklySummaryRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteDetailRoute
 import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteHistoryRoute
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModel
 import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModelFactory
@@ -430,7 +431,59 @@ private fun AppNavigationGraph(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onRouteDateClick = {},
+                    onRouteDateClick = { dateKey ->
+                        navController.navigate(
+                            NavRoute.careRouteDetail(
+                                dependentUserId = dependentUserId,
+                                dateKey = dateKey,
+                                nickname = nickname
+                            )
+                        )
+                    },
+                    modifier = modifier
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_ROUTE_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_DATE_KEY) {
+                    type = NavType.StringType
+                },
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_NICKNAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_ROUTE_DETAIL_DEPENDENT_USER_ID)
+                ?: return@composable
+            val dateKey = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_DETAIL_DATE_KEY)
+                .orEmpty()
+            val nickname = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_DETAIL_NICKNAME)
+                .orEmpty()
+
+            BottomBarScaffold(
+                navController = navController,
+                selectedRoute = NavRoute.FRIENDS,
+                onBottomBarReselected = onBottomBarReselected
+            ) { modifier ->
+                ProtectedPersonRouteDetailRoute(
+                    dependentUserId = dependentUserId,
+                    dependentNickname = nickname,
+                    dateKey = dateKey,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
                     modifier = modifier
                 )
             }

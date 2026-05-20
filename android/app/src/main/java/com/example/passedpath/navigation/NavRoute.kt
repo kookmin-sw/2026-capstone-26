@@ -24,6 +24,14 @@ object NavRoute {
     const val CARE_ROUTE_HISTORY_WITH_ARGS =
         "$CARE_ROUTE_HISTORY/{$CARE_ROUTE_HISTORY_DEPENDENT_USER_ID}" +
             "?$CARE_ROUTE_HISTORY_NICKNAME={$CARE_ROUTE_HISTORY_NICKNAME}"
+    const val CARE_ROUTE_DETAIL = "care_route_detail"
+    const val CARE_ROUTE_DETAIL_DEPENDENT_USER_ID = "dependentUserId"
+    const val CARE_ROUTE_DETAIL_DATE_KEY = "dateKey"
+    const val CARE_ROUTE_DETAIL_NICKNAME = "nickname"
+    const val CARE_ROUTE_DETAIL_WITH_ARGS =
+        "$CARE_ROUTE_DETAIL/{$CARE_ROUTE_DETAIL_DEPENDENT_USER_ID}/" +
+            "{$CARE_ROUTE_DETAIL_DATE_KEY}?$CARE_ROUTE_DETAIL_NICKNAME=" +
+            "{$CARE_ROUTE_DETAIL_NICKNAME}"
     const val CARE_WEEKLY_SUMMARY = "care_weekly_summary"
     const val CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID = "dependentUserId"
     const val CARE_WEEKLY_SUMMARY_WITH_ARGS =
@@ -49,6 +57,15 @@ object NavRoute {
     ): String {
         return "$CARE_ROUTE_HISTORY/$dependentUserId?" +
             "$CARE_ROUTE_HISTORY_NICKNAME=${Uri.encode(nickname)}"
+    }
+
+    fun careRouteDetail(
+        dependentUserId: Long,
+        dateKey: String,
+        nickname: String
+    ): String {
+        return "$CARE_ROUTE_DETAIL/$dependentUserId/$dateKey?" +
+            "$CARE_ROUTE_DETAIL_NICKNAME=${Uri.encode(nickname)}"
     }
 
     fun careWeeklySummary(dependentUserId: Long): String {
