@@ -4,13 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
 import com.example.passedpath.feature.summary.presentation.mapper.toStatisticsPeriod
 import com.example.passedpath.feature.summary.presentation.mapper.toSummaryDetailPeriod
+import com.example.passedpath.feature.summary.presentation.mapper.toTotalOutingCountSummaryDetailUiState
 import com.example.passedpath.feature.summary.presentation.mapper.toTotalOutingDurationSummaryDetailUiState
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailPeriod
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailViewModelUiState
 import com.example.passedpath.ui.state.ApiFailureMessage
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,34 +23,79 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SummaryDetailViewModel(
-    private val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase
+    private val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase,
+    private val getTotalOutingCountStatisticsUseCase: GetTotalOutingCountStatisticsUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SummaryDetailViewModelUiState())
     val uiState: StateFlow<SummaryDetailViewModelUiState> = _uiState.asStateFlow()
+    private var fetchJob: Job? = null
+
+    fun loadSummaryDetail(
+        metric: SummaryDetailMetric,
+        forceRefresh: Boolean = false
+    ) {
+        if (!metric.isApiBackedMetric()) return
+
+        val currentState = _uiState.value
+        if (currentState.isLoading && currentState.metric == metric) return
+        if (!forceRefresh && currentState.hasLoaded && currentState.metric == metric) return
+
+        fetchSummaryDetail(metric = metric, period = currentState.selectedPeriod)
+    }
 
     fun loadTotalOutingDuration(forceRefresh: Boolean = false) {
-        val currentState = _uiState.value
-        if (currentState.isLoading) return
-        if (!forceRefresh && currentState.hasLoaded) return
-
-        fetchTotalOutingDuration(period = currentState.selectedPeriod)
+        loadSummaryDetail(
+            metric = SummaryDetailMetric.TOTAL_OUTING_DURATION,
+            forceRefresh = forceRefresh
+        )
     }
 
     fun selectPeriod(period: SummaryDetailPeriod) {
-        val currentState = _uiState.value
-        if (currentState.selectedPeriod == period && currentState.hasLoaded) return
-        if (currentState.isLoading && currentState.selectedPeriod == period) return
-
-        _uiState.update { state ->
-            state.copy(selectedPeriod = period)
-        }
-        fetchTotalOutingDuration(period = period)
+        selectPeriod(metric = _uiState.value.metric, period = period)
     }
 
-    private fun fetchTotalOutingDuration(period: SummaryDetailPeriod) {
-        viewModelScope.launch {
+    fun selectPeriod(
+        metric: SummaryDetailMetric,
+        period: SummaryDetailPeriod
+    ) {
+        if (!metric.isApiBackedMetric()) return
+
+        val currentState = _uiState.value
+        if (
+            currentState.metric == metric &&
+            currentState.selectedPeriod == period &&
+            currentState.hasLoaded
+        ) {
+            return
+        }
+        if (
+            currentState.metric == metric &&
+            currentState.isLoading &&
+            currentState.selectedPeriod == period
+        ) {
+            return
+        }
+
+        _uiState.update { state ->
+            state.copy(
+                metric = metric,
+                selectedPeriod = period
+            )
+        }
+        fetchSummaryDetail(metric = metric, period = period)
+    }
+
+    private fun fetchSummaryDetail(
+        metric: SummaryDetailMetric,
+        period: SummaryDetailPeriod
+    ) {
+        if (!metric.isApiBackedMetric()) return
+
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
             _uiState.update { state ->
                 state.copy(
+                    metric = metric,
                     selectedPeriod = period,
                     isLoading = true,
                     errorMessage = null
@@ -53,18 +103,41 @@ class SummaryDetailViewModel(
             }
 
             runCatching {
-                getTotalOutingSecondsStatisticsUseCase(period = period.toStatisticsPeriod())
+                when (metric) {
+                    SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
+                        getTotalOutingSecondsStatisticsUseCase(period = period.toStatisticsPeriod())
+                    }
+                    SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
+                        getTotalOutingCountStatisticsUseCase(period = period.toStatisticsPeriod())
+                    }
+                    SummaryDetailMetric.OUTING_TIME,
+                    SummaryDetailMetric.ENTER_HOME_TIME,
+                    SummaryDetailMetric.VISITS -> error("Unsupported summary detail metric: $metric")
+                }
             }.onSuccess { statisticMetric ->
                 _uiState.update {
                     it.copy(
+                        metric = metric,
                         selectedPeriod = statisticMetric.period.toSummaryDetailPeriod(),
-                        content = statisticMetric.toTotalOutingDurationSummaryDetailUiState(),
+                        content = when (metric) {
+                            SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
+                                statisticMetric.toTotalOutingDurationSummaryDetailUiState()
+                            }
+                            SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
+                                statisticMetric.toTotalOutingCountSummaryDetailUiState()
+                            }
+                            SummaryDetailMetric.OUTING_TIME,
+                            SummaryDetailMetric.ENTER_HOME_TIME,
+                            SummaryDetailMetric.VISITS -> null
+                        },
                         hasLoaded = true,
                         isLoading = false,
                         errorMessage = null
                     )
                 }
             }.onFailure { throwable ->
+                if (throwable is CancellationException) throw throwable
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -76,6 +149,11 @@ class SummaryDetailViewModel(
     }
 }
 
+private fun SummaryDetailMetric.isApiBackedMetric(): Boolean {
+    return this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
+        this == SummaryDetailMetric.TOTAL_OUTING_COUNT
+}
+
 class SummaryDetailViewModelFactory(
     private val appContainer: AppContainer
 ) : ViewModelProvider.Factory {
@@ -83,7 +161,8 @@ class SummaryDetailViewModelFactory(
         if (modelClass.isAssignableFrom(SummaryDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return SummaryDetailViewModel(
-                getTotalOutingSecondsStatisticsUseCase = appContainer.getTotalOutingSecondsStatisticsUseCase
+                getTotalOutingSecondsStatisticsUseCase = appContainer.getTotalOutingSecondsStatisticsUseCase,
+                getTotalOutingCountStatisticsUseCase = appContainer.getTotalOutingCountStatisticsUseCase
             ) as T
         }
 

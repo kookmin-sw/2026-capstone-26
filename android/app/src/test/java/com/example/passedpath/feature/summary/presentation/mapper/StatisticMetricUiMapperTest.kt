@@ -143,6 +143,115 @@ class StatisticMetricUiMapperTest {
         assertEquals(0f, result.highlights.first().comparisons.first().ratio, 0f)
     }
 
+    @Test
+    fun `toTotalOutingCountSummaryDetailUiState maps count chart and highlight`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.WEEK,
+            average = StatisticMetricAverage(
+                value = 1.3,
+                displayText = null,
+                sampleSize = 5
+            ),
+            bars = listOf(
+                countBar("Mon", value = 0.0, hasValue = true),
+                countBar("Tue", value = null, hasValue = false),
+                countBar("Wed", value = 1.0, hasValue = true),
+                countBar("Thu", value = 2.0, hasValue = true),
+                countBar("Fri", value = 0.5, hasValue = true),
+                countBar("Sat", value = null, hasValue = false),
+                countBar("Sun", value = 1.5, hasValue = true)
+            ),
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Compared with previous",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = 0.0,
+                    displayText = null,
+                    sampleSize = 5
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = 2.0,
+                    displayText = "2.0\uD68C",
+                    sampleSize = 5
+                )
+            )
+        )
+
+        val result = metric.toTotalOutingCountSummaryDetailUiState()
+
+        assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, result.metric)
+        assertEquals(SummaryDetailPeriod.WEEK, result.selectedPeriod)
+        assertEquals("2026.05.14 ~ 05.20", result.dateRange.rangeText)
+        assertFalse(result.dateRange.canMovePrevious)
+        assertFalse(result.dateRange.canMoveNext)
+        assertEquals("1.3\uD68C", result.chart.averageValueText)
+        assertTrue(result.chart.hasAverageData)
+        assertEquals(listOf("2", "1", "0"), result.chart.yAxisLabels)
+        assertEquals(7, result.chart.bars.size)
+        assertTrue(result.chart.bars.first().hasData)
+        assertTrue(result.chart.bars.first().isZeroValue)
+        assertEquals(0f, result.chart.bars.first().ratio, 0f)
+        assertFalse(result.chart.bars[1].hasData)
+        assertEquals(1f, result.chart.bars[3].ratio, 0f)
+        assertTrue(result.chart.bars.all { bar -> bar.showLabel })
+        assertEquals("0.0\uD68C", result.highlights.first().comparisons.first().valueText)
+        assertEquals(0f, result.highlights.first().comparisons.first().ratio, 0f)
+        assertEquals("2.0\uD68C", result.highlights.first().comparisons.last().valueText)
+        assertEquals(1f, result.highlights.first().comparisons.last().ratio, 0f)
+    }
+
+    @Test
+    fun `toTotalOutingCountSummaryDetailUiState maps missing average and month labels`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.MONTH,
+            average = StatisticMetricAverage(
+                value = null,
+                displayText = null,
+                sampleSize = 0
+            ),
+            bars = (1..30).map { day ->
+                countBar(
+                    label = day.toString(),
+                    value = null,
+                    hasValue = false
+                )
+            },
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Not enough data",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                )
+            )
+        )
+
+        val result = metric.toTotalOutingCountSummaryDetailUiState()
+
+        assertEquals(DaySummaryNoDataText, result.chart.averageValueText)
+        assertFalse(result.chart.hasAverageData)
+        assertEquals(listOf("1", "0.5", "0"), result.chart.yAxisLabels)
+        assertTrue(result.chart.bars.none { bar -> bar.hasData })
+        assertEquals(
+            listOf(0, 7, 14, 21, 29),
+            result.chart.bars.mapIndexedNotNull { index, bar ->
+                if (bar.showLabel) index else null
+            }
+        )
+        assertEquals(DaySummaryNoDataText, result.highlights.first().comparisons.first().valueText)
+        assertEquals(0f, result.highlights.first().comparisons.first().ratio, 0f)
+    }
+
     private fun statisticMetric(
         period: StatisticsPeriod,
         average: StatisticMetricAverage,
@@ -176,6 +285,23 @@ class StatisticMetricUiMapperTest {
             endDate = "2026-05-20",
             value = value,
             displayText = value?.toLong()?.toString(),
+            hasValue = hasValue,
+            sampleSize = if (hasValue) 1 else 0
+        )
+    }
+
+    private fun countBar(
+        label: String,
+        value: Double?,
+        hasValue: Boolean,
+        displayText: String? = null
+    ): StatisticMetricBarItem {
+        return StatisticMetricBarItem(
+            label = label,
+            startDate = "2026-05-20",
+            endDate = "2026-05-20",
+            value = value,
+            displayText = displayText,
             hasValue = hasValue,
             sampleSize = if (hasValue) 1 else 0
         )

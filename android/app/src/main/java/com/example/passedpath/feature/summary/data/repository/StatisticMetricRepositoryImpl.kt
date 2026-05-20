@@ -12,4 +12,8 @@ class StatisticMetricRepositoryImpl(
     override suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric {
         return statisticMetricApi.getTotalOutingSeconds(period = period.apiValue).toStatisticMetric()
     }
+
+    override suspend fun getTotalOutingCount(period: StatisticsPeriod): StatisticMetric {
+        return statisticMetricApi.getTotalOutingCount(period = period.apiValue).toStatisticMetric()
+    }
 }

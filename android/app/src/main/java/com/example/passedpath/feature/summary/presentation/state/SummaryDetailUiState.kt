@@ -83,6 +83,7 @@ data class SummaryDetailComparisonBarUiState(
 )
 
 data class SummaryDetailViewModelUiState(
+    val metric: SummaryDetailMetric = SummaryDetailMetric.TOTAL_OUTING_DURATION,
     val selectedPeriod: SummaryDetailPeriod = SummaryDetailPeriod.WEEK,
     val content: SummaryDetailUiState? = null,
     val hasLoaded: Boolean = false,

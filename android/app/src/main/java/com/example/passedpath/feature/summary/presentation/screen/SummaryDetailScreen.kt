@@ -59,8 +59,9 @@ fun SummaryDetailRoute(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (metric == SummaryDetailMetric.TOTAL_OUTING_DURATION) {
-        TotalOutingDurationSummaryDetailRoute(
+    if (metric.isApiBackedSummaryDetailMetric()) {
+        ApiBackedSummaryDetailRoute(
+            metric = metric,
             dateKey = dateKey,
             onBackClick = onBackClick,
             modifier = modifier
@@ -107,7 +108,8 @@ fun SummaryDetailRoute(
 }
 
 @Composable
-private fun TotalOutingDurationSummaryDetailRoute(
+private fun ApiBackedSummaryDetailRoute(
+    metric: SummaryDetailMetric,
     dateKey: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -123,11 +125,12 @@ private fun TotalOutingDurationSummaryDetailRoute(
         parseSummaryDetailDateOrToday(dateKey)
     }
     val contentState = viewModelState.content
+        ?.takeIf { content -> content.metric == metric }
         ?.copy(
             selectedPeriod = viewModelState.selectedPeriod,
             periodOptions = periodOptions
         )
-        ?: SummaryDetailMetric.TOTAL_OUTING_DURATION.toEmptySummaryDetailUiState(
+        ?: metric.toEmptySummaryDetailUiState(
             selectedPeriod = viewModelState.selectedPeriod,
             periodOptions = periodOptions,
             anchorDate = anchorDate,
@@ -140,20 +143,20 @@ private fun TotalOutingDurationSummaryDetailRoute(
             )
         )
 
-    LaunchedEffect(viewModel) {
-        viewModel.loadTotalOutingDuration()
+    LaunchedEffect(viewModel, metric) {
+        viewModel.loadSummaryDetail(metric = metric)
     }
 
     SummaryDetailScreen(
-        title = stringResource(SummaryDetailMetric.TOTAL_OUTING_DURATION.titleResId()),
+        title = stringResource(metric.titleResId()),
         uiState = contentState,
         highlightTitle = stringResource(R.string.summary_detail_highlight),
         emptyHighlightText = emptyHighlightText,
         isLoading = viewModelState.isLoading && !viewModelState.hasLoaded,
         errorMessage = viewModelState.errorMessage,
-        onRetryClick = { viewModel.loadTotalOutingDuration(forceRefresh = true) },
+        onRetryClick = { viewModel.loadSummaryDetail(metric = metric, forceRefresh = true) },
         onBackClick = onBackClick,
-        onPeriodSelected = viewModel::selectPeriod,
+        onPeriodSelected = { period -> viewModel.selectPeriod(metric = metric, period = period) },
         onPreviousRangeClick = {},
         onNextRangeClick = {},
         modifier = modifier
@@ -311,6 +314,11 @@ private fun SummaryDetailMetric.toEmptySummaryDetailUiState(
         ),
         highlights = emptyList()
     )
+}
+
+private fun SummaryDetailMetric.isApiBackedSummaryDetailMetric(): Boolean {
+    return this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
+        this == SummaryDetailMetric.TOTAL_OUTING_COUNT
 }
 
 @StringRes

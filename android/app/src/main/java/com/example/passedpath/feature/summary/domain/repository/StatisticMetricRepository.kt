@@ -5,4 +5,6 @@ import com.example.passedpath.feature.summary.domain.model.StatisticsPeriod
 
 interface StatisticMetricRepository {
     suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric
+
+    suspend fun getTotalOutingCount(period: StatisticsPeriod): StatisticMetric
 }

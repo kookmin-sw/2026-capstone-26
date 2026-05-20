@@ -5,6 +5,7 @@ import com.example.passedpath.feature.summary.domain.model.StatisticMetric
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricAverage
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricHighlight
 import com.example.passedpath.feature.summary.domain.repository.StatisticMetricRepository
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailPeriod
@@ -38,6 +39,7 @@ class SummaryDetailViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf(StatisticsPeriod.WEEK), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.TOTAL_OUTING_DURATION), repository.requestedMetrics)
         assertTrue(state.hasLoaded)
         assertFalse(state.isLoading)
         assertNull(state.errorMessage)
@@ -46,7 +48,25 @@ class SummaryDetailViewModelTest {
     }
 
     @Test
-    fun `selectPeriod fetches selected period`() = runTest {
+    fun `loadSummaryDetail requests total outing count week and exposes ui state on success`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.loadSummaryDetail(metric = SummaryDetailMetric.TOTAL_OUTING_COUNT)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(StatisticsPeriod.WEEK), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.TOTAL_OUTING_COUNT), repository.requestedMetrics)
+        assertTrue(state.hasLoaded)
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+        assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, state.metric)
+        assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, state.content?.metric)
+    }
+
+    @Test
+    fun `selectPeriod fetches selected period for total outing duration`() = runTest {
         val repository = FakeStatisticMetricRepository()
         val viewModel = createViewModel(repository)
 
@@ -54,7 +74,25 @@ class SummaryDetailViewModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf(StatisticsPeriod.MONTH), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.TOTAL_OUTING_DURATION), repository.requestedMetrics)
         assertEquals(SummaryDetailPeriod.MONTH, viewModel.uiState.value.selectedPeriod)
+    }
+
+    @Test
+    fun `selectPeriod fetches selected period for total outing count`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.selectPeriod(
+            metric = SummaryDetailMetric.TOTAL_OUTING_COUNT,
+            period = SummaryDetailPeriod.MONTH
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(StatisticsPeriod.MONTH), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.TOTAL_OUTING_COUNT), repository.requestedMetrics)
+        assertEquals(SummaryDetailPeriod.MONTH, viewModel.uiState.value.selectedPeriod)
+        assertEquals(SummaryDetailMetric.TOTAL_OUTING_COUNT, viewModel.uiState.value.metric)
     }
 
     @Test
@@ -93,7 +131,8 @@ class SummaryDetailViewModelTest {
         repository: StatisticMetricRepository
     ): SummaryDetailViewModel {
         return SummaryDetailViewModel(
-            getTotalOutingSecondsStatisticsUseCase = GetTotalOutingSecondsStatisticsUseCase(repository)
+            getTotalOutingSecondsStatisticsUseCase = GetTotalOutingSecondsStatisticsUseCase(repository),
+            getTotalOutingCountStatisticsUseCase = GetTotalOutingCountStatisticsUseCase(repository)
         )
     }
 }
@@ -102,18 +141,46 @@ private class FakeStatisticMetricRepository(
     private val failure: Throwable? = null
 ) : StatisticMetricRepository {
     val requestedPeriods = mutableListOf<StatisticsPeriod>()
+    val requestedMetrics = mutableListOf<SummaryDetailMetric>()
 
     override suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric {
+        requestedMetrics += SummaryDetailMetric.TOTAL_OUTING_DURATION
         requestedPeriods += period
         failure?.let { throw it }
-        return StatisticMetric(
+        return statisticMetric(
             metricType = "TOTAL_OUTING_SECONDS",
+            period = period,
+            value = 3600.0,
+            displayText = "1h"
+        )
+    }
+
+    override suspend fun getTotalOutingCount(period: StatisticsPeriod): StatisticMetric {
+        requestedMetrics += SummaryDetailMetric.TOTAL_OUTING_COUNT
+        requestedPeriods += period
+        failure?.let { throw it }
+        return statisticMetric(
+            metricType = "TOTAL_OUTING_COUNT",
+            period = period,
+            value = 2.0,
+            displayText = "2.0\uD68C"
+        )
+    }
+
+    private fun statisticMetric(
+        metricType: String,
+        period: StatisticsPeriod,
+        value: Double,
+        displayText: String
+    ): StatisticMetric {
+        return StatisticMetric(
+            metricType = metricType,
             period = period,
             startDate = "2026-05-14",
             endDate = "2026-05-20",
             average = StatisticMetricAverage(
-                value = 3600.0,
-                displayText = "1h",
+                value = value,
+                displayText = displayText,
                 sampleSize = 1
             ),
             bars = listOf(
@@ -121,8 +188,8 @@ private class FakeStatisticMetricRepository(
                     label = "Mon",
                     startDate = "2026-05-20",
                     endDate = "2026-05-20",
-                    value = 3600.0,
-                    displayText = "1h",
+                    value = value,
+                    displayText = displayText,
                     hasValue = true,
                     sampleSize = 1
                 )
@@ -130,7 +197,7 @@ private class FakeStatisticMetricRepository(
             highlight = StatisticMetricHighlight(
                 title = "Highlight",
                 message = "Message",
-                current = HighlightMetricValue("Current", 3600.0, "1h", 1),
+                current = HighlightMetricValue("Current", value, displayText, 1),
                 previous = HighlightMetricValue("Previous", null, null, 0)
             )
         )

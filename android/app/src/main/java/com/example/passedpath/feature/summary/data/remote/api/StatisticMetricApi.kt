@@ -9,4 +9,9 @@ interface StatisticMetricApi {
     suspend fun getTotalOutingSeconds(
         @Query("period") period: String? = null
     ): StatisticMetricResponseDto
+
+    @GET("/api/statics/metrics/total-outing-count")
+    suspend fun getTotalOutingCount(
+        @Query("period") period: String? = null
+    ): StatisticMetricResponseDto
 }

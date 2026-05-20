@@ -26,6 +26,20 @@ class StatisticMetricRepositoryImplTest {
         assertEquals("2026-05-20", result.endDate)
     }
 
+    @Test
+    fun `getTotalOutingCount passes period query and maps response`() = runTest {
+        val fakeApi = FakeStatisticMetricApi()
+        val repository = StatisticMetricRepositoryImpl(statisticMetricApi = fakeApi)
+
+        val result = repository.getTotalOutingCount(period = StatisticsPeriod.SIX_MONTHS)
+
+        assertEquals("total-outing-count", fakeApi.requestedEndpoint)
+        assertEquals("SIX_MONTHS", fakeApi.requestedPeriod)
+        assertEquals(StatisticsPeriod.SIX_MONTHS, result.period)
+        assertEquals("2025-12-01", result.startDate)
+        assertEquals("2026-05-20", result.endDate)
+    }
+
     @Test(expected = RuntimeException::class)
     fun `getTotalOutingSeconds throws api failures`() = runTest {
         val repository = StatisticMetricRepositoryImpl(
@@ -37,16 +51,41 @@ class StatisticMetricRepositoryImplTest {
         repository.getTotalOutingSeconds(period = StatisticsPeriod.WEEK)
     }
 
+    @Test(expected = RuntimeException::class)
+    fun `getTotalOutingCount throws api failures`() = runTest {
+        val repository = StatisticMetricRepositoryImpl(
+            statisticMetricApi = FakeStatisticMetricApi(
+                throwable = RuntimeException("boom")
+            )
+        )
+
+        repository.getTotalOutingCount(period = StatisticsPeriod.WEEK)
+    }
+
     private class FakeStatisticMetricApi(
         private val throwable: Throwable? = null
     ) : StatisticMetricApi {
+        var requestedEndpoint: String? = null
         var requestedPeriod: String? = null
 
         override suspend fun getTotalOutingSeconds(period: String?): StatisticMetricResponseDto {
+            requestedEndpoint = "total-outing-seconds"
+            return response(period = period, metricType = "TOTAL_OUTING_SECONDS")
+        }
+
+        override suspend fun getTotalOutingCount(period: String?): StatisticMetricResponseDto {
+            requestedEndpoint = "total-outing-count"
+            return response(period = period, metricType = "TOTAL_OUTING_COUNT")
+        }
+
+        private fun response(
+            period: String?,
+            metricType: String
+        ): StatisticMetricResponseDto {
             requestedPeriod = period
             throwable?.let { throw it }
             return StatisticMetricResponseDto(
-                metricType = "TOTAL_OUTING_SECONDS",
+                metricType = metricType,
                 period = period,
                 startDate = "2025-12-01",
                 endDate = "2026-05-20",

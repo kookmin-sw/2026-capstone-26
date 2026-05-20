@@ -120,6 +120,7 @@ import com.example.passedpath.feature.summary.domain.repository.StatisticMetricR
 import com.example.passedpath.feature.summary.domain.repository.VisitStatisticsRepository
 import com.example.passedpath.feature.summary.domain.repository.WeeklyStatisticsRepository
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetVisitStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetWeeklyStatisticsUseCase
@@ -511,6 +512,12 @@ class AppContainer(
 
     val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase by lazy {
         GetTotalOutingSecondsStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
+    }
+
+    val getTotalOutingCountStatisticsUseCase: GetTotalOutingCountStatisticsUseCase by lazy {
+        GetTotalOutingCountStatisticsUseCase(
             statisticMetricRepository = statisticMetricRepository
         )
     }
