@@ -123,7 +123,8 @@ fun DaySummaryBottomSheetContent(
                         label = stringResource(R.string.day_summary_visited_dong_title),
                         visitedDongNames = uiState.summary.visitedDongNames,
                         emptyValue = DaySummaryNoDataText,
-                        isEmptyValueNoData = !uiState.summary.hasVisitedDongData
+                        isEmptyValueNoData = !uiState.summary.hasVisitedDongData,
+                        onClick = { onMetricClick(SummaryDetailMetric.VISITS) }
                     )
                 }
             }

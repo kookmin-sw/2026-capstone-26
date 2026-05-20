@@ -128,13 +128,18 @@ private fun Modifier.weeklySummaryCardClickable(
 @Composable
 fun WeeklySummaryVisitedRegionsCard(
     card: WeeklySummaryVisitedRegionsCardUiState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardShape = RoundedCornerShape(16.dp)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(WeeklySummaryCardHeight)
-            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .clip(cardShape)
+            .background(color = Gray50, shape = cardShape)
+            .weeklySummaryCardClickable(onClick)
             .padding(horizontal = WeeklySummaryCardHorizontalPadding)
     ) {
         Column(

@@ -7,20 +7,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passedpath.R
+import com.example.passedpath.app.appContainer
 import com.example.passedpath.feature.summary.presentation.component.SummaryDetailChart
 import com.example.passedpath.feature.summary.presentation.component.SummaryDetailDateRangeBar
 import com.example.passedpath.feature.summary.presentation.component.SummaryDetailHighlightSection
@@ -34,6 +41,11 @@ import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMe
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailPeriod
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailPeriodOptionUiState
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailUiState
+import com.example.passedpath.feature.summary.presentation.viewmodel.SummaryDetailViewModel
+import com.example.passedpath.feature.summary.presentation.viewmodel.SummaryDetailViewModelFactory
+import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
+import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
+import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 import java.time.LocalDate
@@ -47,6 +59,15 @@ fun SummaryDetailRoute(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (metric == SummaryDetailMetric.TOTAL_OUTING_DURATION) {
+        TotalOutingDurationSummaryDetailRoute(
+            dateKey = dateKey,
+            onBackClick = onBackClick,
+            modifier = modifier
+        )
+        return
+    }
+
     var selectedPeriod by rememberSaveable(metric) {
         mutableStateOf(SummaryDetailPeriod.WEEK)
     }
@@ -86,11 +107,68 @@ fun SummaryDetailRoute(
 }
 
 @Composable
+private fun TotalOutingDurationSummaryDetailRoute(
+    dateKey: String,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SummaryDetailViewModel = viewModel(
+        factory = SummaryDetailViewModelFactory(LocalContext.current.appContainer)
+    )
+) {
+    val viewModelState by viewModel.uiState.collectAsStateWithLifecycle()
+    val periodOptions = rememberSummaryDetailPeriodOptions()
+    val averageLabel = stringResource(R.string.summary_detail_average)
+    val emptyHighlightText = stringResource(R.string.summary_detail_highlight_empty)
+    val anchorDate = remember(dateKey) {
+        parseSummaryDetailDateOrToday(dateKey)
+    }
+    val contentState = viewModelState.content
+        ?.copy(
+            selectedPeriod = viewModelState.selectedPeriod,
+            periodOptions = periodOptions
+        )
+        ?: SummaryDetailMetric.TOTAL_OUTING_DURATION.toEmptySummaryDetailUiState(
+            selectedPeriod = viewModelState.selectedPeriod,
+            periodOptions = periodOptions,
+            anchorDate = anchorDate,
+            averageLabel = averageLabel
+        ).copy(
+            dateRange = SummaryDetailDateRangeUiState(
+                rangeText = anchorDate.toRangeText(viewModelState.selectedPeriod),
+                canMovePrevious = false,
+                canMoveNext = false
+            )
+        )
+
+    LaunchedEffect(viewModel) {
+        viewModel.loadTotalOutingDuration()
+    }
+
+    SummaryDetailScreen(
+        title = stringResource(SummaryDetailMetric.TOTAL_OUTING_DURATION.titleResId()),
+        uiState = contentState,
+        highlightTitle = stringResource(R.string.summary_detail_highlight),
+        emptyHighlightText = emptyHighlightText,
+        isLoading = viewModelState.isLoading && !viewModelState.hasLoaded,
+        errorMessage = viewModelState.errorMessage,
+        onRetryClick = { viewModel.loadTotalOutingDuration(forceRefresh = true) },
+        onBackClick = onBackClick,
+        onPeriodSelected = viewModel::selectPeriod,
+        onPreviousRangeClick = {},
+        onNextRangeClick = {},
+        modifier = modifier
+    )
+}
+
+@Composable
 internal fun SummaryDetailScreen(
     title: String,
     uiState: SummaryDetailUiState,
     highlightTitle: String,
     emptyHighlightText: String,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetryClick: () -> Unit = {},
     onBackClick: () -> Unit,
     onPeriodSelected: (SummaryDetailPeriod) -> Unit,
     onPreviousRangeClick: () -> Unit,
@@ -132,7 +210,21 @@ internal fun SummaryDetailScreen(
                         onPreviousClick = onPreviousRangeClick,
                         onNextClick = onNextRangeClick
                     )
-                    SummaryDetailChart(chart = uiState.chart)
+                    if (isLoading) {
+                        SummaryDetailChartSkeleton()
+                    } else {
+                        SummaryDetailChart(chart = uiState.chart)
+                    }
+                }
+            }
+
+            if (errorMessage != null) {
+                item(key = "summary_detail_error") {
+                    NetworkFailureBanner(
+                        retryText = stringResource(R.string.route_retry),
+                        onRetryClick = onRetryClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
 
@@ -144,6 +236,33 @@ internal fun SummaryDetailScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SummaryDetailChartSkeleton(
+    modifier: Modifier = Modifier
+) {
+    val skeletonBrush = rememberBaseSkeletonBrush()
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        BaseSkeletonBlock(
+            brush = skeletonBrush,
+            modifier = Modifier
+                .fillMaxWidth(0.34f)
+                .height(36.dp),
+            shape = RoundedCornerShape(10.dp)
+        )
+        BaseSkeletonBlock(
+            brush = skeletonBrush,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
@@ -201,6 +320,7 @@ private fun SummaryDetailMetric.titleResId(): Int {
         SummaryDetailMetric.ENTER_HOME_TIME -> R.string.day_summary_enter_home_time
         SummaryDetailMetric.TOTAL_OUTING_DURATION -> R.string.day_summary_total_outing_duration
         SummaryDetailMetric.TOTAL_OUTING_COUNT -> R.string.day_summary_total_outing_count
+        SummaryDetailMetric.VISITS -> R.string.day_summary_visited_dong_title
     }
 }
 
@@ -210,6 +330,7 @@ private fun SummaryDetailMetric.yAxisLabels(): List<String> {
         SummaryDetailMetric.ENTER_HOME_TIME -> listOf("10:00", "09:30", "09:00")
         SummaryDetailMetric.TOTAL_OUTING_DURATION -> listOf("8h", "4h", "0h")
         SummaryDetailMetric.TOTAL_OUTING_COUNT -> listOf("3", "1.5", "0")
+        SummaryDetailMetric.VISITS -> emptyList()
     }
 }
 

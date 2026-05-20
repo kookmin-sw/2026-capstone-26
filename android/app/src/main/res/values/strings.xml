@@ -171,6 +171,11 @@
     <string name="summary_detail_average">평균</string>
     <string name="summary_detail_highlight">하이라이트</string>
     <string name="summary_detail_highlight_empty">표시할 하이라이트가 없어요</string>
+    <string name="visit_statistics_regions_title">방문 동네 분포</string>
+    <string name="visit_statistics_places_title">자주 방문한 장소</string>
+    <string name="visit_statistics_total_count">총 %1$s</string>
+    <string name="visit_statistics_regions_empty">방문한 동네 기록이 없어요</string>
+    <string name="visit_statistics_places_empty">방문한 장소 기록이 없어요</string>
     <string name="place_sheet_title">방문한 장소</string>
     <string name="place_sheet_placeholder_body">이 날짜에 저장한 장소 목록이 이곳에 표시됩니다. 다음 단계에서 장소 추가와 편집을 연결합니다.</string>
     <string name="place_sheet_selected_date">선택한 날짜 %1$s</string>

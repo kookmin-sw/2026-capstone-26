@@ -146,12 +146,17 @@ fun DaySummaryVisitedDongCard(
     visitedDongNames: List<String>,
     modifier: Modifier = Modifier,
     emptyValue: String = EmptySummaryValue,
-    isEmptyValueNoData: Boolean = false
+    isEmptyValueNoData: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardShape = RoundedCornerShape(16.dp)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = Gray50, shape = RoundedCornerShape(16.dp))
+            .clip(cardShape)
+            .background(color = Gray50, shape = cardShape)
+            .summaryMetricClickable(onClick)
             .padding(horizontal = 20.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {

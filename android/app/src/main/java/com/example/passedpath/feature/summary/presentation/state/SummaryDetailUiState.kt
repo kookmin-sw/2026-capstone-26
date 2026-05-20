@@ -6,7 +6,8 @@ enum class SummaryDetailMetric(
     OUTING_TIME("outing_time"),
     ENTER_HOME_TIME("enter_home_time"),
     TOTAL_OUTING_DURATION("total_outing_duration"),
-    TOTAL_OUTING_COUNT("total_outing_count");
+    TOTAL_OUTING_COUNT("total_outing_count"),
+    VISITS("visits");
 
     companion object {
         fun fromRouteValue(routeValue: String?): SummaryDetailMetric {
@@ -63,7 +64,9 @@ data class SummaryDetailChartUiState(
 data class SummaryDetailChartBarUiState(
     val label: String,
     val ratio: Float,
-    val hasData: Boolean = true
+    val hasData: Boolean = true,
+    val isZeroValue: Boolean = false,
+    val showLabel: Boolean = true
 )
 
 data class SummaryDetailHighlightCardUiState(
@@ -77,4 +80,12 @@ data class SummaryDetailComparisonBarUiState(
     val valueText: String,
     val ratio: Float,
     val isPrimary: Boolean
+)
+
+data class SummaryDetailViewModelUiState(
+    val selectedPeriod: SummaryDetailPeriod = SummaryDetailPeriod.WEEK,
+    val content: SummaryDetailUiState? = null,
+    val hasLoaded: Boolean = false,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
 )

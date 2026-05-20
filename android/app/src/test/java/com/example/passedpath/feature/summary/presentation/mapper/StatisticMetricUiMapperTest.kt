@@ -1,0 +1,183 @@
+package com.example.passedpath.feature.summary.presentation.mapper
+
+import com.example.passedpath.feature.summary.domain.model.HighlightMetricValue
+import com.example.passedpath.feature.summary.domain.model.StatisticMetric
+import com.example.passedpath.feature.summary.domain.model.StatisticMetricAverage
+import com.example.passedpath.feature.summary.domain.model.StatisticMetricBarItem
+import com.example.passedpath.feature.summary.domain.model.StatisticMetricHighlight
+import com.example.passedpath.feature.summary.domain.model.StatisticsPeriod
+import com.example.passedpath.feature.summary.presentation.state.DaySummaryNoDataText
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailPeriod
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class StatisticMetricUiMapperTest {
+
+    @Test
+    fun `toTotalOutingDurationSummaryDetailUiState maps duration chart and highlight`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.WEEK,
+            average = StatisticMetricAverage(
+                value = 5400.0,
+                displayText = "server average",
+                sampleSize = 5
+            ),
+            bars = listOf(
+                bar("Mon", value = 0.0, hasValue = true),
+                bar("Tue", value = null, hasValue = false),
+                bar("Wed", value = 7200.0, hasValue = true),
+                bar("Thu", value = 3600.0, hasValue = true),
+                bar("Fri", value = 1800.0, hasValue = true),
+                bar("Sat", value = null, hasValue = false),
+                bar("Sun", value = 60.0, hasValue = true)
+            ),
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Compared with previous",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = 3600.0,
+                    displayText = "1h",
+                    sampleSize = 5
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = 7200.0,
+                    displayText = "2h",
+                    sampleSize = 5
+                )
+            )
+        )
+
+        val result = metric.toTotalOutingDurationSummaryDetailUiState()
+
+        assertEquals(SummaryDetailMetric.TOTAL_OUTING_DURATION, result.metric)
+        assertEquals(SummaryDetailPeriod.WEEK, result.selectedPeriod)
+        assertEquals("2026.05.14 ~ 05.20", result.dateRange.rangeText)
+        assertFalse(result.dateRange.canMovePrevious)
+        assertFalse(result.dateRange.canMoveNext)
+        assertEquals("server average", result.chart.averageValueText)
+        assertTrue(result.chart.hasAverageData)
+        assertEquals(listOf("2\uC2DC\uAC04", "1\uC2DC\uAC04", "0\uBD84"), result.chart.yAxisLabels)
+        assertEquals(7, result.chart.bars.size)
+        assertTrue(result.chart.bars.first().hasData)
+        assertTrue(result.chart.bars.first().isZeroValue)
+        assertEquals(0f, result.chart.bars.first().ratio, 0f)
+        assertFalse(result.chart.bars[1].hasData)
+        assertEquals(1f, result.chart.bars[2].ratio, 0f)
+        assertTrue(result.chart.bars.all { bar -> bar.showLabel })
+        assertEquals("Highlight", result.highlights.first().title)
+        assertEquals("Compared with previous", result.highlights.first().description)
+        assertEquals(0.5f, result.highlights.first().comparisons.first().ratio, 0f)
+        assertEquals(1f, result.highlights.first().comparisons.last().ratio, 0f)
+    }
+
+    @Test
+    fun `toTotalOutingDurationSummaryDetailUiState keeps month bars and thins labels`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.MONTH,
+            average = StatisticMetricAverage(
+                value = 1800.0,
+                displayText = null,
+                sampleSize = 3
+            ),
+            bars = (1..30).map { day ->
+                bar(day.toString(), value = 60.0 * day, hasValue = true)
+            }
+        )
+
+        val result = metric.toTotalOutingDurationSummaryDetailUiState()
+
+        assertEquals(SummaryDetailPeriod.MONTH, result.selectedPeriod)
+        assertEquals(30, result.chart.bars.size)
+        assertEquals(
+            listOf(0, 7, 14, 21, 29),
+            result.chart.bars.mapIndexedNotNull { index, bar ->
+                if (bar.showLabel) index else null
+            }
+        )
+        assertEquals("30\uBD84", result.chart.averageValueText)
+    }
+
+    @Test
+    fun `toTotalOutingDurationSummaryDetailUiState maps missing average and bars as no data`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.YEAR,
+            average = StatisticMetricAverage(
+                value = null,
+                displayText = null,
+                sampleSize = 0
+            ),
+            bars = listOf(
+                bar("Jan", value = null, hasValue = false),
+                bar("Feb", value = null, hasValue = false)
+            ),
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Not enough data",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                )
+            )
+        )
+
+        val result = metric.toTotalOutingDurationSummaryDetailUiState()
+
+        assertEquals(DaySummaryNoDataText, result.chart.averageValueText)
+        assertFalse(result.chart.hasAverageData)
+        assertEquals(listOf("1\uC2DC\uAC04", "30\uBD84", "0\uBD84"), result.chart.yAxisLabels)
+        assertTrue(result.chart.bars.none { bar -> bar.hasData })
+        assertEquals(DaySummaryNoDataText, result.highlights.first().comparisons.first().valueText)
+        assertEquals(0f, result.highlights.first().comparisons.first().ratio, 0f)
+    }
+
+    private fun statisticMetric(
+        period: StatisticsPeriod,
+        average: StatisticMetricAverage,
+        bars: List<StatisticMetricBarItem>,
+        highlight: StatisticMetricHighlight = StatisticMetricHighlight(
+            title = "Highlight",
+            message = "Message",
+            current = HighlightMetricValue("Current", 0.0, "0m", 1),
+            previous = HighlightMetricValue("Previous", 0.0, "0m", 1)
+        )
+    ): StatisticMetric {
+        return StatisticMetric(
+            metricType = "TOTAL_OUTING_SECONDS",
+            period = period,
+            startDate = "2026-05-14",
+            endDate = "2026-05-20",
+            average = average,
+            bars = bars,
+            highlight = highlight
+        )
+    }
+
+    private fun bar(
+        label: String,
+        value: Double?,
+        hasValue: Boolean
+    ): StatisticMetricBarItem {
+        return StatisticMetricBarItem(
+            label = label,
+            startDate = "2026-05-20",
+            endDate = "2026-05-20",
+            value = value,
+            displayText = value?.toLong()?.toString(),
+            hasValue = hasValue,
+            sampleSize = if (hasValue) 1 else 0
+        )
+    }
+}

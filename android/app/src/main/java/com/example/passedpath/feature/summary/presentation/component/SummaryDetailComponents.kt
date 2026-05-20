@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -387,14 +386,14 @@ private fun SummaryDetailBarPlot(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = 2.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
                 bars.forEach { bar ->
                     SummaryDetailChartBar(
                         bar = bar,
                         maxHeight = plotMaxHeight,
-                        modifier = Modifier.width(30.dp)
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -404,16 +403,16 @@ private fun SummaryDetailBarPlot(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(28.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.Top
         ) {
             bars.forEach { bar ->
                 Text(
-                    text = bar.label,
-                    modifier = Modifier.width(30.dp),
+                    text = if (bar.showLabel) bar.label else "",
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodySmall,
                     color = Gray400,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     textAlign = TextAlign.Center
@@ -450,24 +449,26 @@ private fun SummaryDetailChartBar(
     maxHeight: Dp,
     modifier: Modifier = Modifier
 ) {
-    val barHeight = if (bar.hasData) {
-        (maxHeight.value * bar.ratio.coerceIn(0f, 1f)).dp
-    } else {
-        SummaryDetailMissingBarHeight
+    val rawBarHeight = (maxHeight.value * bar.ratio.coerceIn(0f, 1f)).dp
+    val barHeight = when {
+        !bar.hasData -> 0.dp
+        bar.isZeroValue -> SummaryDetailZeroBarHeight
+        rawBarHeight < SummaryDetailMinimumBarHeight -> SummaryDetailMinimumBarHeight
+        else -> rawBarHeight
     }
-    val barColor = if (bar.hasData) Green500 else Gray200
 
     Box(
         modifier = modifier.fillMaxHeight(),
         contentAlignment = Alignment.BottomCenter
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = SummaryDetailMissingBarHeight)
-                .height(barHeight)
-                .background(color = barColor, shape = SummaryDetailBarShape)
-        )
+        if (bar.hasData) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.72f)
+                    .height(barHeight)
+                    .background(color = Green500, shape = SummaryDetailBarShape)
+            )
+        }
     }
 }
 
@@ -607,7 +608,8 @@ private fun previewHighlightCard(): SummaryDetailHighlightCardUiState {
     )
 }
 
-private val SummaryDetailMissingBarHeight = 4.dp
+private val SummaryDetailMinimumBarHeight = 4.dp
+private val SummaryDetailZeroBarHeight = 2.dp
 private val SummaryDetailBarShape = RoundedCornerShape(
     topStart = 5.dp,
     topEnd = 5.dp,

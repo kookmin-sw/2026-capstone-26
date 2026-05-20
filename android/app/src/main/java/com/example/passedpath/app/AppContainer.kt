@@ -108,12 +108,20 @@ import com.example.passedpath.feature.placebookmark.domain.usecase.DeletePlaceBo
 import com.example.passedpath.feature.placebookmark.domain.usecase.GetPlaceBookmarksUseCase
 import com.example.passedpath.feature.placebookmark.domain.usecase.UpdatePlaceBookmarkUseCase
 import com.example.passedpath.feature.summary.data.remote.api.DayRouteSummaryApi
+import com.example.passedpath.feature.summary.data.remote.api.StatisticMetricApi
+import com.example.passedpath.feature.summary.data.remote.api.VisitStatisticsApi
 import com.example.passedpath.feature.summary.data.remote.api.WeeklyStatisticsApi
 import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.StatisticMetricRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.VisitStatisticsRepositoryImpl
 import com.example.passedpath.feature.summary.data.repository.WeeklyStatisticsRepositoryImpl
 import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
+import com.example.passedpath.feature.summary.domain.repository.StatisticMetricRepository
+import com.example.passedpath.feature.summary.domain.repository.VisitStatisticsRepository
 import com.example.passedpath.feature.summary.domain.repository.WeeklyStatisticsRepository
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetVisitStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetWeeklyStatisticsUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
 import java.util.concurrent.TimeUnit
@@ -232,6 +240,14 @@ class AppContainer(
         retrofit.create(WeeklyStatisticsApi::class.java)
     }
 
+    private val visitStatisticsApi by lazy {
+        retrofit.create(VisitStatisticsApi::class.java)
+    }
+
+    private val statisticMetricApi by lazy {
+        retrofit.create(StatisticMetricApi::class.java)
+    }
+
     private val calendarMonthlyRouteApi by lazy {
         retrofit.create(CalendarMonthlyRouteApi::class.java)
     }
@@ -345,6 +361,14 @@ class AppContainer(
 
     val weeklyStatisticsRepository: WeeklyStatisticsRepository by lazy {
         WeeklyStatisticsRepositoryImpl(weeklyStatisticsApi = weeklyStatisticsApi)
+    }
+
+    val visitStatisticsRepository: VisitStatisticsRepository by lazy {
+        VisitStatisticsRepositoryImpl(visitStatisticsApi = visitStatisticsApi)
+    }
+
+    val statisticMetricRepository: StatisticMetricRepository by lazy {
+        StatisticMetricRepositoryImpl(statisticMetricApi = statisticMetricApi)
     }
 
     val calendarMonthlyRouteRepository: CalendarMonthlyRouteRepository by lazy {
@@ -479,6 +503,16 @@ class AppContainer(
 
     val getWeeklyStatisticsUseCase: GetWeeklyStatisticsUseCase by lazy {
         GetWeeklyStatisticsUseCase(weeklyStatisticsRepository = weeklyStatisticsRepository)
+    }
+
+    val getVisitStatisticsUseCase: GetVisitStatisticsUseCase by lazy {
+        GetVisitStatisticsUseCase(visitStatisticsRepository = visitStatisticsRepository)
+    }
+
+    val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase by lazy {
+        GetTotalOutingSecondsStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
     }
 
     val getCalendarMonthlyRouteUseCase: GetCalendarMonthlyRouteUseCase by lazy {

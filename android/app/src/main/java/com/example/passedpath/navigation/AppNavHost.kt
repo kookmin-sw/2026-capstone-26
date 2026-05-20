@@ -51,6 +51,7 @@ import com.example.passedpath.feature.place.presentation.screen.PlaceBookmarkSea
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkRoute
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkSearchResultEvent
 import com.example.passedpath.feature.summary.presentation.screen.SummaryDetailRoute
+import com.example.passedpath.feature.summary.presentation.screen.VisitStatisticsDetailRoute
 import com.example.passedpath.feature.summary.presentation.screen.WeeklySummaryRoute
 import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
@@ -439,13 +440,21 @@ private fun AppNavigationGraph(
                 ?.getString(NavRoute.SUMMARY_DETAIL_DATE_KEY)
                 .orEmpty()
 
-            SummaryDetailRoute(
-                metric = metric,
-                dateKey = dateKey,
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
+            if (metric == SummaryDetailMetric.VISITS) {
+                VisitStatisticsDetailRoute(
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                SummaryDetailRoute(
+                    metric = metric,
+                    dateKey = dateKey,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         composable(

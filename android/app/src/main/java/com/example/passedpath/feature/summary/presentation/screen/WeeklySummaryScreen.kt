@@ -198,7 +198,10 @@ private fun WeeklySummaryLoadedList(
         }
 
         item(key = "weekly_summary_visited_regions") {
-            WeeklySummaryVisitedRegionsCard(card = uiState.summary.visitedRegionsCard)
+            WeeklySummaryVisitedRegionsCard(
+                card = uiState.summary.visitedRegionsCard,
+                onClick = { onMetricClick(SummaryDetailMetric.VISITS) }
+            )
         }
     }
 }
