@@ -69,3 +69,5 @@ backend/node_modules/
 
 # test data
 /backend/src/test/resources/test-data
+
+/reference
