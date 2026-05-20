@@ -28,6 +28,20 @@ class StatisticMetricRepositoryImplTest {
     }
 
     @Test
+    fun `getEnterHomeTime passes period query and maps response`() = runTest {
+        val fakeApi = FakeStatisticMetricApi()
+        val repository = StatisticMetricRepositoryImpl(statisticMetricApi = fakeApi)
+
+        val result = repository.getEnterHomeTime(period = StatisticsPeriod.SIX_MONTHS)
+
+        assertEquals("enter-home-time", fakeApi.requestedEndpoint)
+        assertEquals("SIX_MONTHS", fakeApi.requestedPeriod)
+        assertEquals(StatisticsPeriod.SIX_MONTHS, result.period)
+        assertEquals("2025-12-01", result.startDate)
+        assertEquals("2026-05-20", result.endDate)
+    }
+
+    @Test
     fun `getTotalOutingSeconds passes period query and maps response`() = runTest {
         val fakeApi = FakeStatisticMetricApi()
         val repository = StatisticMetricRepositoryImpl(statisticMetricApi = fakeApi)
@@ -66,6 +80,17 @@ class StatisticMetricRepositoryImplTest {
     }
 
     @Test(expected = RuntimeException::class)
+    fun `getEnterHomeTime throws api failures`() = runTest {
+        val repository = StatisticMetricRepositoryImpl(
+            statisticMetricApi = FakeStatisticMetricApi(
+                throwable = RuntimeException("boom")
+            )
+        )
+
+        repository.getEnterHomeTime(period = StatisticsPeriod.WEEK)
+    }
+
+    @Test(expected = RuntimeException::class)
     fun `getTotalOutingSeconds throws api failures`() = runTest {
         val repository = StatisticMetricRepositoryImpl(
             statisticMetricApi = FakeStatisticMetricApi(
@@ -96,6 +121,11 @@ class StatisticMetricRepositoryImplTest {
         override suspend fun getOutingTime(period: String?): StatisticMetricResponseDto {
             requestedEndpoint = "outing-time"
             return response(period = period, metricType = "OUTING_TIME")
+        }
+
+        override suspend fun getEnterHomeTime(period: String?): StatisticMetricResponseDto {
+            requestedEndpoint = "enter-home-time"
+            return response(period = period, metricType = "ENTER_HOME_TIME")
         }
 
         override suspend fun getTotalOutingSeconds(period: String?): StatisticMetricResponseDto {

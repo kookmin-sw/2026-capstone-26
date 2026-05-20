@@ -5,6 +5,7 @@ import com.example.passedpath.feature.summary.domain.model.StatisticMetric
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricAverage
 import com.example.passedpath.feature.summary.domain.model.StatisticMetricHighlight
 import com.example.passedpath.feature.summary.domain.repository.StatisticMetricRepository
+import com.example.passedpath.feature.summary.domain.usecase.GetEnterHomeTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetOutingTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
@@ -46,6 +47,24 @@ class SummaryDetailViewModelTest {
         assertNull(state.errorMessage)
         assertEquals(SummaryDetailMetric.OUTING_TIME, state.metric)
         assertEquals(SummaryDetailMetric.OUTING_TIME, state.content?.metric)
+    }
+
+    @Test
+    fun `loadSummaryDetail requests enter home time week and exposes ui state on success`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.loadSummaryDetail(metric = SummaryDetailMetric.ENTER_HOME_TIME)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(StatisticsPeriod.WEEK), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.ENTER_HOME_TIME), repository.requestedMetrics)
+        assertTrue(state.hasLoaded)
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+        assertEquals(SummaryDetailMetric.ENTER_HOME_TIME, state.metric)
+        assertEquals(SummaryDetailMetric.ENTER_HOME_TIME, state.content?.metric)
     }
 
     @Test
@@ -102,6 +121,23 @@ class SummaryDetailViewModelTest {
     }
 
     @Test
+    fun `selectPeriod fetches selected period for enter home time`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.selectPeriod(
+            metric = SummaryDetailMetric.ENTER_HOME_TIME,
+            period = SummaryDetailPeriod.MONTH
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(StatisticsPeriod.MONTH), repository.requestedPeriods)
+        assertEquals(listOf(SummaryDetailMetric.ENTER_HOME_TIME), repository.requestedMetrics)
+        assertEquals(SummaryDetailPeriod.MONTH, viewModel.uiState.value.selectedPeriod)
+        assertEquals(SummaryDetailMetric.ENTER_HOME_TIME, viewModel.uiState.value.metric)
+    }
+
+    @Test
     fun `selectPeriod fetches selected period for total outing duration`() = runTest {
         val repository = FakeStatisticMetricRepository()
         val viewModel = createViewModel(repository)
@@ -148,6 +184,29 @@ class SummaryDetailViewModelTest {
     }
 
     @Test
+    fun `loadSummaryDetail forceRefresh requests enter home time again`() = runTest {
+        val repository = FakeStatisticMetricRepository()
+        val viewModel = createViewModel(repository)
+
+        viewModel.loadSummaryDetail(metric = SummaryDetailMetric.ENTER_HOME_TIME)
+        advanceUntilIdle()
+        viewModel.loadSummaryDetail(
+            metric = SummaryDetailMetric.ENTER_HOME_TIME,
+            forceRefresh = true
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(StatisticsPeriod.WEEK, StatisticsPeriod.WEEK),
+            repository.requestedPeriods
+        )
+        assertEquals(
+            listOf(SummaryDetailMetric.ENTER_HOME_TIME, SummaryDetailMetric.ENTER_HOME_TIME),
+            repository.requestedMetrics
+        )
+    }
+
+    @Test
     fun `loadTotalOutingDuration exposes error on failure`() = runTest {
         val repository = FakeStatisticMetricRepository(
             failure = RuntimeException("boom")
@@ -163,11 +222,29 @@ class SummaryDetailViewModelTest {
         assertNotNull(state.errorMessage)
     }
 
+    @Test
+    fun `loadSummaryDetail exposes enter home time error on failure`() = runTest {
+        val repository = FakeStatisticMetricRepository(
+            failure = RuntimeException("boom")
+        )
+        val viewModel = createViewModel(repository)
+
+        viewModel.loadSummaryDetail(metric = SummaryDetailMetric.ENTER_HOME_TIME)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.hasLoaded)
+        assertFalse(state.isLoading)
+        assertNotNull(state.errorMessage)
+        assertEquals(SummaryDetailMetric.ENTER_HOME_TIME, state.metric)
+    }
+
     private fun createViewModel(
         repository: StatisticMetricRepository
     ): SummaryDetailViewModel {
         return SummaryDetailViewModel(
             getOutingTimeStatisticsUseCase = GetOutingTimeStatisticsUseCase(repository),
+            getEnterHomeTimeStatisticsUseCase = GetEnterHomeTimeStatisticsUseCase(repository),
             getTotalOutingSecondsStatisticsUseCase = GetTotalOutingSecondsStatisticsUseCase(repository),
             getTotalOutingCountStatisticsUseCase = GetTotalOutingCountStatisticsUseCase(repository)
         )
@@ -189,6 +266,18 @@ private class FakeStatisticMetricRepository(
             period = period,
             value = 552.0,
             displayText = "09:12"
+        )
+    }
+
+    override suspend fun getEnterHomeTime(period: StatisticsPeriod): StatisticMetric {
+        requestedMetrics += SummaryDetailMetric.ENTER_HOME_TIME
+        requestedPeriods += period
+        failure?.let { throw it }
+        return statisticMetric(
+            metricType = "ENTER_HOME_TIME",
+            period = period,
+            value = 1395.0,
+            displayText = "23:15"
         )
     }
 

@@ -144,6 +144,133 @@ class StatisticMetricUiMapperTest {
     }
 
     @Test
+    fun `toEnterHomeTimeSummaryDetailUiState maps time chart and highlight`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.WEEK,
+            average = StatisticMetricAverage(
+                value = 1395.0,
+                displayText = null,
+                sampleSize = 5
+            ),
+            bars = listOf(
+                timeBar("Mon", value = 1380.0, hasValue = true),
+                timeBar("Tue", value = null, hasValue = false),
+                timeBar("Wed", value = 1410.0, hasValue = true),
+                timeBar("Thu", value = 1440.0, hasValue = true),
+                timeBar("Fri", value = 1420.0, hasValue = true),
+                timeBar("Sat", value = null, hasValue = false),
+                timeBar("Sun", value = 1395.0, hasValue = true)
+            ),
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Compared with previous",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = 1395.0,
+                    displayText = null,
+                    sampleSize = 5
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = 1410.0,
+                    displayText = "23:30",
+                    sampleSize = 5
+                )
+            )
+        )
+
+        val result = metric.toEnterHomeTimeSummaryDetailUiState()
+
+        assertEquals(SummaryDetailMetric.ENTER_HOME_TIME, result.metric)
+        assertEquals(SummaryDetailPeriod.WEEK, result.selectedPeriod)
+        assertEquals("2026.05.14 ~ 05.20", result.dateRange.rangeText)
+        assertFalse(result.dateRange.canMovePrevious)
+        assertFalse(result.dateRange.canMoveNext)
+        assertEquals("23:15", result.chart.averageValueText)
+        assertTrue(result.chart.hasAverageData)
+        assertEquals(listOf("24:00", "23:30", "23:00"), result.chart.yAxisLabels)
+        assertEquals(7, result.chart.bars.size)
+        assertTrue(result.chart.bars[0].hasData)
+        assertEquals(0f, result.chart.bars[0].ratio, 0f)
+        assertFalse(result.chart.bars[1].hasData)
+        assertEquals(0.5f, result.chart.bars[2].ratio, 0f)
+        assertEquals(1f, result.chart.bars[3].ratio, 0f)
+        assertTrue(result.chart.bars.all { bar -> bar.showLabel })
+        assertEquals("23:15", result.highlights.first().comparisons.first().valueText)
+        assertEquals("23:30", result.highlights.first().comparisons.last().valueText)
+    }
+
+    @Test
+    fun `toEnterHomeTimeSummaryDetailUiState treats zero as valid midnight value`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.WEEK,
+            average = StatisticMetricAverage(
+                value = 0.0,
+                displayText = null,
+                sampleSize = 1
+            ),
+            bars = listOf(timeBar("Mon", value = 0.0, hasValue = true))
+        )
+
+        val result = metric.toEnterHomeTimeSummaryDetailUiState()
+
+        assertEquals("00:00", result.chart.averageValueText)
+        assertTrue(result.chart.hasAverageData)
+        assertTrue(result.chart.bars.first().hasData)
+        assertTrue(result.chart.bars.first().isZeroValue)
+    }
+
+    @Test
+    fun `toEnterHomeTimeSummaryDetailUiState maps missing average and month labels`() {
+        val metric = statisticMetric(
+            period = StatisticsPeriod.MONTH,
+            average = StatisticMetricAverage(
+                value = null,
+                displayText = null,
+                sampleSize = 0
+            ),
+            bars = (1..30).map { day ->
+                timeBar(
+                    label = day.toString(),
+                    value = null,
+                    hasValue = false
+                )
+            },
+            highlight = StatisticMetricHighlight(
+                title = "Highlight",
+                message = "Not enough data",
+                current = HighlightMetricValue(
+                    label = "Current",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                ),
+                previous = HighlightMetricValue(
+                    label = "Previous",
+                    value = null,
+                    displayText = null,
+                    sampleSize = 0
+                )
+            )
+        )
+
+        val result = metric.toEnterHomeTimeSummaryDetailUiState()
+
+        assertEquals(DaySummaryNoDataText, result.chart.averageValueText)
+        assertFalse(result.chart.hasAverageData)
+        assertEquals(listOf("24:00", "23:30", "23:00"), result.chart.yAxisLabels)
+        assertTrue(result.chart.bars.none { bar -> bar.hasData })
+        assertEquals(
+            listOf(0, 7, 14, 21, 29),
+            result.chart.bars.mapIndexedNotNull { index, bar ->
+                if (bar.showLabel) index else null
+            }
+        )
+        assertEquals(DaySummaryNoDataText, result.highlights.first().comparisons.first().valueText)
+        assertEquals(0f, result.highlights.first().comparisons.first().ratio, 0f)
+    }
+
+    @Test
     fun `toTotalOutingDurationSummaryDetailUiState maps duration chart and highlight`() {
         val metric = statisticMetric(
             period = StatisticsPeriod.WEEK,

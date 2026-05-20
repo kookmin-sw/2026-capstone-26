@@ -13,6 +13,10 @@ class StatisticMetricRepositoryImpl(
         return statisticMetricApi.getOutingTime(period = period.apiValue).toStatisticMetric()
     }
 
+    override suspend fun getEnterHomeTime(period: StatisticsPeriod): StatisticMetric {
+        return statisticMetricApi.getEnterHomeTime(period = period.apiValue).toStatisticMetric()
+    }
+
     override suspend fun getTotalOutingSeconds(period: StatisticsPeriod): StatisticMetric {
         return statisticMetricApi.getTotalOutingSeconds(period = period.apiValue).toStatisticMetric()
     }

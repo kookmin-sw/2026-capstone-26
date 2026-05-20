@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.passedpath.app.AppContainer
+import com.example.passedpath.feature.summary.domain.usecase.GetEnterHomeTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetOutingTimeStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
 import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
+import com.example.passedpath.feature.summary.presentation.mapper.toEnterHomeTimeSummaryDetailUiState
 import com.example.passedpath.feature.summary.presentation.mapper.toStatisticsPeriod
 import com.example.passedpath.feature.summary.presentation.mapper.toSummaryDetailPeriod
 import com.example.passedpath.feature.summary.presentation.mapper.toOutingTimeSummaryDetailUiState
@@ -26,6 +28,7 @@ import kotlinx.coroutines.launch
 
 class SummaryDetailViewModel(
     private val getOutingTimeStatisticsUseCase: GetOutingTimeStatisticsUseCase,
+    private val getEnterHomeTimeStatisticsUseCase: GetEnterHomeTimeStatisticsUseCase,
     private val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase,
     private val getTotalOutingCountStatisticsUseCase: GetTotalOutingCountStatisticsUseCase
 ) : ViewModel() {
@@ -113,13 +116,15 @@ class SummaryDetailViewModel(
                     SummaryDetailMetric.OUTING_TIME -> {
                         getOutingTimeStatisticsUseCase(period = period.toStatisticsPeriod())
                     }
+                    SummaryDetailMetric.ENTER_HOME_TIME -> {
+                        getEnterHomeTimeStatisticsUseCase(period = period.toStatisticsPeriod())
+                    }
                     SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
                         getTotalOutingSecondsStatisticsUseCase(period = period.toStatisticsPeriod())
                     }
                     SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
                         getTotalOutingCountStatisticsUseCase(period = period.toStatisticsPeriod())
                     }
-                    SummaryDetailMetric.ENTER_HOME_TIME,
                     SummaryDetailMetric.VISITS -> error("Unsupported summary detail metric: $metric")
                 }
             }.onSuccess { statisticMetric ->
@@ -131,13 +136,15 @@ class SummaryDetailViewModel(
                             SummaryDetailMetric.OUTING_TIME -> {
                                 statisticMetric.toOutingTimeSummaryDetailUiState()
                             }
+                            SummaryDetailMetric.ENTER_HOME_TIME -> {
+                                statisticMetric.toEnterHomeTimeSummaryDetailUiState()
+                            }
                             SummaryDetailMetric.TOTAL_OUTING_DURATION -> {
                                 statisticMetric.toTotalOutingDurationSummaryDetailUiState()
                             }
                             SummaryDetailMetric.TOTAL_OUTING_COUNT -> {
                                 statisticMetric.toTotalOutingCountSummaryDetailUiState()
                             }
-                            SummaryDetailMetric.ENTER_HOME_TIME,
                             SummaryDetailMetric.VISITS -> null
                         },
                         hasLoaded = true,
@@ -161,6 +168,7 @@ class SummaryDetailViewModel(
 
 private fun SummaryDetailMetric.isApiBackedMetric(): Boolean {
     return this == SummaryDetailMetric.OUTING_TIME ||
+        this == SummaryDetailMetric.ENTER_HOME_TIME ||
         this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
         this == SummaryDetailMetric.TOTAL_OUTING_COUNT
 }
@@ -173,6 +181,7 @@ class SummaryDetailViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return SummaryDetailViewModel(
                 getOutingTimeStatisticsUseCase = appContainer.getOutingTimeStatisticsUseCase,
+                getEnterHomeTimeStatisticsUseCase = appContainer.getEnterHomeTimeStatisticsUseCase,
                 getTotalOutingSecondsStatisticsUseCase = appContainer.getTotalOutingSecondsStatisticsUseCase,
                 getTotalOutingCountStatisticsUseCase = appContainer.getTotalOutingCountStatisticsUseCase
             ) as T

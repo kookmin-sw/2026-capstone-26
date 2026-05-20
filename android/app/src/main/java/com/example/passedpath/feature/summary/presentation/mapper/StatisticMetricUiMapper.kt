@@ -22,11 +22,34 @@ import kotlin.math.floor
 import kotlin.math.roundToLong
 
 internal fun StatisticMetric.toOutingTimeSummaryDetailUiState(): SummaryDetailUiState {
+    return toTimeSummaryDetailUiState(
+        metric = SummaryDetailMetric.OUTING_TIME,
+        defaultAxisRange = TimeAxisRange(
+            minMinutes = DefaultOutingTimeAxisMin,
+            maxMinutes = DefaultOutingTimeAxisMax
+        )
+    )
+}
+
+internal fun StatisticMetric.toEnterHomeTimeSummaryDetailUiState(): SummaryDetailUiState {
+    return toTimeSummaryDetailUiState(
+        metric = SummaryDetailMetric.ENTER_HOME_TIME,
+        defaultAxisRange = TimeAxisRange(
+            minMinutes = DefaultEnterHomeTimeAxisMin,
+            maxMinutes = DefaultEnterHomeTimeAxisMax
+        )
+    )
+}
+
+private fun StatisticMetric.toTimeSummaryDetailUiState(
+    metric: SummaryDetailMetric,
+    defaultAxisRange: TimeAxisRange
+): SummaryDetailUiState {
     val selectedPeriod = period.toSummaryDetailPeriod()
-    val yAxisRange = calculateTimeAxisRange()
+    val yAxisRange = calculateTimeAxisRange(defaultAxisRange = defaultAxisRange)
 
     return SummaryDetailUiState(
-        metric = SummaryDetailMetric.OUTING_TIME,
+        metric = metric,
         selectedPeriod = selectedPeriod,
         periodOptions = DefaultSummaryDetailPeriodOptions,
         dateRange = SummaryDetailDateRangeUiState(
@@ -159,18 +182,18 @@ private fun StatisticMetric.calculateCountAxisMax(): Double {
     return ceil(maxValue).coerceAtLeast(MinimumCountAxisMax)
 }
 
-private fun StatisticMetric.calculateTimeAxisRange(): TimeAxisRange {
+private fun StatisticMetric.calculateTimeAxisRange(defaultAxisRange: TimeAxisRange): TimeAxisRange {
     val values = bars.asSequence()
         .filter { bar -> bar.hasValue }
         .mapNotNull { bar -> bar.value }
         .toList() + listOfNotNull(average.value)
 
     if (values.isEmpty()) {
-        return TimeAxisRange(minMinutes = DefaultTimeAxisMin, maxMinutes = DefaultTimeAxisMax)
+        return defaultAxisRange
     }
 
-    val minValue = values.minOrNull()?.coerceAtLeast(0.0) ?: DefaultTimeAxisMin.toDouble()
-    val maxValue = values.maxOrNull()?.coerceAtLeast(0.0) ?: DefaultTimeAxisMax.toDouble()
+    val minValue = values.minOrNull()?.coerceAtLeast(0.0) ?: defaultAxisRange.minMinutes.toDouble()
+    val maxValue = values.maxOrNull()?.coerceAtLeast(0.0) ?: defaultAxisRange.maxMinutes.toDouble()
     val axisMin = floor(minValue / TimeAxisStepMinutes).toLong() * TimeAxisStepMinutes
     var axisMax = ceil(maxValue / TimeAxisStepMinutes).toLong() * TimeAxisStepMinutes
 
@@ -536,8 +559,10 @@ private const val ZeroCountText = "0"
 private const val MinimumCountAxisMax = 1.0
 private const val TimeAxisStepMinutes = 30L
 private const val MinimumTimeAxisRangeMinutes = 60L
-private const val DefaultTimeAxisMin = 540L
-private const val DefaultTimeAxisMax = 600L
+private const val DefaultOutingTimeAxisMin = 540L
+private const val DefaultOutingTimeAxisMax = 600L
+private const val DefaultEnterHomeTimeAxisMin = 1_380L
+private const val DefaultEnterHomeTimeAxisMax = 1_440L
 private data class TimeAxisRange(
     val minMinutes: Long,
     val maxMinutes: Long

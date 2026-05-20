@@ -318,6 +318,7 @@ private fun SummaryDetailMetric.toEmptySummaryDetailUiState(
 
 private fun SummaryDetailMetric.isApiBackedSummaryDetailMetric(): Boolean {
     return this == SummaryDetailMetric.OUTING_TIME ||
+        this == SummaryDetailMetric.ENTER_HOME_TIME ||
         this == SummaryDetailMetric.TOTAL_OUTING_DURATION ||
         this == SummaryDetailMetric.TOTAL_OUTING_COUNT
 }
@@ -335,8 +336,8 @@ private fun SummaryDetailMetric.titleResId(): Int {
 
 private fun SummaryDetailMetric.yAxisLabels(): List<String> {
     return when (this) {
-        SummaryDetailMetric.OUTING_TIME,
-        SummaryDetailMetric.ENTER_HOME_TIME -> listOf("10:00", "09:30", "09:00")
+        SummaryDetailMetric.OUTING_TIME -> listOf("10:00", "09:30", "09:00")
+        SummaryDetailMetric.ENTER_HOME_TIME -> listOf("24:00", "23:30", "23:00")
         SummaryDetailMetric.TOTAL_OUTING_DURATION -> listOf("8h", "4h", "0h")
         SummaryDetailMetric.TOTAL_OUTING_COUNT -> listOf("3", "1.5", "0")
         SummaryDetailMetric.VISITS -> emptyList()
