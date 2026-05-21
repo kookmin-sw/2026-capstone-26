@@ -83,9 +83,24 @@
         }
 
         .hero {
-            min-height: calc(100vh - 71px);
-            padding: 36px 0 72px;
-            background: transparent;
+            position: relative;
+            min-height: auto;
+            padding: 40px 0 76px;
+            background: radial-gradient(circle at 18% 30%, rgba(255, 255, 255, 0.18), transparent 18rem),
+            radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.16), transparent 15rem),
+            linear-gradient(120deg, #b7e8ea 0%, #cef3f2 48%, #b6e8ea 100%);
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            left: -5%;
+            right: -5%;
+            bottom: -54px;
+            height: 108px;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            background: #f5ffff;
         }
 
         .hero-frame {
@@ -106,13 +121,156 @@
         .main-image {
             display: block;
             width: auto;
-            max-width: min(100%, 1180px);
+            max-width: min(100%, 880px);
             height: auto;
-            max-height: 54vh;
+            max-height: 34vh;
             margin: 0 auto;
             object-fit: contain;
             object-position: center center;
             border-radius: 0;
+        }
+
+        .concept {
+            position: relative;
+            padding: 72px 0 104px;
+            background: linear-gradient(180deg, #f5ffff 0%, #eefcfc 100%);
+        }
+
+        .concept-image {
+            display: block;
+            width: min(100% - 40px, 680px);
+            height: auto;
+            max-height: 38vh;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        .features {
+            padding: 96px 0 122px;
+            background: radial-gradient(circle at 18% 28%, rgba(183, 232, 234, 0.42), transparent 24rem),
+            radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.86), transparent 20rem),
+            linear-gradient(180deg, #eefcfc 0%, #ffffff 100%);
+        }
+
+        .features-head {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto 52px;
+            text-align: left;
+        }
+
+        .features-label {
+            margin: 0;
+            color: var(--teal);
+            font-size: clamp(1.55rem, 2.6vw, 2.25rem);
+            font-weight: 900;
+            line-height: 1.16;
+        }
+
+        .features-subtitle {
+            max-width: 560px;
+            margin: 14px 0 0;
+            color: #4b6070;
+            font-size: 1.08rem;
+            font-weight: 700;
+            line-height: 1.7;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 0.92fr 1.08fr 0.92fr;
+            align-items: start;
+            gap: 28px;
+            margin: 0 auto;
+        }
+
+        .feature-group {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        .feature-group + .feature-group {
+            margin-top: 76px;
+            padding-top: 70px;
+            border-top: 1px solid rgba(15, 105, 112, 0.12);
+        }
+
+        .feature-list.companion-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+            width: min(860px, 100%);
+            margin: 0 auto;
+        }
+
+        .feature-panel {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-self: start;
+            padding: clamp(18px, 2.4vw, 28px);
+            border-radius: 32px;
+            background: radial-gradient(circle at 50% 12%, rgba(191, 236, 238, 0.36), transparent 18rem),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 255, 255, 0.88));
+            border: 1px solid rgba(15, 105, 112, 0.1);
+            box-shadow: 0 22px 60px rgba(15, 105, 112, 0.12);
+            animation: floatFeature 6s ease-in-out infinite;
+        }
+
+        .feature-panel:nth-child(2) {
+            background: radial-gradient(circle at 50% 10%, rgba(15, 105, 112, 0.08), transparent 18rem),
+            linear-gradient(180deg, #ffffff, #ecfbfb);
+            animation-delay: -1.6s;
+        }
+
+        .feature-panel:nth-child(3) {
+            animation-delay: -3.2s;
+        }
+
+        .feature-image {
+            display: block;
+            width: auto;
+            max-width: 100%;
+            max-height: clamp(260px, 34vw, 380px);
+            height: auto;
+            margin: 0 auto;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 32px rgba(20, 45, 65, 0.12));
+        }
+
+        .feature-image.compact-route {
+            max-height: clamp(230px, 30vw, 330px);
+        }
+
+        .feature-caption {
+            margin: 16px 0 0;
+            text-align: center;
+        }
+
+        .feature-caption h2,
+        .feature-caption h3 {
+            margin: 0;
+            color: var(--teal);
+            font-size: clamp(1.28rem, 2vw, 1.86rem);
+            line-height: 1.24;
+        }
+
+        .feature-caption p {
+            margin: 10px auto 0;
+            max-width: 280px;
+            color: #546879;
+            font-size: 0.98rem;
+            font-weight: 700;
+            line-height: 1.62;
+        }
+
+        @keyframes floatFeature {
+            0%, 100% {
+                translate: 0 0;
+            }
+            50% {
+                translate: 0 -8px;
+            }
         }
 
         @media (max-width: 720px) {
@@ -129,8 +287,8 @@
             }
 
             .hero {
-                min-height: calc(100vh - 63px);
-                padding: 24px 0 48px;
+                min-height: auto;
+                padding: 28px 0 54px;
             }
 
             .hero-frame {
@@ -141,6 +299,54 @@
             .main-image {
                 max-width: 100%;
                 max-height: 48vh;
+            }
+
+            .concept {
+                padding: 58px 0 68px;
+            }
+
+            .concept-image {
+                width: min(100% - 28px, 520px);
+                max-height: 34vh;
+            }
+
+            .features {
+                padding: 68px 0 84px;
+            }
+
+            .features-head,
+            .feature-group,
+            .feature-list {
+                width: min(100% - 28px, 1180px);
+            }
+
+            .feature-group + .feature-group {
+                margin-top: 42px;
+                padding-top: 42px;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+                gap: 22px;
+            }
+
+            .feature-list.companion-list {
+                grid-template-columns: 1fr;
+                width: 100%;
+            }
+
+            .feature-panel {
+                border-radius: 24px;
+                padding: clamp(16px, 5vw, 22px);
+                animation: none;
+            }
+
+            .feature-image {
+                max-height: clamp(220px, 74vw, 310px);
+            }
+
+            .feature-image.compact-route {
+                max-height: clamp(210px, 68vw, 280px);
             }
         }
     </style>
@@ -163,7 +369,102 @@
 <main>
     <section aria-label="길벗 메인 이미지" class="hero">
         <div class="hero-frame">
-            <img alt="길벗 위치 기반 기억 보조 및 보호자 안심 확인 서비스" class="main-image" src="reference/메인3.png">
+            <img alt="길벗 위치 기반 기억 보조 및 보호자 안심 확인 서비스" class="main-image" src="reference/물방울 추가.png">
+        </div>
+    </section>
+    <section aria-label="기억 보조와 보호자 안심 서비스 흐름" class="concept">
+        <img alt="개인 사용자에게는 기억 보조를, 보호자에게는 안심 확인을 제공하는 위치 데이터 서비스 흐름" class="concept-image"
+             src="reference/기안2.png">
+    </section>
+    <section aria-labelledby="features-title" class="features" id="features">
+        <div class="features-head">
+            <h4 class="features-label" id="features-title">주요 기능</h4>
+        </div>
+        <div class="feature-group">
+            <div class="feature-list">
+                <article class="feature-panel">
+                    <img alt="날짜별 이동 경로를 조회하는 캘린더 화면" class="feature-image"
+                         src="reference/나의길/날짜별조회.png">
+                    <div class="feature-caption">
+                        <h4>날짜별 이동 경로 조회</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="지도 위에 하루 이동 경로가 표시된 나의 길 메인 화면" class="feature-image"
+                         src="reference/나의길/나의길메인.png">
+                    <div class="feature-caption">
+                        <h4>이동 경로 기록</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="하루 경로에 메모를 작성하는 화면" class="feature-image"
+                         src="reference/나의길/메모작성.png">
+                    <div class="feature-caption">
+                        <h4>메모 작성</h4>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="feature-group companion">
+            <div class="feature-list companion-list">
+                <article class="feature-panel">
+                    <img alt="보호 대상자의 실시간 위치를 확인하는 함께 가는 길 화면" class="feature-image"
+                         src="reference/함께 가는 길/보호 대상자의 실시간 위치 확인.png">
+                    <div class="feature-caption">
+                        <h4>보호 대상자의 실시간 위치 확인</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="보호 대상자의 이동 경로를 확인하는 함께 가는 길 화면" class="feature-image compact-route"
+                         src="reference/함께 가는 길/보호자의 이동 경로 확인.png">
+                    <div class="feature-caption">
+                        <h4>보호 대상자의 이동 경로 확인</h4>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="feature-group">
+            <div class="feature-list companion-list">
+                <article class="feature-panel">
+                    <img alt="체류 장소를 자동으로 저장하는 기능 화면" class="feature-image"
+                         src="reference/체류,외출귀가/체류 장소 자동 저장.png">
+                    <div class="feature-caption">
+                        <h4>체류 장소 자동 저장</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="외출과 귀가 시각을 자동으로 기록하는 기능 화면" class="feature-image"
+                         src="reference/체류,외출귀가/외출·귀가 시각 자동 기록.png">
+                    <div class="feature-caption">
+                        <h4>외출·귀가 시각 자동 기록</h4>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="feature-group">
+            <div class="feature-list">
+                <article class="feature-panel">
+                    <img alt="주간 생활 패턴 변화량 통계 화면" class="feature-image"
+                         src="reference/통계/주간 생활 패턴 변화량.png">
+                    <div class="feature-caption">
+                        <h4>주간 생활 패턴 변화량</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="외출과 귀가 시각 통계 화면" class="feature-image"
+                         src="reference/통계/외출·귀가 시각 통계.png">
+                    <div class="feature-caption">
+                        <h4>외출·귀가 시각 통계</h4>
+                    </div>
+                </article>
+                <article class="feature-panel">
+                    <img alt="방문한 지역 및 장소 통계 화면" class="feature-image"
+                         src="reference/통계/방문한 지역 및 장소 통계.png">
+                    <div class="feature-caption">
+                        <h4>방문한 지역 및 장소 통계</h4>
+                    </div>
+                </article>
+            </div>
         </div>
     </section>
 </main>
