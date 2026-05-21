@@ -25,7 +25,7 @@
             min-height: 100vh;
             color: var(--ink);
             font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #d8f3f2;
+            background: #e4f7f6;
         }
 
         a {
@@ -81,9 +81,11 @@
         }
 
         main {
-            background: radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.52), transparent 27rem),
-            radial-gradient(circle at 86% 45%, rgba(255, 255, 255, 0.42), transparent 30rem),
-            linear-gradient(180deg, #d8f3f2 0%, #e4f8f7 42%, #eefcfc 100%);
+            background:
+                radial-gradient(circle at 14% 22%, rgba(255, 255, 255, 0.88), transparent 28rem),
+                radial-gradient(circle at 86% 34%, rgba(255, 255, 255, 0.62), transparent 26rem),
+                radial-gradient(circle at 20% 72%, rgba(183, 232, 234, 0.34), transparent 32rem),
+                linear-gradient(180deg, #ffffff 0%, #f7ffff 12%, #eafafa 34%, #d8f3f2 68%, #c9eceb 100%);
         }
 
         .hero {
@@ -104,7 +106,7 @@
             bottom: -54px;
             height: 108px;
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            background: #d8f3f2;
+            background: #ffffff;
         }
 
         .hero-frame {
@@ -313,7 +315,8 @@
 
         .story-block.record-story {
             grid-template-columns: 0.9fr 1.1fr;
-            gap: clamp(18px, 3vw, 42px);
+            gap: clamp(12px, 2vw, 28px);
+            padding-inline: clamp(28px, 5vw, 70px);
         }
 
         .story-block.record-story .story-visual {
@@ -329,7 +332,8 @@
         .story-block.reverse {
             width: min(100%, 980px);
             grid-template-columns: minmax(300px, 0.82fr) minmax(430px, 1.18fr);
-            gap: clamp(28px, 4vw, 58px);
+            gap: clamp(18px, 2.8vw, 40px);
+            padding-inline: clamp(28px, 5vw, 70px);
         }
 
         .story-block.reverse .story-copy {
@@ -340,6 +344,8 @@
             min-height: 650px;
             grid-template-columns: 0.92fr 1.08fr;
             align-items: start;
+            gap: clamp(4px, 1.2vw, 18px);
+            padding-inline: clamp(28px, 5vw, 70px);
         }
 
         .story-block.summary-story,
@@ -347,6 +353,11 @@
         .story-block.neighborhood-story {
             grid-template-columns: 0.82fr 1.18fr;
             min-height: 560px;
+        }
+
+        .story-block.time-story,
+        .story-block.neighborhood-story {
+            margin-top: clamp(36px, 5vw, 84px);
         }
 
         .story-block.summary-story .story-visual,
@@ -839,6 +850,12 @@
                 gap: 26px;
             }
 
+            .story-block.record-story,
+            .story-block.reverse,
+            .story-block.stack {
+                padding-inline: clamp(18px, 5vw, 36px);
+            }
+
             .story-copy,
             .story-block.reverse .story-copy,
             .story-note {
@@ -985,6 +1002,12 @@
                 grid-template-columns: 1fr;
                 min-height: auto;
                 gap: 28px;
+            }
+
+            .story-block.record-story,
+            .story-block.reverse,
+            .story-block.stack {
+                padding-inline: 12px;
             }
 
             .story-block.record-story .story-phone {
