@@ -81,21 +81,34 @@
         }
 
         main {
-            background:
-                radial-gradient(circle at 14% 22%, rgba(255, 255, 255, 0.88), transparent 28rem),
-                radial-gradient(circle at 86% 34%, rgba(255, 255, 255, 0.62), transparent 26rem),
-                radial-gradient(circle at 20% 72%, rgba(183, 232, 234, 0.34), transparent 32rem),
-                linear-gradient(180deg, #ffffff 0%, #f7ffff 12%, #eafafa 34%, #d8f3f2 68%, #c9eceb 100%);
+            background: radial-gradient(circle at 14% 22%, rgba(255, 255, 255, 0.88), transparent 28rem),
+            radial-gradient(circle at 86% 34%, rgba(255, 255, 255, 0.62), transparent 26rem),
+            radial-gradient(circle at 20% 72%, rgba(183, 232, 234, 0.34), transparent 32rem),
+            linear-gradient(180deg, #ffffff 0%, #f7ffff 12%, #eafafa 34%, #d8f3f2 68%, #c9eceb 100%);
         }
 
         .hero {
             position: relative;
             min-height: auto;
-            padding: 40px 0 76px;
+            padding: 40px 0 104px;
             background: radial-gradient(circle at 18% 30%, rgba(255, 255, 255, 0.18), transparent 18rem),
             radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.16), transparent 15rem),
             linear-gradient(120deg, #b7e8ea 0%, #cef3f2 48%, #b6e8ea 100%);
             overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            left: -7%;
+            right: -7%;
+            bottom: -78px;
+            height: 154px;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.5) 48%, rgba(255, 255, 255, 0) 100%);
+            filter: blur(16px);
+            z-index: 2;
+            pointer-events: none;
         }
 
         .hero::after {
@@ -103,14 +116,16 @@
             position: absolute;
             left: -5%;
             right: -5%;
-            bottom: -54px;
-            height: 108px;
+            bottom: -64px;
+            height: 128px;
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
             background: #ffffff;
+            z-index: 1;
         }
 
         .hero-frame {
             position: relative;
+            z-index: 2;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -136,13 +151,43 @@
             border-radius: 0;
         }
 
+        .hero-mascot {
+            position: absolute;
+            z-index: 4;
+            right: clamp(110px, 16vw, 260px);
+            bottom: 15px;
+            width: clamp(120px, 12vw, 210px);
+            height: auto;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
         .concept {
             position: relative;
             padding: 72px 0 104px;
             background: transparent;
+            overflow: hidden;
+        }
+
+        .concept::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 15%;
+            width: clamp(240px, 20vw, 500px);
+            aspect-ratio: 2.3;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: radial-gradient(circle at 40% 50%, rgba(172, 232, 234, 0.46), transparent 48%),
+            radial-gradient(circle at 66% 52%, rgba(116, 204, 209, 0.34), transparent 58%);
+            filter: blur(22px);
+            opacity: 0.78;
+            pointer-events: none;
         }
 
         .concept-image {
+            position: relative;
+            z-index: 1;
             display: block;
             width: min(100% - 40px, 680px);
             height: auto;
@@ -346,6 +391,7 @@
             align-items: start;
             gap: clamp(4px, 1.2vw, 18px);
             padding-inline: clamp(28px, 5vw, 70px);
+            margin-top: clamp(36px, 5vw, 88px);
         }
 
         .story-block.summary-story,
@@ -490,6 +536,10 @@
 
         .story-phone.summary-phone {
             max-height: clamp(330px, 38vw, 520px);
+        }
+
+        .story-phone.daily-summary-phone {
+            transform: translateY(-28px);
         }
 
         .story-phone.weekly-phone {
@@ -1151,8 +1201,10 @@
 <main>
     <section aria-label="길벗 메인 이미지" class="hero">
         <div class="hero-frame">
-            <img alt="길벗 위치 기반 기억 보조 및 보호자 안심 확인 서비스" class="main-image" src="reference/물방울 추가.png">
+            <img alt="길벗 위치 기반 기억 보조 및 보호자 안심 확인 서비스" class="main-image"
+                 src="reference/길벗 상단 이미지.png">
         </div>
+        <img alt="" aria-hidden="true" class="hero-mascot" src="reference/로고/지도보는 패패.png">
     </section>
     <section aria-label="기억 보조와 보호자 안심 서비스 흐름" class="concept">
         <img alt="개인 사용자에게는 기억 보조를, 보호자에게는 안심 확인을 제공하는 위치 데이터 서비스 흐름" class="concept-image"
@@ -1229,7 +1281,8 @@
                         <div class="story-duo">
                             <div class="story-duo-item">
                                 <span class="story-duo-label">하루 요약</span>
-                                <img alt="외출 시간과 하루 활동을 요약한 화면" class="story-phone summary-phone"
+                                <img alt="외출 시간과 하루 활동을 요약한 화면"
+                                     class="story-phone summary-phone daily-summary-phone"
                                      src="reference/new주요기능/와이어프레임2/하루요약.png">
                             </div>
                             <div class="story-duo-item">
