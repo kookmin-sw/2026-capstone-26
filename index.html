@@ -44,6 +44,7 @@
         }
 
         .nav {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -61,17 +62,16 @@
         }
 
         .brand-mark {
-            display: grid;
-            place-items: center;
             width: 38px;
             height: 38px;
-            border-radius: 14px;
-            color: var(--white);
-            background: linear-gradient(135deg, var(--teal), var(--teal-soft));
-            box-shadow: 0 10px 24px rgba(15, 105, 112, 0.2);
+            object-fit: contain;
+            filter: drop-shadow(0 10px 18px rgba(15, 105, 112, 0.18));
         }
 
         .nav-links {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
             gap: 22px;
@@ -342,6 +342,26 @@
             align-items: start;
         }
 
+        .story-block.summary-story,
+        .story-block.time-story,
+        .story-block.neighborhood-story {
+            grid-template-columns: 0.82fr 1.18fr;
+            min-height: 560px;
+        }
+
+        .story-block.summary-story .story-visual,
+        .story-block.neighborhood-story .story-visual {
+            width: min(100%, 620px);
+        }
+
+        .story-block.time-story {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .story-block.time-story .story-visual {
+            width: min(100%, 430px);
+        }
+
         .story-copy {
             position: relative;
             z-index: 1;
@@ -383,14 +403,26 @@
         }
 
         .story-block.record-story .story-copy h4 {
-            font-size: clamp(1.4rem, 2.6vw, 2.85rem);
+            font-size: clamp(1.18rem, 2.1vw, 2.35rem);
         }
 
         .story-block.reverse .story-copy h4 {
-            font-size: clamp(1.34rem, 2.45vw, 2.6rem);
+            font-size: clamp(1.16rem, 2vw, 2.25rem);
+        }
+
+        .story-block.record-story .story-copy p,
+        .story-block.reverse .story-copy p {
+            font-size: clamp(0.78rem, 1vw, 0.96rem);
+            line-height: 1.58;
         }
 
         .story-block.stack .story-note h4 {
+            font-size: clamp(1.28rem, 2.35vw, 2.5rem);
+        }
+
+        .story-block.summary-story .story-copy h4,
+        .story-block.time-story .story-note h4,
+        .story-block.neighborhood-story .story-copy h4 {
             font-size: clamp(1.28rem, 2.35vw, 2.5rem);
         }
 
@@ -443,6 +475,100 @@
         .story-phone.place-phone {
             margin-left: 0;
             max-height: clamp(320px, 35vw, 500px);
+        }
+
+        .story-phone.summary-phone {
+            max-height: clamp(330px, 38vw, 520px);
+        }
+
+        .story-phone.weekly-phone {
+            max-height: clamp(320px, 36vw, 500px);
+        }
+
+        .story-phone.time-phone {
+            max-height: clamp(330px, 38vw, 520px);
+        }
+
+        .story-phone.region-phone {
+            max-height: clamp(340px, 40vw, 540px);
+        }
+
+        .story-duo {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: end;
+            gap: clamp(18px, 3vw, 36px);
+        }
+
+        .story-duo-item {
+            position: relative;
+            display: grid;
+            justify-items: center;
+            gap: 14px;
+        }
+
+        .story-duo-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 18px;
+            border-radius: 999px;
+            color: var(--teal);
+            background: rgba(217, 247, 248, 0.95);
+            border: 1px solid rgba(25, 170, 180, 0.22);
+            box-shadow: 0 12px 26px rgba(15, 105, 112, 0.12);
+            font-size: 0.88rem;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .insight-stack {
+            display: grid;
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        .insight-card {
+            padding: 18px 22px;
+            border-radius: 24px;
+            background: rgba(241, 255, 255, 0.88);
+            border: 1px solid rgba(25, 170, 180, 0.16);
+            box-shadow: 0 14px 34px rgba(15, 105, 112, 0.1);
+            color: #40566b;
+            font-size: clamp(0.88rem, 1vw, 1rem);
+            font-weight: 800;
+            line-height: 1.62;
+        }
+
+        .insight-card.care {
+            background: rgba(255, 244, 239, 0.94);
+            border-color: rgba(238, 124, 83, 0.18);
+        }
+
+        .insight-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--teal);
+            font-size: 0.9rem;
+            font-weight: 950;
+        }
+
+        .insight-card.care .insight-label {
+            color: #e77745;
+        }
+
+        .mini-summary-card {
+            width: min(100%, 270px);
+            padding: 16px 18px;
+            border-radius: 24px;
+            background: rgba(245, 255, 255, 0.94);
+            border: 1px solid rgba(25, 170, 180, 0.18);
+            box-shadow: 0 16px 36px rgba(15, 105, 112, 0.12);
+            color: var(--teal);
+            font-size: 0.92rem;
+            font-weight: 900;
+            line-height: 1.5;
         }
 
         .callout {
@@ -501,6 +627,12 @@
         .story-note {
             align-self: end;
             padding-bottom: 78px;
+        }
+
+        .story-block.stack .story-note {
+            align-self: start;
+            padding-top: 200px;
+            padding-bottom: 0;
         }
 
         .story-note,
@@ -697,7 +829,10 @@
 
             .story-block,
             .story-block.reverse,
-            .story-block.stack {
+            .story-block.stack,
+            .story-block.summary-story,
+            .story-block.time-story,
+            .story-block.neighborhood-story {
                 width: 100%;
                 grid-template-columns: 1fr;
                 min-height: auto;
@@ -733,6 +868,14 @@
 
             .story-phone.place-phone {
                 margin: 0 auto;
+            }
+
+            .story-duo {
+                grid-template-columns: 1fr;
+            }
+
+            .insight-stack {
+                margin-top: 0;
             }
 
             .callout {
@@ -834,7 +977,10 @@
 
             .story-block,
             .story-block.reverse,
-            .story-block.stack {
+            .story-block.stack,
+            .story-block.summary-story,
+            .story-block.time-story,
+            .story-block.neighborhood-story {
                 width: 100%;
                 grid-template-columns: 1fr;
                 min-height: auto;
@@ -969,13 +1115,12 @@
 <header class="site-header">
     <nav aria-label="상단 메뉴" class="nav">
         <a aria-label="길벗 홈" class="brand" href="./">
-            <span aria-hidden="true" class="brand-mark">길</span>
-            <span>길벗</span>
+            <img alt="" aria-hidden="true" class="brand-mark" src="reference/로고/길벗 로고.png">
         </a>
-        <div aria-label="준비 중인 섹션" class="nav-links">
+        <div aria-label="상단 섹션 이동" class="nav-links">
             <a href="#service">서비스 소개</a>
             <a href="#features">주요 기능</a>
-            <a href="#care">보호자 안심</a>
+            <a href="#architecture">기술</a>
         </div>
     </nav>
 </header>
@@ -1038,6 +1183,93 @@
                         <span class="story-step">03 · 자동 정리</span>
                         <h4>체류 장소 자동 저장</h4>
                         <p>사용자가 오래 머문 장소와 시간을 자동으로 저장해, 하루를 되짚는 기억의 단서로 남깁니다.</p>
+                    </div>
+                </article>
+
+                <article class="story-block summary-story">
+                    <div class="story-copy">
+                        <span class="story-step">04 · 생활 요약</span>
+                        <h4>요약 통계</h4>
+                        <p>하루와 주간 단위의 외출, 귀가, 활동 시간을 정리해 생활 패턴과 변화 흐름을 빠르게 확인합니다.</p>
+                        <div class="insight-stack">
+                            <div class="insight-card">
+                                <span class="insight-label">개인 사용자</span>
+                                하루의 시작과 끝, 규칙적인 생활 여부를 한눈에 확인합니다.
+                            </div>
+                            <div class="insight-card care">
+                                <span class="insight-label">보호자</span>
+                                평소와 다른 생활 변화가 보이면 이상 신호를 더 빨리 살필 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="story-visual">
+                        <div class="story-duo">
+                            <div class="story-duo-item">
+                                <span class="story-duo-label">하루 요약</span>
+                                <img alt="외출 시간과 하루 활동을 요약한 화면" class="story-phone summary-phone"
+                                     src="reference/new주요기능/와이어프레임2/하루요약.png">
+                            </div>
+                            <div class="story-duo-item">
+                                <span class="story-duo-label">주간 요약</span>
+                                <img alt="주간 생활 패턴을 통계로 보여주는 화면" class="story-phone weekly-phone"
+                                     src="reference/new주요기능/와이어프레임2/주간요약.png">
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="story-block time-story">
+                    <div class="story-visual">
+                        <img alt="외출 시간과 귀가 시간을 상세히 비교하는 화면" class="story-phone time-phone"
+                             src="reference/new주요기능/와이어프레임2/외출 시간 상세.png">
+                    </div>
+                    <div class="story-note">
+                        <span class="story-step">05 · 시간 변화</span>
+                        <h4>외출/귀가 시간</h4>
+                        <p>외출과 귀가 시간의 평균을 비교해 하루 리듬이 평소와 달라졌는지 확인합니다.</p>
+                        <div class="insight-stack">
+                            <div class="insight-card">
+                                <span class="insight-label">개인 사용자</span>
+                                생활 루틴을 되돌아보고 규칙적인 활동을 유지하는 데 도움을 줍니다.
+                            </div>
+                            <div class="insight-card care">
+                                <span class="insight-label">보호자</span>
+                                평소보다 늦은 귀가처럼 주의가 필요한 변화를 확인할 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="story-block neighborhood-story">
+                    <div class="story-copy">
+                        <span class="story-step">06 · 방문 지역</span>
+                        <h4>방문 동네 분석</h4>
+                        <p>자주 방문한 지역과 장소를 정리해 익숙한 생활권과 낯선 이동 변화를 함께 보여줍니다.</p>
+                        <div class="insight-stack">
+                            <div class="insight-card">
+                                <span class="insight-label">개인 사용자</span>
+                                방문한 주요 지역을 한눈에 확인합니다.
+                            </div>
+                            <div class="insight-card care">
+                                <span class="insight-label">보호자</span>
+                                익숙하지 않은 지역 방문이 늘어나면 이상 상황을 인지할 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="story-visual">
+                        <div class="story-duo">
+                            <div class="story-duo-item">
+                                <span class="story-duo-label">하루 요약</span>
+                                <img alt="하루 요약에 표시된 방문 동네 목록" class="story-phone summary-phone"
+                                     src="reference/new주요기능/와이어프레임2/방문동네 하루요약.png">
+                            </div>
+                            <div class="story-duo-item">
+                                <span class="story-duo-label">동네 상세</span>
+                                <img alt="방문한 동네와 장소를 상세 통계로 보여주는 화면"
+                                     class="story-phone region-phone"
+                                     src="reference/new주요기능/와이어프레임2/방문 동네 및 장소 상세.png">
+                            </div>
+                        </div>
                     </div>
                 </article>
             </div>
