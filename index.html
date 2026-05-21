@@ -150,7 +150,7 @@
         }
 
         .features {
-            padding: 128px 400px 164px;
+            padding: 128px 0 164px;
             background: transparent;
             color: var(--ink);
         }
@@ -158,11 +158,11 @@
         .features-head {
             width: min(980px, calc(100% - 40px));
             margin: 0 auto 42px;
-            text-align: center;
+            text-align: left;
         }
 
         .features-label {
-            margin: 0 auto;
+            margin: 0 0 32px;
         }
 
         .section-tag {
@@ -390,6 +390,10 @@
             font-size: clamp(1.34rem, 2.45vw, 2.6rem);
         }
 
+        .story-block.stack .story-note h4 {
+            font-size: clamp(1.28rem, 2.35vw, 2.5rem);
+        }
+
         .story-copy p,
         .story-note p {
             margin: 0;
@@ -438,7 +442,7 @@
 
         .story-phone.place-phone {
             margin-left: 0;
-            max-height: clamp(390px, 43vw, 610px);
+            max-height: clamp(320px, 35vw, 500px);
         }
 
         .callout {
@@ -561,7 +565,7 @@
 
         .architecture-image {
             display: block;
-            width: 100%;
+            width: min(100%, 860px);
             height: auto;
             margin: 0 auto;
             object-fit: contain;
@@ -680,7 +684,7 @@
             .features-head {
                 width: min(100% - 32px, 900px);
                 margin: 0 auto 34px;
-                text-align: center;
+                text-align: left;
             }
 
             .feature-story {
