@@ -25,9 +25,7 @@
             min-height: 100vh;
             color: var(--ink);
             font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at 10% 38%, rgba(255, 255, 255, 0.7), transparent 24rem),
-            radial-gradient(circle at 86% 28%, rgba(255, 255, 255, 0.66), transparent 20rem),
-            linear-gradient(120deg, #cceff1 0%, #f7ffff 36%, #ffffff 50%, #cbeff1 100%);
+            background: #d8f3f2;
         }
 
         a {
@@ -83,9 +81,9 @@
         }
 
         main {
-            background: radial-gradient(circle at 18% 28%, rgba(183, 232, 234, 0.34), transparent 26rem),
-            radial-gradient(circle at 84% 58%, rgba(255, 255, 255, 0.72), transparent 24rem),
-            linear-gradient(180deg, #ffffff 0%, #eefcfc 48%, #eefcfc 100%);
+            background: radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.52), transparent 27rem),
+            radial-gradient(circle at 86% 45%, rgba(255, 255, 255, 0.42), transparent 30rem),
+            linear-gradient(180deg, #d8f3f2 0%, #e4f8f7 42%, #eefcfc 100%);
         }
 
         .hero {
@@ -106,7 +104,7 @@
             bottom: -54px;
             height: 108px;
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            background: #f5ffff;
+            background: #d8f3f2;
         }
 
         .hero-frame {
@@ -139,7 +137,7 @@
         .concept {
             position: relative;
             padding: 72px 0 104px;
-            background: linear-gradient(180deg, #f5ffff 0%, #eefcfc 100%);
+            background: transparent;
         }
 
         .concept-image {
@@ -152,14 +150,15 @@
         }
 
         .features {
-            padding: 96px 0 122px;
+            padding: 128px 400px 164px;
             background: transparent;
+            color: var(--ink);
         }
 
         .features-head {
-            width: min(1180px, calc(100% - 40px));
-            margin: 0 auto 52px;
-            text-align: left;
+            width: min(980px, calc(100% - 40px));
+            margin: 0 auto 42px;
+            text-align: center;
         }
 
         .features-label {
@@ -180,6 +179,7 @@
             font-size: clamp(0.98rem, 1.35vw, 1.16rem);
             font-weight: 900;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .features-subtitle {
@@ -274,6 +274,246 @@
             font-size: 0.98rem;
             font-weight: 700;
             line-height: 1.62;
+        }
+
+        .feature-story {
+            width: min(980px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .story-flow {
+            position: relative;
+            display: grid;
+            align-items: center;
+            gap: 72px;
+        }
+
+        .story-block {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+            min-height: 540px;
+            display: grid;
+            grid-template-columns: 0.88fr 1.12fr;
+            align-items: center;
+            gap: clamp(24px, 5vw, 72px);
+            animation: featureRise 0.9s ease both;
+        }
+
+        .story-block:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .story-block:nth-child(3) {
+            animation-delay: 0.24s;
+        }
+
+        .story-block.record-story {
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: clamp(18px, 3vw, 42px);
+        }
+
+        .story-block.record-story .story-visual {
+            width: min(100%, 470px);
+            margin: 0 auto;
+        }
+
+        .story-block.record-story .story-phone {
+            max-height: clamp(320px, 38vw, 500px);
+            transform: translateX(-34px);
+        }
+
+        .story-block.reverse {
+            width: min(100%, 980px);
+            grid-template-columns: minmax(300px, 0.82fr) minmax(430px, 1.18fr);
+            gap: clamp(28px, 4vw, 58px);
+        }
+
+        .story-block.reverse .story-copy {
+            max-width: 360px;
+        }
+
+        .story-block.stack {
+            min-height: 650px;
+            grid-template-columns: 0.92fr 1.08fr;
+            align-items: start;
+        }
+
+        .story-copy {
+            position: relative;
+            z-index: 1;
+            justify-self: start;
+            max-width: 360px;
+        }
+
+        .story-icon {
+            display: grid;
+            place-items: center;
+            width: 62px;
+            height: 62px;
+            margin-bottom: 26px;
+            border-radius: 50%;
+            background: #76dbe1;
+            font-size: 1.85rem;
+            box-shadow: 0 18px 36px rgba(38, 173, 184, 0.24);
+        }
+
+        .story-step {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            color: var(--teal);
+            background: rgba(191, 236, 238, 0.62);
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
+        .story-copy h4,
+        .story-note h4 {
+            margin: 16px 0 10px;
+            color: var(--teal);
+            font-size: clamp(1.5rem, 3vw, 3.3rem);
+            line-height: 1.12;
+        }
+
+        .story-block.record-story .story-copy h4 {
+            font-size: clamp(1.4rem, 2.6vw, 2.85rem);
+        }
+
+        .story-block.reverse .story-copy h4 {
+            font-size: clamp(1.34rem, 2.45vw, 2.6rem);
+        }
+
+        .story-copy p,
+        .story-note p {
+            margin: 0;
+            color: #4f6575;
+            font-size: clamp(0.88rem, 1.18vw, 1.08rem);
+            font-weight: 750;
+            line-height: 1.62;
+        }
+
+        .story-visual {
+            position: relative;
+            z-index: 1;
+            min-height: 500px;
+            width: min(100%, 560px);
+            justify-self: center;
+        }
+
+        .story-phone {
+            display: block;
+            width: auto;
+            max-width: 100%;
+            max-height: clamp(360px, 46vw, 590px);
+            margin: 0 auto;
+            object-fit: contain;
+            filter: drop-shadow(0 24px 34px rgba(15, 105, 112, 0.16));
+            animation: floatFeature 6s ease-in-out infinite;
+        }
+
+        .story-phone.small-phone {
+            max-height: clamp(330px, 36vw, 500px);
+        }
+
+        .story-phone.route-phone {
+            position: absolute;
+            right: 10px;
+            top: 94px;
+            max-height: clamp(300px, 31vw, 480px);
+        }
+
+        .story-phone.calendar-phone {
+            position: absolute;
+            left: 6px;
+            top: 136px;
+            max-height: clamp(290px, 30vw, 460px);
+        }
+
+        .story-phone.place-phone {
+            margin-left: 0;
+            max-height: clamp(390px, 43vw, 610px);
+        }
+
+        .callout {
+            position: absolute;
+            z-index: 3;
+            max-width: 300px;
+            padding: 13px 18px;
+            border-radius: 999px;
+            color: #40566b;
+            background: linear-gradient(180deg, rgba(234, 253, 254, 0.96), rgba(208, 244, 246, 0.94));
+            border: 1px solid rgba(25, 170, 180, 0.24);
+            box-shadow:
+                0 16px 32px rgba(15, 105, 112, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            font-size: clamp(0.8rem, 0.98vw, 0.98rem);
+            font-weight: 900;
+            line-height: 1.35;
+        }
+
+        .callout.list {
+            right: -20px;
+            bottom: 16px;
+            max-width: 370px;
+            border-radius: 44px;
+            color: var(--teal);
+            font-size: clamp(0.78rem, 1vw, 1rem);
+        }
+
+        .callout.toggle {
+            right: -84px;
+            top: 82px;
+        }
+
+        .story-block.record-story .callout.toggle {
+            right: -12px;
+        }
+
+        .story-block.record-story .callout.list {
+            right: -6px;
+        }
+
+        .callout.date {
+            left: 14px;
+            top: 56px;
+        }
+
+        .callout.route {
+            right: 54px;
+            top: 24px;
+        }
+
+        .callout.place {
+            left: 44px;
+            top: -82px;
+        }
+
+        .story-arrow.big-arrow {
+            position: absolute;
+            left: 48%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            place-items: center;
+            color: #1aaeb8;
+            font-size: clamp(3.2rem, 7vw, 6rem);
+            font-weight: 900;
+        }
+
+        .story-note {
+            align-self: end;
+            padding-bottom: 78px;
+        }
+
+        .story-note,
+        .story-block.stack .story-visual {
+            position: relative;
+            z-index: 1;
         }
 
         .demo {
@@ -436,6 +676,87 @@
             }
         }
 
+        @keyframes featureRise {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .features-head {
+                width: min(100% - 32px, 900px);
+                margin: 0 auto 34px;
+                text-align: center;
+            }
+
+            .feature-story {
+                width: min(100% - 32px, 900px);
+            }
+
+            .story-flow {
+                gap: 68px;
+            }
+
+            .story-block,
+            .story-block.reverse,
+            .story-block.stack {
+                width: 100%;
+                grid-template-columns: 1fr;
+                min-height: auto;
+                gap: 26px;
+            }
+
+            .story-copy,
+            .story-block.reverse .story-copy,
+            .story-note {
+                max-width: 100%;
+                justify-self: center;
+                text-align: center;
+            }
+
+            .story-visual,
+            .story-block.record-story .story-visual {
+                width: min(100%, 560px);
+                min-height: auto;
+            }
+
+            .story-block.record-story .story-phone {
+                transform: translateX(-10px);
+            }
+
+            .story-phone {
+                max-height: 340px;
+            }
+
+            .story-phone.route-phone,
+            .story-phone.calendar-phone {
+                position: static;
+            }
+
+            .story-phone.place-phone {
+                margin: 0 auto;
+            }
+
+            .callout {
+                position: static;
+                width: fit-content;
+                max-width: 100%;
+                margin: 14px auto 0;
+            }
+
+            .story-arrow.big-arrow {
+                position: static;
+                transform: none;
+                margin: 8px auto;
+                font-size: 3rem;
+            }
+        }
+
         @media (max-width: 720px) {
             .site-header {
                 padding: 12px 0;
@@ -474,7 +795,7 @@
             }
 
             .features {
-                padding: 68px 0 84px;
+                padding: 84px 0 104px;
             }
 
             .features-head,
@@ -506,6 +827,93 @@
 
             .feature-image {
                 max-height: clamp(220px, 74vw, 310px);
+            }
+
+            .feature-story {
+                width: min(100% - 28px, 1180px);
+                padding: 18px;
+                border-radius: 26px;
+            }
+
+            .story-flow {
+                gap: 72px;
+            }
+
+            .story-block,
+            .story-block.reverse,
+            .story-block.stack {
+                width: 100%;
+                grid-template-columns: 1fr;
+                min-height: auto;
+                gap: 28px;
+            }
+
+            .story-block.record-story .story-phone {
+                transform: translateX(-10px);
+            }
+
+            .story-icon {
+                width: 58px;
+                height: 58px;
+                margin-bottom: 18px;
+                font-size: 1.7rem;
+            }
+
+            .story-copy h4,
+            .story-note h4 {
+                font-size: clamp(1.78rem, 9.4vw, 2.72rem);
+            }
+
+            .story-block.reverse .story-copy h4 {
+                font-size: clamp(1.58rem, 8.4vw, 2.34rem);
+            }
+
+            .story-copy p,
+            .story-note p {
+                font-size: 0.98rem;
+            }
+
+            .story-phone {
+                max-height: 360px;
+                animation: none;
+            }
+
+            .story-visual {
+                min-height: auto;
+                width: 100%;
+            }
+
+            .story-phone.route-phone,
+            .story-phone.calendar-phone {
+                position: static;
+            }
+
+            .story-phone.place-phone {
+                margin: 0 auto;
+            }
+
+            .callout {
+                position: static;
+                width: fit-content;
+                max-width: 100%;
+                margin: 14px auto 0;
+                padding: 13px 18px;
+                font-size: 0.95rem;
+            }
+
+            .callout.list {
+                border-radius: 24px;
+            }
+
+            .story-arrow.big-arrow {
+                position: static;
+                transform: none;
+                margin: 6px auto;
+                font-size: 3.4rem;
+            }
+
+            .story-note {
+                padding-bottom: 0;
             }
 
             .demo {
@@ -593,88 +1001,51 @@
         <div class="features-head">
             <h4 class="features-label section-tag" id="features-title">주요 기능</h4>
         </div>
-        <div class="feature-group">
-            <div class="feature-list">
-                <article class="feature-panel">
-                    <img alt="날짜별 이동 경로를 조회하는 캘린더 화면" class="feature-image"
-                         src="reference/나의길/날짜별조회.png">
-                    <div class="feature-caption">
-                        <h4>날짜별 이동 경로 조회</h4>
-                    </div>
-                </article>
-                <article class="feature-panel">
-                    <img alt="지도 위에 하루 이동 경로가 표시된 나의 길 메인 화면" class="feature-image"
-                         src="reference/나의길/나의길메인.png">
-                    <div class="feature-caption">
+        <div class="feature-story">
+            <div class="story-flow">
+                <article class="story-block record-story">
+                    <div class="story-copy">
+                        <span class="story-step">01 · 실시간 기록</span>
                         <h4>이동 경로 기록</h4>
+                        <p>하루 동안의 위치 좌표가 지도 위 경로로 이어지고, 방문 장소와 하루 요약의 시작점이 됩니다.</p>
+                    </div>
+                    <div class="story-visual">
+                        <img alt="지도 위에 하루 이동 경로가 표시된 나의 길 메인 화면" class="story-phone"
+                             src="reference/new주요기능/나의길메인.png">
+                        <div class="callout toggle">위치 수집 ON/OFF 버튼</div>
+                        <div class="callout list">하루 기록 구성 요소<br>1. 방문 장소 리스트<br>2. 하루 메모<br>3. 위치
+                            데이터 기반 하루 요약
+                        </div>
                     </div>
                 </article>
-                <article class="feature-panel">
-                    <img alt="하루 경로에 메모를 작성하는 화면" class="feature-image"
-                         src="reference/나의길/메모작성.png">
-                    <div class="feature-caption">
-                        <h4>메모 작성</h4>
+
+                <article class="story-block reverse">
+                    <div class="story-copy">
+                        <span class="story-step">02 · 다시 보기</span>
+                        <h4>날짜별 <br>이동 경로 조회</h4>
+                        <p>과거의 하루를 다시 떠올리는 회고 기능으로, 날짜를 고르면 해당 날의 이동 경로를 불러옵니다.</p>
+                    </div>
+                    <div class="story-visual">
+                        <div class="callout date">날짜 선택</div>
+                        <img alt="날짜별 이동 경로를 조회하는 캘린더 화면" class="story-phone calendar-phone"
+                             src="reference/new주요기능/날짜별조회.png">
+                        <div aria-hidden="true" class="story-arrow big-arrow">→</div>
+                        <div class="callout route">과거 날짜 조회</div>
+                        <img alt="과거 날짜의 이동 경로가 지도에 표시된 화면" class="story-phone route-phone"
+                             src="reference/new주요기능/과거 날짜 조회.png">
                     </div>
                 </article>
-            </div>
-        </div>
-        <div class="feature-group companion">
-            <div class="feature-list companion-list">
-                <article class="feature-panel">
-                    <img alt="보호 대상자의 실시간 위치를 확인하는 함께 가는 길 화면" class="feature-image"
-                         src="reference/함께 가는 길/보호 대상자의 실시간 위치 확인.png">
-                    <div class="feature-caption">
-                        <h4>보호 대상자의 실시간 위치 확인</h4>
+
+                <article class="story-block stack">
+                    <div class="story-visual">
+                        <div class="callout place">장소 리스트</div>
+                        <img alt="체류 장소가 자동 저장된 방문 장소 목록 화면" class="story-phone place-phone"
+                             src="reference/new주요기능/체류 장소 자동 저장.png">
                     </div>
-                </article>
-                <article class="feature-panel">
-                    <img alt="보호 대상자의 이동 경로를 확인하는 함께 가는 길 화면" class="feature-image"
-                         src="reference/함께 가는 길/보호자의 이동 경로 확인.png">
-                    <div class="feature-caption">
-                        <h4>보호 대상자의 이동 경로 확인</h4>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="feature-group">
-            <div class="feature-list companion-list">
-                <article class="feature-panel">
-                    <img alt="체류 장소를 자동으로 저장하는 기능 화면" class="feature-image"
-                         src="reference/체류,외출귀가/체류 장소 자동 저장.png">
-                    <div class="feature-caption">
+                    <div class="story-note">
+                        <span class="story-step">03 · 자동 정리</span>
                         <h4>체류 장소 자동 저장</h4>
-                    </div>
-                </article>
-                <article class="feature-panel">
-                    <img alt="외출과 귀가 시각을 자동으로 기록하는 기능 화면" class="feature-image"
-                         src="reference/체류,외출귀가/외출·귀가 시각 자동 기록.png">
-                    <div class="feature-caption">
-                        <h4>외출·귀가 시각 자동 기록</h4>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="feature-group">
-            <div class="feature-list">
-                <article class="feature-panel">
-                    <img alt="주간 생활 패턴 변화량 통계 화면" class="feature-image"
-                         src="reference/통계/주간 생활 패턴 변화량.png">
-                    <div class="feature-caption">
-                        <h4>주간 생활 패턴 변화량</h4>
-                    </div>
-                </article>
-                <article class="feature-panel">
-                    <img alt="외출과 귀가 시각 통계 화면" class="feature-image"
-                         src="reference/통계/외출·귀가 시각 통계.png">
-                    <div class="feature-caption">
-                        <h4>외출·귀가 시각 통계</h4>
-                    </div>
-                </article>
-                <article class="feature-panel">
-                    <img alt="방문한 지역 및 장소 통계 화면" class="feature-image"
-                         src="reference/통계/방문한 지역 및 장소 통계.png">
-                    <div class="feature-caption">
-                        <h4>방문한 지역 및 장소 통계</h4>
+                        <p>사용자가 오래 머문 장소와 시간을 자동으로 저장해, 하루를 되짚는 기억의 단서로 남깁니다.</p>
                     </div>
                 </article>
             </div>
