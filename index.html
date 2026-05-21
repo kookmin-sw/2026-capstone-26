@@ -41,6 +41,14 @@
             background: rgba(255, 255, 255, 0.58);
             backdrop-filter: blur(18px);
             border-bottom: 1px solid rgba(15, 105, 112, 0.08);
+            transform: translateY(0);
+            transition: transform 0.32s ease, opacity 0.32s ease;
+            will-change: transform;
+        }
+
+        .site-header.is-hidden {
+            opacity: 0;
+            transform: translateY(-100%);
         }
 
         .nav {
@@ -198,7 +206,10 @@
 
         .features {
             padding: 128px 0 164px;
-            background: transparent;
+            background: radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.86), transparent 26rem),
+            radial-gradient(circle at 88% 42%, rgba(130, 215, 219, 0.22), transparent 30rem),
+            radial-gradient(circle at 18% 82%, rgba(255, 255, 255, 0.7), transparent 26rem),
+            linear-gradient(180deg, #ffffff 0%, #f5ffff 16%, #d7f2f1 50%, #f4ffff 84%, #ffffff 100%);
             color: var(--ink);
         }
 
@@ -426,6 +437,67 @@
             max-width: 360px;
         }
 
+        .story-block.record-story .story-copy::before,
+        .story-block.reverse .story-copy::before,
+        .story-block.stack .story-note::before,
+        .story-block.summary-story .story-copy::before,
+        .story-block.time-story .story-note::before,
+        .story-block.neighborhood-story .story-copy::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            transform: translate(-50%, -50%);
+            border-radius: 999px;
+            background: radial-gradient(circle at 34% 42%, rgba(255, 255, 255, 0.8), transparent 35%),
+            radial-gradient(circle at 58% 54%, rgba(151, 224, 227, 0.42), transparent 64%);
+            filter: blur(24px);
+            opacity: 0.78;
+            pointer-events: none;
+        }
+
+        .story-block.record-story .story-copy::before {
+            left: 15%;
+            top: 52%;
+            width: clamp(300px, 70vw, 580px);
+            aspect-ratio: 1.95;
+            opacity: 0.86;
+        }
+
+        .story-block.reverse .story-copy::before {
+            left: 15%;
+            top: 52%;
+            width: clamp(300px, 70vw, 580px);
+            aspect-ratio: 1.9;
+        }
+
+        .story-block.stack .story-note::before {
+            left: 10%;
+            top: 52%;
+            width: clamp(300px, 70vw, 580px);
+            aspect-ratio: 1.9;
+        }
+
+        .story-block.summary-story .story-copy::before {
+            left: 15%;
+            top: 15%;
+            width: clamp(300px, 70vw, 580px);
+            aspect-ratio: 1.9;
+        }
+
+        .story-block.time-story .story-note::before {
+            left: 5%;
+            top: 15%;
+            width: clamp(300px, 70vw, 580px);
+            aspect-ratio: 1.9;
+        }
+
+        .story-block.neighborhood-story .story-copy::before {
+            left: 8%;
+            top: 15%;
+            width: clamp(300px, 70vw, 600px);
+            aspect-ratio: 1.7;
+        }
+
         .story-icon {
             display: grid;
             place-items: center;
@@ -474,13 +546,13 @@
         }
 
         .story-block.stack .story-note h4 {
-            font-size: clamp(1.28rem, 2.35vw, 2.5rem);
+            font-size: clamp(1.16rem, 2vw, 2.25rem);
         }
 
         .story-block.summary-story .story-copy h4,
         .story-block.time-story .story-note h4,
         .story-block.neighborhood-story .story-copy h4 {
-            font-size: clamp(1.28rem, 2.35vw, 2.5rem);
+            font-size: clamp(1.16rem, 2vw, 2.25rem);
         }
 
         .story-copy p,
@@ -853,6 +925,71 @@
             line-height: 1.25;
         }
 
+        .final-cta {
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            min-height: 35vh;
+            padding: clamp(34px, 4.5vw, 58px) 20px;
+            background: radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.14), transparent 24rem),
+            radial-gradient(circle at 72% 72%, rgba(15, 105, 112, 0.16), transparent 26rem),
+            linear-gradient(135deg, #56bcc0 0%, #45aeb3 54%, #3da6ab 100%);
+            text-align: center;
+        }
+
+        .final-cta::before,
+        .final-cta::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        .final-cta::before {
+            width: 220px;
+            height: 220px;
+            left: 8%;
+            top: 18%;
+        }
+
+        .final-cta::after {
+            width: 320px;
+            height: 320px;
+            right: 9%;
+            bottom: -110px;
+        }
+
+        .final-cta-inner {
+            position: relative;
+            z-index: 1;
+            width: min(980px, 100%);
+            margin: 0 auto;
+        }
+
+        .final-cta-title {
+            margin: clamp(42px, 4vw, 64px) auto clamp(20px, 3vw, 34px);
+            color: #ffffff;
+            font-size: clamp(0.96rem, 1.9vw, 1.8rem);
+            font-weight: 650;
+            line-height: 1.2;
+            letter-spacing: 0;
+        }
+
+        .final-cta-title .highlight {
+            color: #ffd78f;
+        }
+
+        .final-cta-logo {
+            display: block;
+            width: clamp(96px, 10vw, 160px);
+            height: auto;
+            margin: 0 auto;
+            filter: drop-shadow(0 28px 44px rgba(15, 105, 112, 0.24));
+        }
+
         @keyframes floatFeature {
             0%, 100% {
                 translate: 0 0;
@@ -1181,6 +1318,15 @@
                 grid-template-columns: 1fr;
             }
 
+            .final-cta {
+                min-height: 35vh;
+                padding: 34px 18px;
+            }
+
+            .final-cta-title {
+                font-size: clamp(0.92rem, 4.6vw, 1.38rem);
+            }
+
         }
     </style>
 </head>
@@ -1462,6 +1608,32 @@
             </div>
         </div>
     </section>
+    <section aria-label="길벗 하단 메시지" class="final-cta">
+        <div class="final-cta-inner">
+            <h2 class="final-cta-title">
+                <span class="highlight">길벗</span>이 당신의 모든 발걸음을<br>
+                곁에서 함께합니다.
+            </h2>
+            <img alt="길벗 로고" class="final-cta-logo" src="reference/로고/길벗 로고 물방울.png">
+        </div>
+    </section>
 </main>
+<script>
+  const siteHeader = document.querySelector(".site-header");
+  let lastScrollY = window.scrollY;
+
+  window.addEventListener("scroll", () => {
+    const currentScrollY = window.scrollY;
+    const scrollingDown = currentScrollY > lastScrollY;
+
+    if (currentScrollY > 80 && scrollingDown) {
+      siteHeader.classList.add("is-hidden");
+    } else {
+      siteHeader.classList.remove("is-hidden");
+    }
+
+    lastScrollY = currentScrollY;
+  }, {passive: true});
+</script>
 </body>
 </html>
