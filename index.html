@@ -83,10 +83,9 @@
         }
 
         main {
-            background:
-                    radial-gradient(circle at 18% 28%, rgba(183, 232, 234, 0.34), transparent 26rem),
-                    radial-gradient(circle at 84% 58%, rgba(255, 255, 255, 0.72), transparent 24rem),
-                    linear-gradient(180deg, #ffffff 0%, #eefcfc 48%, #eefcfc 100%);
+            background: radial-gradient(circle at 18% 28%, rgba(183, 232, 234, 0.34), transparent 26rem),
+            radial-gradient(circle at 84% 58%, rgba(255, 255, 255, 0.72), transparent 24rem),
+            linear-gradient(180deg, #ffffff 0%, #eefcfc 48%, #eefcfc 100%);
         }
 
         .hero {
@@ -165,10 +164,22 @@
 
         .features-label {
             margin: 0;
-            color: var(--teal);
-            font-size: clamp(1.55rem, 2.6vw, 2.25rem);
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 999px;
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+            box-shadow: 0 14px 30px rgba(15, 105, 112, 0.18);
+            font-size: clamp(0.98rem, 1.35vw, 1.16rem);
             font-weight: 900;
-            line-height: 1.16;
+            line-height: 1;
         }
 
         .features-subtitle {
@@ -277,10 +288,6 @@
 
         .demo-title {
             margin: 0 0 32px;
-            color: var(--teal);
-            font-size: clamp(1.55rem, 2.6vw, 2.25rem);
-            font-weight: 900;
-            line-height: 1.16;
         }
 
         .video-frame {
@@ -298,6 +305,126 @@
             width: 100%;
             height: 100%;
             border: 0;
+        }
+
+        .architecture {
+            padding: 100px 0 128px;
+            background: transparent;
+        }
+
+        .architecture-inner {
+            width: min(1120px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        .architecture-title {
+            margin: 0 0 32px;
+        }
+
+        .architecture-card {
+            padding: clamp(18px, 3vw, 32px);
+            border-radius: 32px;
+            border: 1px solid rgba(15, 105, 112, 0.1);
+            background: radial-gradient(circle at 18% 18%, rgba(191, 236, 238, 0.32), transparent 22rem),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 255, 255, 0.9));
+            box-shadow: 0 22px 60px rgba(15, 105, 112, 0.12);
+        }
+
+        .architecture-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        .stack {
+            padding: 96px 0 132px;
+            background: transparent;
+        }
+
+        .stack-inner {
+            width: min(1120px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        .stack-title {
+            margin: 0 0 34px;
+        }
+
+        .stack-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 26px;
+        }
+
+        .stack-group {
+            padding: clamp(22px, 3vw, 34px);
+            border-radius: 32px;
+            border: 1px solid rgba(15, 105, 112, 0.1);
+            background: radial-gradient(circle at 18% 18%, rgba(191, 236, 238, 0.32), transparent 18rem),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 255, 255, 0.9));
+            box-shadow: 0 22px 60px rgba(15, 105, 112, 0.1);
+        }
+
+        .stack-group h5 {
+            margin: 0 0 22px;
+            color: var(--teal);
+            font-size: clamp(1.35rem, 2.2vw, 2rem);
+            line-height: 1.2;
+        }
+
+        .stack-items {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .stack-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 74px;
+            padding: 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(15, 105, 112, 0.08);
+        }
+
+        .stack-logo {
+            display: grid;
+            place-items: center;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(15, 105, 112, 0.08);
+        }
+
+        .stack-logo img {
+            display: block;
+            max-width: 32px;
+            max-height: 32px;
+        }
+
+        .stack-mark {
+            display: grid;
+            place-items: center;
+            flex: 0 0 42px;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+            font-size: 0.9rem;
+            font-weight: 900;
+        }
+
+        .stack-name {
+            color: #20384d;
+            font-weight: 900;
+            line-height: 1.25;
         }
 
         @keyframes floatFeature {
@@ -394,6 +521,46 @@
                 border-radius: 24px;
             }
 
+            .section-tag {
+                min-height: 38px;
+                padding: 0 15px;
+            }
+
+            .architecture {
+                padding: 72px 0 88px;
+            }
+
+            .architecture-inner {
+                width: min(100% - 28px, 1120px);
+            }
+
+            .architecture-card {
+                border-radius: 24px;
+                padding: 16px;
+            }
+
+            .stack {
+                padding: 72px 0 92px;
+            }
+
+            .stack-inner {
+                width: min(100% - 28px, 1120px);
+            }
+
+            .stack-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .stack-group {
+                border-radius: 24px;
+                padding: 20px;
+            }
+
+            .stack-items {
+                grid-template-columns: 1fr;
+            }
+
         }
     </style>
 </head>
@@ -424,7 +591,7 @@
     </section>
     <section aria-labelledby="features-title" class="features" id="features">
         <div class="features-head">
-            <h4 class="features-label" id="features-title">주요 기능</h4>
+            <h4 class="features-label section-tag" id="features-title">주요 기능</h4>
         </div>
         <div class="feature-group">
             <div class="feature-list">
@@ -515,14 +682,112 @@
     </section>
     <section aria-labelledby="demo-title" class="demo" id="demo">
         <div class="demo-inner">
-            <h4 class="demo-title" id="demo-title">시연 영상</h4>
+            <h4 class="demo-title section-tag" id="demo-title">시연 영상</h4>
             <div class="video-frame">
                 <iframe
-                        title="길벗 서비스 시연 영상"
-                        src="https://www.youtube.com/embed/JXuCr7dzy6Y"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen>
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    src="https://www.youtube.com/embed/JXuCr7dzy6Y"
+                    title="길벗 서비스 시연 영상">
                 </iframe>
+            </div>
+        </div>
+    </section>
+    <section aria-labelledby="architecture-title" class="architecture" id="architecture">
+        <div class="architecture-inner">
+            <h4 class="architecture-title section-tag" id="architecture-title">시스템 아키텍처</h4>
+            <div class="architecture-card">
+                <img alt="길벗 서비스 시스템 아키텍처 구성도" class="architecture-image"
+                     src="reference/길벗_아키텍쳐.png">
+            </div>
+        </div>
+    </section>
+    <section aria-labelledby="stack-title" class="stack" id="stack">
+        <div class="stack-inner">
+            <h4 class="stack-title section-tag" id="stack-title">기술 스택</h4>
+            <div class="stack-grid">
+                <article class="stack-group">
+                    <h5>Android</h5>
+                    <div class="stack-items">
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/kotlin/7F52FF"></span><span
+                            class="stack-name">Kotlin</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/android/3DDC84"></span><span
+                            class="stack-name">Android</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/jetpackcompose/4285F4"></span><span
+                            class="stack-name">Jetpack Compose</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/materialdesign/757575"></span><span
+                            class="stack-name">Material 3</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/sqlite/003B57"></span><span
+                            class="stack-name">Room</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/google/4285F4"></span><span
+                            class="stack-name">DataStore</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/square/3E4348"></span><span
+                            class="stack-name">Retrofit</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/square/3E4348"></span><span
+                            class="stack-name">OkHttp</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/googlemaps/4285F4"></span><span
+                            class="stack-name">Maps Compose</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/kakao/FFCD00"></span><span
+                            class="stack-name">Kakao SDK</span></div>
+                    </div>
+                </article>
+                <article class="stack-group">
+                    <h5>Backend</h5>
+                    <div class="stack-items">
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/openjdk/000000"></span><span
+                            class="stack-name">Java 21</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/springboot/6DB33F"></span><span
+                            class="stack-name">Spring Boot</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/gradle/02303A"></span><span
+                            class="stack-name">Gradle</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/hibernate/59666C"></span><span
+                            class="stack-name">Spring Data JPA</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/springsecurity/6DB33F"></span><span
+                            class="stack-name">Spring Security</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/jsonwebtokens/000000"></span><span
+                            class="stack-name">JWT</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/mysql/4479A1"></span><span
+                            class="stack-name">MySQL</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/redis/DC382D"></span><span
+                            class="stack-name">Redis</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/docker/2496ED"></span><span
+                            class="stack-name">Docker</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/kakao/FFCD00"></span><span
+                            class="stack-name">Kakao Local API</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="reference/로고/ec2.png"></span><span
+                            class="stack-name">AWS EC2</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="reference/로고/ecr.png"></span><span
+                            class="stack-name">AWS ECR</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="reference/로고/rds.png"></span><span
+                            class="stack-name">AWS RDS</span></div>
+                        <div class="stack-item"><span class="stack-logo"><img alt=""
+                                                                              src="https://cdn.simpleicons.org/githubactions/2088FF"></span><span
+                            class="stack-name">GitHub Actions</span></div>
+                    </div>
+                </article>
             </div>
         </div>
     </section>
