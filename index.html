@@ -733,6 +733,17 @@
             font-size: clamp(0.78rem, 1vw, 1rem);
         }
 
+        .callout-title {
+            display: block;
+            font-weight: 900;
+        }
+
+        .callout-body {
+            display: block;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
         .callout.toggle {
             right: -84px;
             top: 82px;
@@ -1376,8 +1387,9 @@
                         <img alt="지도 위에 하루 이동 경로가 표시된 나의 길 메인 화면" class="story-phone"
                              src="assets/images/features/나의길메인.png">
                         <div class="callout toggle">위치 수집 ON/OFF 버튼</div>
-                        <div class="callout list">하루 기록 구성 요소<br>1. 방문 장소 리스트<br>2. 하루 메모<br>3. 위치
-                            데이터 기반 하루 요약
+                        <div class="callout list">
+                            <span class="callout-title">하루 기록 구성 요소</span>
+                            <span class="callout-body">1. 방문 장소 리스트<br>2. 하루 메모<br>3. 위치 데이터 기반 하루 요약</span>
                         </div>
                     </div>
                 </article>
