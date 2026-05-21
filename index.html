@@ -162,7 +162,7 @@
         }
 
         .features-label {
-            margin: 0;
+            margin: 0 auto;
         }
 
         .section-tag {
@@ -286,6 +286,8 @@
             position: relative;
             display: grid;
             align-items: center;
+            width: 100%;
+            margin: 0 auto;
             gap: 72px;
         }
 
@@ -448,9 +450,8 @@
             color: #40566b;
             background: linear-gradient(180deg, rgba(234, 253, 254, 0.96), rgba(208, 244, 246, 0.94));
             border: 1px solid rgba(25, 170, 180, 0.24);
-            box-shadow:
-                0 16px 32px rgba(15, 105, 112, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            box-shadow: 0 16px 32px rgba(15, 105, 112, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
             font-size: clamp(0.8rem, 0.98vw, 0.98rem);
             font-weight: 900;
             line-height: 1.35;
@@ -491,18 +492,6 @@
         .callout.place {
             left: 44px;
             top: -82px;
-        }
-
-        .story-arrow.big-arrow {
-            position: absolute;
-            left: 48%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            display: grid;
-            place-items: center;
-            color: #1aaeb8;
-            font-size: clamp(3.2rem, 7vw, 6rem);
-            font-weight: 900;
         }
 
         .story-note {
@@ -1029,7 +1018,6 @@
                         <div class="callout date">날짜 선택</div>
                         <img alt="날짜별 이동 경로를 조회하는 캘린더 화면" class="story-phone calendar-phone"
                              src="reference/new주요기능/날짜별조회.png">
-                        <div aria-hidden="true" class="story-arrow big-arrow">→</div>
                         <div class="callout route">과거 날짜 조회</div>
                         <img alt="과거 날짜의 이동 경로가 지도에 표시된 화면" class="story-phone route-phone"
                              src="reference/new주요기능/과거 날짜 조회.png">
