@@ -1,5 +1,14 @@
 <div align="center">
 
+<h2>
+  <img src="docs/images/길벗 로고.png" alt="길벗 로고" width="36" align="absmiddle">
+  길벗
+</h2>
+
+</div>
+
+<div align="center">
+
 ### 당신의 하루를 대신 기억합니다
 
 위치 데이터를 기반으로 사용자의 하루를 자동으로 기록하여  
