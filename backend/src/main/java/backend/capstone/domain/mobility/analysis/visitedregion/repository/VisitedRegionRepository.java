@@ -3,6 +3,7 @@ package backend.capstone.domain.mobility.analysis.visitedregion.repository;
 import backend.capstone.domain.mobility.analysis.visitedregion.entity.VisitedRegion;
 import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.region.entity.Region;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,6 +33,20 @@ public interface VisitedRegionRepository extends JpaRepository<VisitedRegion, Lo
         """)
     List<VisitedRegion> findByDayRouteInOrderByTotalStaySecondsDesc(
         @Param("dayRoutes") List<DayRoute> dayRoutes);
+
+    @Query("""
+        select vr
+        from VisitedRegion vr
+        join fetch vr.region r
+        join vr.dayRoute dr
+        where dr.user.id = :userId
+          and dr.date between :startDate and :endDate
+        """)
+    List<VisitedRegion> findByUserIdAndDateBetween(
+        @Param("userId") Long userId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

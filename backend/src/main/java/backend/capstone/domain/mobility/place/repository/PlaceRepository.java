@@ -2,6 +2,7 @@ package backend.capstone.domain.mobility.place.repository;
 
 import backend.capstone.domain.mobility.dayroute.entity.DayRoute;
 import backend.capstone.domain.mobility.place.entity.Place;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +22,19 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     List<Place> findByDayRouteOrderByOrderIndex(DayRoute dayRoute);
 
     boolean existsByDayRoute(DayRoute dayRoute);
+
+    @Query("""
+        select p
+        from Place p
+        join p.dayRoute dr
+        where dr.user.id = :userId
+          and dr.date between :startDate and :endDate
+        """)
+    List<Place> findByUserIdAndDateBetween(
+        @Param("userId") Long userId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
 
     Optional<Place> findByIdAndDayRoute(Long placeId, DayRoute dayRoute);
 
