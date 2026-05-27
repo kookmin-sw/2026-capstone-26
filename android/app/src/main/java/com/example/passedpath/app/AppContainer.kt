@@ -33,24 +33,33 @@ import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoute
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRoutePlacesApi
 import com.example.passedpath.feature.care.data.remote.api.CareDependentDayRouteSummaryApi
 import com.example.passedpath.feature.care.data.remote.api.CareRelationshipInviteApi
+import com.example.passedpath.feature.care.data.remote.api.ProtectedPersonStatisticsApi
 import com.example.passedpath.feature.care.data.repository.CareDependentLocationStreamRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareDependentRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.CareGuideRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.CareRelationshipInviteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDayRouteRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonDaySummaryRepositoryImpl
+import com.example.passedpath.feature.care.data.repository.ProtectedPersonStatisticsRepositoryImpl
 import com.example.passedpath.feature.care.data.repository.ProtectedPersonVisitedPlaceRepositoryImpl
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
+import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonStatisticsRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
 import com.example.passedpath.feature.care.domain.usecase.AcceptCareRelationshipInviteUseCase
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteListUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonStatisticMetricUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitStatisticsUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonWeeklyStatisticsUseCase
 import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.locationtracking.data.local.PassedPathDatabase
 import com.example.passedpath.feature.locationtracking.data.manager.AndroidNetworkConnectivityObserver
@@ -105,9 +114,24 @@ import com.example.passedpath.feature.placebookmark.domain.usecase.DeletePlaceBo
 import com.example.passedpath.feature.placebookmark.domain.usecase.GetPlaceBookmarksUseCase
 import com.example.passedpath.feature.placebookmark.domain.usecase.UpdatePlaceBookmarkUseCase
 import com.example.passedpath.feature.summary.data.remote.api.DayRouteSummaryApi
+import com.example.passedpath.feature.summary.data.remote.api.StatisticMetricApi
+import com.example.passedpath.feature.summary.data.remote.api.VisitStatisticsApi
+import com.example.passedpath.feature.summary.data.remote.api.WeeklyStatisticsApi
 import com.example.passedpath.feature.summary.data.repository.DayRouteSummaryRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.StatisticMetricRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.VisitStatisticsRepositoryImpl
+import com.example.passedpath.feature.summary.data.repository.WeeklyStatisticsRepositoryImpl
 import com.example.passedpath.feature.summary.domain.repository.DayRouteSummaryRepository
+import com.example.passedpath.feature.summary.domain.repository.StatisticMetricRepository
+import com.example.passedpath.feature.summary.domain.repository.VisitStatisticsRepository
+import com.example.passedpath.feature.summary.domain.repository.WeeklyStatisticsRepository
 import com.example.passedpath.feature.summary.domain.usecase.GetDayRouteSummaryUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetEnterHomeTimeStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetOutingTimeStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingCountStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetTotalOutingSecondsStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetVisitStatisticsUseCase
+import com.example.passedpath.feature.summary.domain.usecase.GetWeeklyStatisticsUseCase
 import com.example.passedpath.interceptor.AccessTokenAuthenticator
 import java.util.concurrent.TimeUnit
 import java.time.LocalTime
@@ -162,6 +186,7 @@ class AppContainer(
         )
             .addMigrations(PassedPathDatabase.MIGRATION_1_2)
             .addMigrations(PassedPathDatabase.MIGRATION_2_3)
+            .addMigrations(PassedPathDatabase.MIGRATION_3_4)
             .build()
     }
 
@@ -191,7 +216,7 @@ class AppContainer(
     private val authTokenManager by lazy {
         AuthTokenManager(
             authApi = refreshAuthApi,
-            sessionStorage = authSessionStorage
+            tokenStore = authSessionStorage
         )
     }
 
@@ -199,7 +224,6 @@ class AppContainer(
         RetrofitClient.provideRetrofit(
             sessionStorage = authSessionStorage,
             authenticator = AccessTokenAuthenticator(
-                sessionStorage = authSessionStorage,
                 tokenManager = authTokenManager
             )
         )
@@ -219,6 +243,18 @@ class AppContainer(
 
     private val dayRouteSummaryApi by lazy {
         retrofit.create(DayRouteSummaryApi::class.java)
+    }
+
+    private val weeklyStatisticsApi by lazy {
+        retrofit.create(WeeklyStatisticsApi::class.java)
+    }
+
+    private val visitStatisticsApi by lazy {
+        retrofit.create(VisitStatisticsApi::class.java)
+    }
+
+    private val statisticMetricApi by lazy {
+        retrofit.create(StatisticMetricApi::class.java)
     }
 
     private val calendarMonthlyRouteApi by lazy {
@@ -269,11 +305,14 @@ class AppContainer(
         retrofit.create(CareRelationshipInviteApi::class.java)
     }
 
+    private val protectedPersonStatisticsApi by lazy {
+        retrofit.create(ProtectedPersonStatisticsApi::class.java)
+    }
+
     private val careDependentLocationStreamOkHttpClient by lazy {
         RetrofitClient.provideOkHttpClient(
             sessionStorage = authSessionStorage,
             authenticator = AccessTokenAuthenticator(
-                sessionStorage = authSessionStorage,
                 tokenManager = authTokenManager
             )
         )
@@ -331,6 +370,18 @@ class AppContainer(
 
     val dayRouteSummaryRepository: DayRouteSummaryRepository by lazy {
         DayRouteSummaryRepositoryImpl(dayRouteSummaryApi = dayRouteSummaryApi)
+    }
+
+    val weeklyStatisticsRepository: WeeklyStatisticsRepository by lazy {
+        WeeklyStatisticsRepositoryImpl(weeklyStatisticsApi = weeklyStatisticsApi)
+    }
+
+    val visitStatisticsRepository: VisitStatisticsRepository by lazy {
+        VisitStatisticsRepositoryImpl(visitStatisticsApi = visitStatisticsApi)
+    }
+
+    val statisticMetricRepository: StatisticMetricRepository by lazy {
+        StatisticMetricRepositoryImpl(statisticMetricApi = statisticMetricApi)
     }
 
     val calendarMonthlyRouteRepository: CalendarMonthlyRouteRepository by lazy {
@@ -393,6 +444,10 @@ class AppContainer(
         PlaceBookmarkRepositoryImpl(placeBookmarkApi)
     }
 
+    val careGuideRepository: CareGuideRepository by lazy {
+        CareGuideRepositoryImpl(appContext)
+    }
+
     val careDependentRepository: CareDependentRepository by lazy {
         CareDependentRepositoryImpl(careDependentApi = careDependentApi)
     }
@@ -412,6 +467,12 @@ class AppContainer(
     val protectedPersonVisitedPlaceRepository: ProtectedPersonVisitedPlaceRepository by lazy {
         ProtectedPersonVisitedPlaceRepositoryImpl(
             careDependentDayRoutePlacesApi = careDependentDayRoutePlacesApi
+        )
+    }
+
+    val protectedPersonStatisticsRepository: ProtectedPersonStatisticsRepository by lazy {
+        ProtectedPersonStatisticsRepositoryImpl(
+            protectedPersonStatisticsApi = protectedPersonStatisticsApi
         )
     }
 
@@ -457,6 +518,38 @@ class AppContainer(
 
     val getDayRouteSummaryUseCase: GetDayRouteSummaryUseCase by lazy {
         GetDayRouteSummaryUseCase(dayRouteSummaryRepository = dayRouteSummaryRepository)
+    }
+
+    val getWeeklyStatisticsUseCase: GetWeeklyStatisticsUseCase by lazy {
+        GetWeeklyStatisticsUseCase(weeklyStatisticsRepository = weeklyStatisticsRepository)
+    }
+
+    val getVisitStatisticsUseCase: GetVisitStatisticsUseCase by lazy {
+        GetVisitStatisticsUseCase(visitStatisticsRepository = visitStatisticsRepository)
+    }
+
+    val getOutingTimeStatisticsUseCase: GetOutingTimeStatisticsUseCase by lazy {
+        GetOutingTimeStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
+    }
+
+    val getEnterHomeTimeStatisticsUseCase: GetEnterHomeTimeStatisticsUseCase by lazy {
+        GetEnterHomeTimeStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
+    }
+
+    val getTotalOutingSecondsStatisticsUseCase: GetTotalOutingSecondsStatisticsUseCase by lazy {
+        GetTotalOutingSecondsStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
+    }
+
+    val getTotalOutingCountStatisticsUseCase: GetTotalOutingCountStatisticsUseCase by lazy {
+        GetTotalOutingCountStatisticsUseCase(
+            statisticMetricRepository = statisticMetricRepository
+        )
     }
 
     val getCalendarMonthlyRouteUseCase: GetCalendarMonthlyRouteUseCase by lazy {
@@ -523,6 +616,12 @@ class AppContainer(
         )
     }
 
+    val getProtectedPersonDayRouteListUseCase: GetProtectedPersonDayRouteListUseCase by lazy {
+        GetProtectedPersonDayRouteListUseCase(
+            repository = protectedPersonDayRouteRepository
+        )
+    }
+
     val getCareDependentsUseCase: GetCareDependentsUseCase by lazy {
         GetCareDependentsUseCase(repository = careDependentRepository)
     }
@@ -536,6 +635,24 @@ class AppContainer(
     val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase by lazy {
         GetProtectedPersonVisitedPlacesUseCase(
             repository = protectedPersonVisitedPlaceRepository
+        )
+    }
+
+    val getProtectedPersonWeeklyStatisticsUseCase: GetProtectedPersonWeeklyStatisticsUseCase by lazy {
+        GetProtectedPersonWeeklyStatisticsUseCase(
+            repository = protectedPersonStatisticsRepository
+        )
+    }
+
+    val getProtectedPersonVisitStatisticsUseCase: GetProtectedPersonVisitStatisticsUseCase by lazy {
+        GetProtectedPersonVisitStatisticsUseCase(
+            repository = protectedPersonStatisticsRepository
+        )
+    }
+
+    val getProtectedPersonStatisticMetricUseCase: GetProtectedPersonStatisticMetricUseCase by lazy {
+        GetProtectedPersonStatisticMetricUseCase(
+            repository = protectedPersonStatisticsRepository
         )
     }
 

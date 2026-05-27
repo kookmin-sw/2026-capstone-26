@@ -18,9 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccessTime
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -246,7 +243,7 @@ private fun PlaceCardDurationRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Rounded.AccessTime,
+            painter = painterResource(id = R.drawable.ic_clock),
             contentDescription = null,
             tint = Gray500,
             modifier = Modifier.size(15.dp)
@@ -304,7 +301,7 @@ private fun PlaceCardActionSection(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.MoreVert,
+                    painter = painterResource(id = R.drawable.ic_more_vert),
                     contentDescription = null,
                     tint = Gray400,
                     modifier = Modifier.size(20.dp)

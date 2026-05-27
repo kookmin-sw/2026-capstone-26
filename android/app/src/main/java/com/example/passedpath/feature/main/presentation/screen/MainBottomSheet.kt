@@ -27,6 +27,7 @@ import com.example.passedpath.feature.daynote.presentation.state.DayNoteUiState
 import com.example.passedpath.feature.place.presentation.screen.PlaceBottomSheetContent
 import com.example.passedpath.feature.place.presentation.state.PlaceUiState
 import com.example.passedpath.feature.summary.presentation.screen.DaySummaryBottomSheetContent
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetContainer
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetTabItem
@@ -46,6 +47,7 @@ internal fun MainBottomSheet(
     onDayNoteSaveClick: () -> Unit,
     onDaySummaryLoadRequest: (String) -> Unit,
     onDaySummaryRetryClick: () -> Unit,
+    onDaySummaryMetricClick: (SummaryDetailMetric) -> Unit = {},
     selectedTab: MainBottomSheetTab,
     onTabSelected: (MainBottomSheetTab) -> Unit,
     onPlaceRetryClick: () -> Unit,
@@ -116,6 +118,7 @@ internal fun MainBottomSheet(
                 onLoadSummary = onDaySummaryLoadRequest,
                 onRetryClick = onDaySummaryRetryClick,
                 onScrollStateChanged = { isContentScrolled = it },
+                onMetricClick = onDaySummaryMetricClick,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 20.dp)
@@ -159,7 +162,7 @@ private fun MainBottomSheetTab.iconResId(): Int {
     return when (this) {
         MainBottomSheetTab.PLACE -> R.drawable.ic_bottom_sheet_place
         MainBottomSheetTab.DAYNOTE -> R.drawable.ic_bottom_sheet_memo
-        MainBottomSheetTab.SUMMARY -> R.drawable.ic_summary_day
+        MainBottomSheetTab.SUMMARY -> R.drawable.ic_day_summary
     }
 }
 
@@ -192,6 +195,7 @@ private fun MainBottomSheetPreview() {
                 onDayNoteSaveClick = {},
                 onDaySummaryLoadRequest = {},
                 onDaySummaryRetryClick = {},
+                onDaySummaryMetricClick = {},
                 selectedTab = MainBottomSheetTab.PLACE,
                 onTabSelected = {},
                 onPlaceRetryClick = {},

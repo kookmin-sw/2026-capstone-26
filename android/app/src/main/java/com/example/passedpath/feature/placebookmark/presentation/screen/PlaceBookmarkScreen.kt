@@ -86,7 +86,6 @@ fun PlaceBookmarkRoute(
         onSearchResultEventConsumed = onSearchResultEventConsumed,
         onBackClick = onBackClick,
         onAddPlaceBookmarkClick = onNavigateToPlaceBookmarkSearch,
-        onRetryClick = viewModel::fetchPlaceBookmarks,
         onCreatePlaceBookmark = viewModel::createPlaceBookmark,
         onUpdatePlaceBookmark = viewModel::updatePlaceBookmark,
         onDeletePlaceBookmark = viewModel::deletePlaceBookmark,
@@ -102,7 +101,6 @@ internal fun PlaceBookmarkScreen(
     onSearchResultEventConsumed: (Int) -> Unit,
     onBackClick: () -> Unit,
     onAddPlaceBookmarkClick: () -> Unit,
-    onRetryClick: () -> Unit,
     onCreatePlaceBookmark: (BookmarkPlaceType, String, String, Double, Double) -> Unit,
     onUpdatePlaceBookmark: (Long, BookmarkPlaceType, String, String, Double, Double) -> Unit,
     onDeletePlaceBookmark: (Long) -> Unit,
@@ -290,7 +288,6 @@ internal fun PlaceBookmarkScreen(
                 },
                 onEditPlaceBookmarkClick = ::openEditSheet,
                 onDeletePlaceBookmarkClick = { pendingDeleteBookmark = it },
-                onRetryClick = onRetryClick,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -468,7 +465,6 @@ private fun PlaceBookmarkScreenPreviewContent(
         onSearchResultEventConsumed = {},
         onBackClick = {},
         onAddPlaceBookmarkClick = {},
-        onRetryClick = {},
         onCreatePlaceBookmark = { _, _, _, _, _ -> },
         onUpdatePlaceBookmark = { _, _, _, _, _, _ -> },
         onDeletePlaceBookmark = {},

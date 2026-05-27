@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +86,7 @@ internal fun MainMapSection(
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
     focusedPlaceId: Long?,
+    currentLocationState: State<CoordinateUiState?>,
     isBookmarkMarkersVisible: Boolean,
     currentLocationCameraRequestKey: Int,
     onFocusedPlaceHandled: () -> Unit,
@@ -120,10 +122,11 @@ internal fun MainMapSection(
     val currentLocation = if (uiState.permissionState == LocationPermissionUiState.DENIED) {
         null
     } else {
-        uiState.currentLocation
+        currentLocationState.value
     }
-    val routePoints = remember(uiState.selectedRoute.polylinePoints) {
-        uiState.selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
+    val mapPolylinePoints = uiState.selectedRoute.mapPolylinePoints
+    val routePoints = remember(mapPolylinePoints) {
+        mapPolylinePoints.map(CoordinateUiState::toLatLng)
     }
     val initialCameraTarget =
         routePoints.firstOrNull() ?: currentLocation?.toLatLng() ?: fallbackPosition
@@ -211,7 +214,7 @@ internal fun MainMapSection(
             }
 
             RouteMapContent(
-                routeModeUiState = uiState.routeModeUiState,
+                routePoints = routePoints,
                 markerPlaces = markerPlaces,
                 routeAccentColor = routeAccentColor,
                 onPlaceMarkerClick = { placeId ->
@@ -282,6 +285,7 @@ internal fun MainMapSection(
 @Composable
 internal fun BoxScope.MainMapBottomOverlayContent(
     uiState: MainUiState,
+    currentLocationState: State<CoordinateUiState?>,
     floatingBottomPadding: Dp,
     isBookmarkMarkersVisible: Boolean,
     showCurrentLocationButton: Boolean,
@@ -299,7 +303,7 @@ internal fun BoxScope.MainMapBottomOverlayContent(
         floatingBottomPadding.coerceAtMost(middleSheetVisiblePadding)
     val currentLocationClick = if (
         uiState.permissionState != LocationPermissionUiState.DENIED &&
-        uiState.currentLocation != null &&
+        currentLocationState.value != null &&
         showCurrentLocationButton
     ) {
         onCurrentLocationClick

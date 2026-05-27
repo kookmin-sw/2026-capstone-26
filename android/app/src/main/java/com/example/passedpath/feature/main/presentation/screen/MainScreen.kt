@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,11 +54,13 @@ import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiSt
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.feature.summary.presentation.state.DaySummaryUiState
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.PermissionSettingDialog
 import com.example.passedpath.ui.component.dialog.BaseConfirmDialog
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
+import com.example.passedpath.ui.state.CoordinateUiState
 
 data class PlaceCreatedEvent(
     val id: Int,
@@ -80,6 +83,7 @@ fun MainScreen(
     dayNoteUiState: DayNoteUiState,
     daySummaryUiState: DaySummaryUiState,
     placeUiState: PlaceUiState,
+    currentLocationState: State<CoordinateUiState?>,
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
     onCameraIntentConsumed: () -> Unit,
@@ -97,6 +101,8 @@ fun MainScreen(
     onNavigateToAddPlace: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
     onNavigateToCalendar: (String) -> Unit,
+    onNavigateToWeeklySummary: () -> Unit,
+    onNavigateToSummaryDetail: (SummaryDetailMetric, String) -> Unit = { _, _ -> },
     onReorderPlaces: (List<Long>) -> Unit,
     onCloseReorderGuideBanner: () -> Unit,
     onUpdatePlace: (Long, String, String, Double, Double) -> Unit,
@@ -328,6 +334,7 @@ fun MainScreen(
             dayNoteUiState = dayNoteUiState,
             daySummaryUiState = daySummaryUiState,
             placeUiState = placeUiState,
+            currentLocationState = currentLocationState,
             markerPlaces = markerPlaces,
             bookmarkMarkers = bookmarkMarkers,
             localUiState = localUiState,
@@ -342,6 +349,8 @@ fun MainScreen(
             onRouteAction = onRouteAction,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToPlaceBookmarks = onNavigateToPlaceBookmarks,
+            onNavigateToWeeklySummary = onNavigateToWeeklySummary,
+            onNavigateToSummaryDetail = onNavigateToSummaryDetail,
             onMapClick = {
                 clearFocus()
                 hideBottomSheet()
@@ -521,6 +530,7 @@ private fun MainScreenScaffoldContent(
     dayNoteUiState: DayNoteUiState,
     daySummaryUiState: DaySummaryUiState,
     placeUiState: PlaceUiState,
+    currentLocationState: State<CoordinateUiState?>,
     markerPlaces: List<PlaceMarkerUiState>,
     bookmarkMarkers: List<PlaceBookmarkSummary>,
     localUiState: MainScreenLocalUiState,
@@ -533,6 +543,8 @@ private fun MainScreenScaffoldContent(
     onRouteAction: (RouteUiAction) -> Unit,
     onNavigateToCalendar: (String) -> Unit,
     onNavigateToPlaceBookmarks: () -> Unit,
+    onNavigateToWeeklySummary: () -> Unit,
+    onNavigateToSummaryDetail: (SummaryDetailMetric, String) -> Unit,
     onMapClick: () -> Unit,
     onPlaceMarkerClick: (Long) -> Unit,
     onPermissionActionClick: () -> Unit,
@@ -567,6 +579,7 @@ private fun MainScreenScaffoldContent(
                 markerPlaces = markerPlaces,
                 bookmarkMarkers = bookmarkMarkers,
                 focusedPlaceId = localUiState.focusedPlaceId,
+                currentLocationState = currentLocationState,
                 isBookmarkMarkersVisible = isBookmarkMarkersVisible,
                 currentLocationCameraRequestKey = currentLocationCameraRequestKey,
                 onFocusedPlaceHandled = onFocusedPlaceHandled,
@@ -574,7 +587,7 @@ private fun MainScreenScaffoldContent(
                 onDateSelected = onDateSelectionRequested,
                 onBookmarkClick = onBookmarkClick,
                 onRouteAction = onRouteAction,
-                onStatsClick = {},
+                onStatsClick = onNavigateToWeeklySummary,
                 onCalendarClick = {
                     onNavigateToCalendar(uiState.selectedDateKey)
                 },
@@ -589,6 +602,7 @@ private fun MainScreenScaffoldContent(
             Box(modifier = Modifier.fillMaxSize()) {
                 MainMapBottomOverlayContent(
                     uiState = uiState,
+                    currentLocationState = currentLocationState,
                     floatingBottomPadding = floatingBottomPadding,
                     isBookmarkMarkersVisible = isBookmarkMarkersVisible,
                     showCurrentLocationButton = shouldShowCurrentLocationButton(
@@ -618,6 +632,9 @@ private fun MainScreenScaffoldContent(
                 onDayNoteSaveClick = onDayNoteSaveClick,
                 onDaySummaryLoadRequest = onDaySummaryLoadRequest,
                 onDaySummaryRetryClick = onDaySummaryRetryClick,
+                onDaySummaryMetricClick = { metric ->
+                    onNavigateToSummaryDetail(metric, uiState.selectedDateKey)
+                },
                 selectedTab = localUiState.selectedBottomSheetTab,
                 onTabSelected = onTabSelected,
                 onPlaceRetryClick = onPlaceRetryClick,
@@ -663,13 +680,37 @@ private fun BoxScope.MainScreenOverlays(
     val dayNoteToastMessage = dayNoteUiState.errorMessage ?: dayNoteUiState.successMessage
     val placeToastMessage = placeUiState.errorMessage ?: placeUiState.successMessage
     val bookmarkToastMessage = uiState.bookmarkToggleUiState.feedbackMessage
+    val shouldSuppressOverlayToasts = uiState.routeModeUiState.routeErrorMessage != null
+
+    LaunchedEffect(
+        shouldSuppressOverlayToasts,
+        dayNoteUiState.feedbackEventId,
+        dayNoteToastMessage,
+        placeUiState.feedbackEventId,
+        placeToastMessage,
+        uiState.bookmarkToggleUiState.feedbackEventId,
+        bookmarkToastMessage
+    ) {
+        if (!shouldSuppressOverlayToasts) return@LaunchedEffect
+
+        if (dayNoteToastMessage != null) {
+            onDayNoteFeedbackDismissed(dayNoteUiState.feedbackEventId)
+        }
+        if (placeToastMessage != null) {
+            onPlaceFeedbackDismissed(placeUiState.feedbackEventId)
+        }
+        if (bookmarkToastMessage != null) {
+            onBookmarkFeedbackDismissed(uiState.bookmarkToggleUiState.feedbackEventId)
+        }
+    }
+
     val shouldShowPastEmptyToast =
         uiState.routeModeUiState is MainRouteModeUiState.Past &&
             uiState.routeModeUiState.isRouteEmpty &&
             uiState.routeModeUiState.routeErrorMessage == null &&
             !uiState.routeModeUiState.isRouteLoading
     val overlayToasts = buildList {
-        if (dayNoteToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && dayNoteToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = dayNoteToastMessage,
@@ -678,7 +719,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (placeToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && placeToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = placeToastMessage,
@@ -687,7 +728,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (bookmarkToastMessage != null) {
+        if (!shouldSuppressOverlayToasts && bookmarkToastMessage != null) {
             add(
                 ToastOverlayItem(
                     message = bookmarkToastMessage,
@@ -698,7 +739,7 @@ private fun BoxScope.MainScreenOverlays(
                 )
             )
         }
-        if (shouldShowPastEmptyToast) {
+        if (!shouldSuppressOverlayToasts && shouldShowPastEmptyToast) {
             add(
                 ToastOverlayItem(
                     message = stringResource(R.string.route_empty_past_toast),

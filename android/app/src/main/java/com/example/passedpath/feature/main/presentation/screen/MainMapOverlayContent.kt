@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,16 +27,12 @@ import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiSt
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
-import com.example.passedpath.ui.component.banner.RequestActionBottomBanner
+import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureDialog
 import com.example.passedpath.ui.component.loading.BaseLoadingLine
 import com.example.passedpath.ui.theme.Black
 
 private val RouteOverlayTopGap = 21.dp
 private val RouteOverlaySidePadding = 16.dp
-private val RouteFloatingButtonSize = 40.dp
-private val RouteErrorBannerGapFromFloatingButton = 12.dp
-private val RouteErrorBannerStartPadding =
-    RouteOverlaySidePadding + RouteFloatingButtonSize + RouteErrorBannerGapFromFloatingButton
 
 @Composable
 internal fun BoxScope.MainMapOverlayContent(
@@ -50,11 +51,21 @@ internal fun BoxScope.MainMapOverlayContent(
     topStartControls: @Composable (() -> Unit)? = null
 ) {
     val routeModeUiState = uiState.routeModeUiState
-    val pastRouteErrorMessage = (routeModeUiState as? MainRouteModeUiState.Past)?.routeErrorMessage
+    val routeErrorMessage = routeModeUiState.routeErrorMessage
+    val routeErrorKey = routeErrorMessage?.let { message ->
+        "${routeModeUiState.route.dateKey}:$message"
+    }
     val isPastRouteLoading = routeModeUiState is MainRouteModeUiState.Past &&
         routeModeUiState.isRouteLoading
+    var dismissedRouteErrorKey by rememberSaveable { mutableStateOf<String?>(null) }
 
-    if (pastRouteErrorMessage == null) {
+    LaunchedEffect(routeErrorKey, routeModeUiState.isRouteLoading) {
+        if (routeErrorKey == null || routeModeUiState.isRouteLoading) {
+            dismissedRouteErrorKey = null
+        }
+    }
+
+    if (routeErrorMessage == null) {
         RouteStatusOverlay(
             routeModeUiState = routeModeUiState,
             onRouteAction = onRouteAction
@@ -83,24 +94,26 @@ internal fun BoxScope.MainMapOverlayContent(
             )
         }
 
-        pastRouteErrorMessage != null -> {
-            RequestActionBottomBanner(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(
-                        top = RouteTopBarsHeight + RouteOverlayTopGap,
-                        start = RouteErrorBannerStartPadding,
-                        end = RouteOverlaySidePadding
-                    ),
-                message = pastRouteErrorMessage,
-                actionText = stringResource(R.string.route_retry),
-                onClickAction = { onRouteAction(RouteUiAction.RetryPastRoute) },
-                borderColor = null,
-                shadowElevation = 6.dp
-            )
+    }
+
+    if (
+        routeErrorMessage != null &&
+        routeErrorKey != null &&
+        dismissedRouteErrorKey != routeErrorKey
+    ) {
+        val retryAction = when (routeModeUiState) {
+            is MainRouteModeUiState.Today -> RouteUiAction.RefreshTodayRoute
+            is MainRouteModeUiState.Past -> RouteUiAction.RetryPastRoute
         }
+        MapOverlayNetworkFailureDialog(
+            retryText = stringResource(R.string.route_retry),
+            message = routeErrorMessage,
+            onDismiss = { dismissedRouteErrorKey = routeErrorKey },
+            onRetryClick = {
+                dismissedRouteErrorKey = routeErrorKey
+                onRouteAction(retryAction)
+            }
+        )
     }
 
     FloatingButtonColumn(
@@ -139,7 +152,7 @@ internal fun BoxScope.MainMapOverlayContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        if (pastRouteErrorMessage == null) {
+        if (routeErrorMessage == null) {
             RouteTopCenterControls(
                 routeMode = routeModeUiState,
                 onRouteAction = onRouteAction

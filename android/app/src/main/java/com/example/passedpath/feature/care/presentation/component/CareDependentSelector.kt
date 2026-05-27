@@ -143,7 +143,7 @@ fun CareDependentSelectorCard(
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = if (selected) Green500 else Gray600,
+            color = if (selected) Green500 else Gray400,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -165,7 +165,7 @@ private fun CareSelectorIconCircle(
                 shape = CircleShape
             )
             .border(
-                border = BorderStroke(2.dp, if (selected) Green500 else Gray300),
+                border = BorderStroke(2.dp, if (selected) Green500 else White),
                 shape = CircleShape
             ),
         contentAlignment = Alignment.Center
@@ -276,6 +276,38 @@ private fun CareDependentSelectorRowPreview() {
                     profileImageUrl = null,
                     latestLatitude = 37.57,
                     latestLongitude = 126.98,
+                    latestRecordedAt = null
+                ),
+                CareDependentUserUiState(
+                    dependentUserId = 3L,
+                    nickname = "Minji",
+                    profileImageUrl = null,
+                    latestLatitude = 37.568,
+                    latestLongitude = 126.982,
+                    latestRecordedAt = null
+                ),
+                CareDependentUserUiState(
+                    dependentUserId = 4L,
+                    nickname = "Hana",
+                    profileImageUrl = null,
+                    latestLatitude = 37.572,
+                    latestLongitude = 126.984,
+                    latestRecordedAt = null
+                ),
+                CareDependentUserUiState(
+                    dependentUserId = 5L,
+                    nickname = "Doyun",
+                    profileImageUrl = null,
+                    latestLatitude = 37.574,
+                    latestLongitude = 126.986,
+                    latestRecordedAt = null
+                ),
+                CareDependentUserUiState(
+                    dependentUserId = 6L,
+                    nickname = "Yuna",
+                    profileImageUrl = null,
+                    latestLatitude = 37.576,
+                    latestLongitude = 126.988,
                     latestRecordedAt = null
                 )
             ),

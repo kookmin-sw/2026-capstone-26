@@ -32,7 +32,6 @@ import com.example.passedpath.R
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.PlaceMarkerUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
-import com.example.passedpath.ui.state.CoordinateUiState
 import com.example.passedpath.ui.theme.Green50
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
@@ -46,17 +45,12 @@ private const val RouteOutlineWidth = 20f
 
 @Composable
 fun RouteMapContent(
-    routeModeUiState: MainRouteModeUiState,
+    routePoints: List<LatLng>,
     markerPlaces: List<PlaceMarkerUiState>,
     routeAccentColor: Color,
     onPlaceMarkerClick: (Long) -> Unit = {}
 ) {
-    val selectedRoute = routeModeUiState.route
-    if (selectedRoute.polylinePoints.size >= 2) {
-        val routePoints = remember(selectedRoute.polylinePoints) {
-            selectedRoute.polylinePoints.map(CoordinateUiState::toLatLng)
-        }
-
+    if (routePoints.size >= 2) {
         Polyline(
             points = routePoints,
             color = Green50,
@@ -104,7 +98,6 @@ fun RouteMapContent(
         }
     }
 }
-
 @Composable
 private fun PlaceOrderMarker(
     place: PlaceMarkerUiState,
@@ -156,7 +149,6 @@ private fun PlaceOrderMarker(
         }
     }
 }
-
 @Composable
 fun RouteStatusOverlay(
     routeModeUiState: MainRouteModeUiState,
@@ -203,8 +195,4 @@ fun RouteStatusOverlay(
             }
         }
     }
-}
-
-private fun CoordinateUiState.toLatLng(): LatLng {
-    return LatLng(latitude, longitude)
 }

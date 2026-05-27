@@ -16,17 +16,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.passedpath.R
+import com.example.passedpath.app.appContainer
 import com.example.passedpath.feature.auth.presentation.screen.LoginRoute
 import com.example.passedpath.feature.bookmark.presentation.screen.DayRouteBookmarkListRoute
 import com.example.passedpath.feature.auth.presentation.state.AuthEvent
 import com.example.passedpath.feature.calendar.presentation.screen.CalendarRoute
+import com.example.passedpath.feature.care.presentation.component.CareInviteAcceptDialog
 import com.example.passedpath.feature.care.presentation.screen.CareRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonSummaryDetailRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonVisitStatisticsDetailRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonWeeklySummaryRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteDetailRoute
+import com.example.passedpath.feature.care.presentation.screen.ProtectedPersonRouteHistoryRoute
+import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModel
+import com.example.passedpath.feature.care.presentation.viewmodel.CareInviteAcceptViewModelFactory
 import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelectedEvent
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
 import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
@@ -38,19 +54,39 @@ import com.example.passedpath.feature.place.presentation.screen.AddPlaceScreen
 import com.example.passedpath.feature.place.presentation.screen.PlaceBookmarkSearchScreen
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkRoute
 import com.example.passedpath.feature.placebookmark.presentation.screen.PlaceBookmarkSearchResultEvent
+import com.example.passedpath.feature.summary.presentation.screen.SummaryDetailRoute
+import com.example.passedpath.feature.summary.presentation.screen.VisitStatisticsDetailRoute
+import com.example.passedpath.feature.summary.presentation.screen.WeeklySummaryRoute
+import com.example.passedpath.feature.summary.presentation.state.SummaryDetailMetric
 import com.example.passedpath.ui.component.toast.ToastOverlayHost
 import com.example.passedpath.ui.component.toast.ToastOverlayItem
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    appEntryViewModel: AppEntryViewModel
+    appEntryViewModel: AppEntryViewModel,
+    pendingCareInviteCode: String? = null,
+    onCareInviteCodeConsumed: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val careInviteAcceptViewModel: CareInviteAcceptViewModel = viewModel(
+        factory = CareInviteAcceptViewModelFactory(context.appContainer)
+    )
+    val careInviteAcceptUiState by careInviteAcceptViewModel.uiState
+        .collectAsStateWithLifecycle()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val inviteAcceptSuccessMessage = stringResource(R.string.care_invite_accept_success)
     var logoutToastMessage by remember { mutableStateOf<String?>(null) }
     var logoutToastTrigger by remember { mutableStateOf(0) }
     var loginToastMessage by remember { mutableStateOf<String?>(null) }
     var loginToastTrigger by remember { mutableStateOf(0) }
+    var inviteAcceptToastTrigger by remember { mutableStateOf(0) }
+    var handledInviteAcceptSuccessEventId by remember { mutableStateOf(0L) }
     var mainTabReselectionEvent by remember { mutableStateOf(0) }
+    var careRefreshEventId by remember { mutableStateOf(0) }
     var placeCreatedEvent by remember { mutableStateOf<PlaceCreatedEvent?>(null) }
     var placeCreatedEventId by remember { mutableStateOf(0) }
     var placeBookmarkChangedEvent by remember { mutableStateOf<PlaceBookmarkChangedEvent?>(null) }
@@ -72,11 +108,42 @@ fun AppNavHost(
         }
     }
 
+    LaunchedEffect(pendingCareInviteCode, currentRoute) {
+        val inviteCode = pendingCareInviteCode
+            ?.trim()
+            ?.takeIf(String::isNotEmpty) ?: return@LaunchedEffect
+        if (!currentRoute.isCareInviteAcceptReadyRoute()) return@LaunchedEffect
+
+        careInviteAcceptViewModel.openInvite(inviteCode)
+        onCareInviteCodeConsumed(inviteCode)
+    }
+
+    LaunchedEffect(careInviteAcceptUiState.successEventId) {
+        val successEventId = careInviteAcceptUiState.successEventId
+        if (successEventId <= 0L ||
+            successEventId == handledInviteAcceptSuccessEventId
+        ) {
+            return@LaunchedEffect
+        }
+
+        handledInviteAcceptSuccessEventId = successEventId
+        inviteAcceptToastTrigger++
+        careRefreshEventId++
+        navController.navigate(NavRoute.FRIENDS) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AppNavigationGraph(
             navController = navController,
             appEntryViewModel = appEntryViewModel,
             mainTabReselectionEvent = mainTabReselectionEvent,
+            careRefreshEventId = careRefreshEventId,
             placeCreatedEvent = placeCreatedEvent,
             placeBookmarkChangedEvent = placeBookmarkChangedEvent,
             placeBookmarkSearchResultEvent = placeBookmarkSearchResultEvent,
@@ -159,8 +226,22 @@ fun AppNavHost(
                         )
                     )
                 }
+                if (inviteAcceptToastTrigger > 0) {
+                    add(
+                        ToastOverlayItem(
+                            message = inviteAcceptSuccessMessage,
+                            triggerKey = "care-invite-accept:$inviteAcceptToastTrigger"
+                        )
+                    )
+                }
             },
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+
+        CareInviteAcceptDialog(
+            uiState = careInviteAcceptUiState,
+            onDismiss = careInviteAcceptViewModel::dismissInvite,
+            onConfirm = careInviteAcceptViewModel::acceptInvite
         )
     }
 }
@@ -170,6 +251,7 @@ private fun AppNavigationGraph(
     navController: NavHostController,
     appEntryViewModel: AppEntryViewModel,
     mainTabReselectionEvent: Int,
+    careRefreshEventId: Int,
     placeCreatedEvent: PlaceCreatedEvent?,
     placeBookmarkChangedEvent: PlaceBookmarkChangedEvent?,
     placeBookmarkSearchResultEvent: PlaceBookmarkSearchResultEvent?,
@@ -229,7 +311,181 @@ private fun AppNavigationGraph(
                 selectedRoute = NavRoute.FRIENDS,
                 onBottomBarReselected = onBottomBarReselected
             ) { modifier ->
-                CareRoute(modifier = modifier)
+                CareRoute(
+                    refreshEventId = careRefreshEventId,
+                    onNavigateToProtectedPersonRouteHistory = { dependentUserId, nickname ->
+                        navController.navigate(
+                            NavRoute.careRouteHistory(
+                                dependentUserId = dependentUserId,
+                                nickname = nickname
+                            )
+                        )
+                    },
+                    onNavigateToProtectedPersonWeeklySummary = { dependentUserId ->
+                        navController.navigate(
+                            NavRoute.careWeeklySummary(dependentUserId = dependentUserId)
+                        )
+                    },
+                    modifier = modifier
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_WEEKLY_SUMMARY_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID)
+                ?: return@composable
+
+            ProtectedPersonWeeklySummaryRoute(
+                dependentUserId = dependentUserId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onMetricClick = { metric ->
+                    navController.navigate(
+                        NavRoute.careSummaryDetail(
+                            dependentUserId = dependentUserId,
+                            metric = metric.routeValue
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.CARE_SUMMARY_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_SUMMARY_DETAIL_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_SUMMARY_DETAIL_METRIC_KEY) {
+                    type = NavType.StringType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_SUMMARY_DETAIL_DEPENDENT_USER_ID)
+                ?: return@composable
+            val metric = SummaryDetailMetric.fromRouteValue(
+                backStackEntry.arguments?.getString(NavRoute.CARE_SUMMARY_DETAIL_METRIC_KEY)
+            )
+
+            if (metric == SummaryDetailMetric.VISITS) {
+                ProtectedPersonVisitStatisticsDetailRoute(
+                    dependentUserId = dependentUserId,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                ProtectedPersonSummaryDetailRoute(
+                    dependentUserId = dependentUserId,
+                    metric = metric,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_ROUTE_HISTORY_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_ROUTE_HISTORY_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_ROUTE_HISTORY_NICKNAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_ROUTE_HISTORY_DEPENDENT_USER_ID)
+                ?: return@composable
+            val nickname = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_HISTORY_NICKNAME)
+                .orEmpty()
+
+            BottomBarScaffold(
+                navController = navController,
+                selectedRoute = NavRoute.FRIENDS,
+                onBottomBarReselected = onBottomBarReselected
+            ) { modifier ->
+                ProtectedPersonRouteHistoryRoute(
+                    dependentUserId = dependentUserId,
+                    dependentNickname = nickname,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onRouteDateClick = { dateKey ->
+                        navController.navigate(
+                            NavRoute.careRouteDetail(
+                                dependentUserId = dependentUserId,
+                                dateKey = dateKey,
+                                nickname = nickname
+                            )
+                        )
+                    },
+                    modifier = modifier
+                )
+            }
+        }
+
+        composable(
+            route = NavRoute.CARE_ROUTE_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_DEPENDENT_USER_ID) {
+                    type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_DATE_KEY) {
+                    type = NavType.StringType
+                },
+                navArgument(NavRoute.CARE_ROUTE_DETAIL_NICKNAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val dependentUserId = backStackEntry.arguments
+                ?.getLong(NavRoute.CARE_ROUTE_DETAIL_DEPENDENT_USER_ID)
+                ?: return@composable
+            val dateKey = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_DETAIL_DATE_KEY)
+                .orEmpty()
+            val nickname = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_ROUTE_DETAIL_NICKNAME)
+                .orEmpty()
+
+            BottomBarScaffold(
+                navController = navController,
+                selectedRoute = NavRoute.FRIENDS,
+                onBottomBarReselected = onBottomBarReselected
+            ) { modifier ->
+                ProtectedPersonRouteDetailRoute(
+                    dependentUserId = dependentUserId,
+                    dependentNickname = nickname,
+                    dateKey = dateKey,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    modifier = modifier
+                )
             }
         }
 
@@ -256,9 +512,77 @@ private fun AppNavigationGraph(
                         },
                         onNavigateToCalendar = { dateKey ->
                             navController.navigate(NavRoute.calendar(dateKey))
+                        },
+                        onNavigateToWeeklySummary = {
+                            navController.navigate(NavRoute.WEEKLY_SUMMARY)
+                        },
+                        onNavigateToSummaryDetail = { metric, dateKey ->
+                            navController.navigate(
+                                NavRoute.summaryDetail(
+                                    metric = metric.routeValue,
+                                    dateKey = dateKey
+                                )
+                            )
                         }
                     )
                 }
+            }
+        }
+
+        composable(
+            route = NavRoute.WEEKLY_SUMMARY,
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) {
+            WeeklySummaryRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onMetricClick = { metric ->
+                    navController.navigate(
+                        NavRoute.summaryDetail(
+                            metric = metric.routeValue,
+                            dateKey = currentSummaryDetailDateKey()
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoute.SUMMARY_DETAIL_WITH_ARGS,
+            arguments = listOf(
+                navArgument(NavRoute.SUMMARY_DETAIL_METRIC_KEY) {
+                    type = NavType.StringType
+                },
+                navArgument(NavRoute.SUMMARY_DETAIL_DATE_KEY) {
+                    type = NavType.StringType
+                }
+            ),
+            enterTransition = { placeSearchEnterTransition() },
+            popExitTransition = { placeSearchPopExitTransition() }
+        ) { backStackEntry ->
+            val metric = SummaryDetailMetric.fromRouteValue(
+                backStackEntry.arguments?.getString(NavRoute.SUMMARY_DETAIL_METRIC_KEY)
+            )
+            val dateKey = backStackEntry.arguments
+                ?.getString(NavRoute.SUMMARY_DETAIL_DATE_KEY)
+                .orEmpty()
+
+            if (metric == SummaryDetailMetric.VISITS) {
+                VisitStatisticsDetailRoute(
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                SummaryDetailRoute(
+                    metric = metric,
+                    dateKey = dateKey,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
 
@@ -400,3 +724,15 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.placeSearchPopExit
 
 private const val PlaceSearchEnterTransitionMillis = 250
 private const val PlaceSearchExitTransitionMillis = 230
+private const val SummaryDetailZoneId = "Asia/Seoul"
+
+private fun currentSummaryDetailDateKey(): String {
+    return LocalDate.now(ZoneId.of(SummaryDetailZoneId)).toString()
+}
+
+private fun String?.isCareInviteAcceptReadyRoute(): Boolean {
+    return this != null &&
+        this != NavRoute.ENTRY &&
+        this != NavRoute.LOGIN &&
+        this != NavRoute.PERMISSION_INTRO
+}

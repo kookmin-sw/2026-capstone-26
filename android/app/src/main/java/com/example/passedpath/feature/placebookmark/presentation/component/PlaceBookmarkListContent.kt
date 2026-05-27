@@ -45,7 +45,6 @@ import com.example.passedpath.feature.placebookmark.domain.model.PlaceBookmarkSu
 import com.example.passedpath.feature.placebookmark.presentation.state.PlaceBookmarkUiState
 import com.example.passedpath.ui.component.button.BaseButton
 import com.example.passedpath.ui.component.feedback.BaseEmptyContent
-import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.BaseSkeletonBlock
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.component.menu.MenuActionItem
@@ -70,7 +69,6 @@ internal fun PlaceBookmarkListContent(
     onAddPlaceBookmarkClick: () -> Unit,
     onEditPlaceBookmarkClick: (PlaceBookmarkSummary) -> Unit,
     onDeletePlaceBookmarkClick: (PlaceBookmarkSummary) -> Unit,
-    onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -107,13 +105,6 @@ internal fun PlaceBookmarkListContent(
                         .weight(1f)
                 )
             }
-        }
-
-        uiState.errorMessage != null && !uiState.hasLoaded -> {
-            PlaceBookmarkErrorContent(
-                onRetryClick = onRetryClick,
-                modifier = modifier
-            )
         }
 
         else -> {
@@ -565,23 +556,6 @@ private fun PlaceBookmarkListDivider(visible: Boolean) {
 }
 
 @Composable
-private fun PlaceBookmarkErrorContent(
-    onRetryClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.padding(horizontal = 28.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        NetworkFailureBanner(
-            retryText = stringResource(R.string.route_retry),
-            onRetryClick = onRetryClick
-        )
-    }
-}
-
-@Composable
 private fun PlaceBookmarkEmptyContent(
     modifier: Modifier = Modifier
 ) {
@@ -674,7 +648,6 @@ private fun PlaceBookmarkListContentPreview(
         onAddPlaceBookmarkClick = {},
         onEditPlaceBookmarkClick = {},
         onDeletePlaceBookmarkClick = {},
-        onRetryClick = {}
     )
 }
 
