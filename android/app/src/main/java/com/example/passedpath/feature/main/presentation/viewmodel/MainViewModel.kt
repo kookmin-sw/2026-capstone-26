@@ -300,7 +300,6 @@ class MainViewModel(
         when (request) {
             is MainRouteActionRequest.ReloadRoute -> reloadRoute(request)
             MainRouteActionRequest.ToggleTracking -> toggleTracking()
-            MainRouteActionRequest.OpenPastPlayback -> Unit
         }
     }
 

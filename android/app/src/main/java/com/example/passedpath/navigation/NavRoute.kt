@@ -34,8 +34,10 @@ object NavRoute {
             "{$CARE_ROUTE_DETAIL_NICKNAME}"
     const val CARE_WEEKLY_SUMMARY = "care_weekly_summary"
     const val CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID = "dependentUserId"
+    const val CARE_WEEKLY_SUMMARY_NICKNAME = "nickname"
     const val CARE_WEEKLY_SUMMARY_WITH_ARGS =
-        "$CARE_WEEKLY_SUMMARY/{$CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID}"
+        "$CARE_WEEKLY_SUMMARY/{$CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID}" +
+            "?$CARE_WEEKLY_SUMMARY_NICKNAME={$CARE_WEEKLY_SUMMARY_NICKNAME}"
     const val CARE_SUMMARY_DETAIL = "care_summary_detail"
     const val CARE_SUMMARY_DETAIL_DEPENDENT_USER_ID = "dependentUserId"
     const val CARE_SUMMARY_DETAIL_METRIC_KEY = "metric"
@@ -68,8 +70,12 @@ object NavRoute {
             "$CARE_ROUTE_DETAIL_NICKNAME=${Uri.encode(nickname)}"
     }
 
-    fun careWeeklySummary(dependentUserId: Long): String {
-        return "$CARE_WEEKLY_SUMMARY/$dependentUserId"
+    fun careWeeklySummary(
+        dependentUserId: Long,
+        nickname: String
+    ): String {
+        return "$CARE_WEEKLY_SUMMARY/$dependentUserId?" +
+            "$CARE_WEEKLY_SUMMARY_NICKNAME=${Uri.encode(nickname)}"
     }
 
     fun careSummaryDetail(

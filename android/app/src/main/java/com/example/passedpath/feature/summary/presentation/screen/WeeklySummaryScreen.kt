@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,7 @@ import com.example.passedpath.feature.summary.presentation.viewmodel.WeeklySumma
 import com.example.passedpath.ui.component.feedback.NetworkFailureBanner
 import com.example.passedpath.ui.component.loading.rememberBaseSkeletonBrush
 import com.example.passedpath.ui.theme.Gray900
+import com.example.passedpath.ui.theme.Green700
 import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 
@@ -81,15 +84,23 @@ internal fun WeeklySummaryScreen(
     onBackClick: () -> Unit,
     onRetryClick: () -> Unit,
     onMetricClick: (SummaryDetailMetric) -> Unit = {},
+    title: String? = null,
+    highlightedTitlePrefix: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val topBarTitle = title ?: stringResource(R.string.weekly_summary_title)
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(White)
             .statusBarsPadding()
     ) {
-        WeeklySummaryTopBar(onBackClick = onBackClick)
+        WeeklySummaryTopBar(
+            title = topBarTitle,
+            highlightedPrefix = highlightedTitlePrefix,
+            onBackClick = onBackClick
+        )
 
         when {
             !uiState.hasLoaded && uiState.errorMessage == null -> {
@@ -125,8 +136,24 @@ internal fun WeeklySummaryScreen(
 
 @Composable
 private fun WeeklySummaryTopBar(
+    title: String,
+    highlightedPrefix: String?,
     onBackClick: () -> Unit
 ) {
+    val titleText = buildAnnotatedString {
+        val prefix = highlightedPrefix
+            ?.trim()
+            ?.takeIf { candidate -> title.startsWith(candidate) }
+        if (prefix == null) {
+            append(title)
+        } else {
+            pushStyle(SpanStyle(color = Green700))
+            append(prefix)
+            pop()
+            append(title.substring(prefix.length))
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -148,7 +175,7 @@ private fun WeeklySummaryTopBar(
         }
 
         Text(
-            text = stringResource(R.string.weekly_summary_title),
+            text = titleText,
             modifier = Modifier.align(Alignment.Center),
             style = MaterialTheme.typography.titleMedium,
             color = Gray900,

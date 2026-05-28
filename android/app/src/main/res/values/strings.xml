@@ -50,6 +50,7 @@
     <string name="care_route_history_title_suffix">의 지나온 길 조회</string>
     <string name="care_route_history_empty_title">아직 지나온 길 기록이 없어요</string>
     <string name="care_route_history_empty_body">보호대상자의 기록이 생기면 이곳에 표시돼요</string>
+    <string name="care_route_error">지나온길 경로를 불러오지 못했어요</string>
     <string name="care_route_detail_loading">경로를 불러오는 중이에요</string>
     <string name="care_route_detail_empty">선택한 날짜의 이동 경로가 없어요</string>
     <string name="main_title">My Walk Log</string>
@@ -141,7 +142,6 @@
     <string name="route_tracking_active">위치 수집 중</string>
     <string name="route_tracking_inactive">기록 중지</string>
     <string name="route_tracking_toggle">추적 시작/중지</string>
-    <string name="route_open_playback">경로 재생 보기</string>
     <string name="route_retry">다시 시도</string>
     <string name="route_loading_today_title">오늘 경로를 불러오는 중</string>
     <string name="route_loading_past_title">지난 경로를 불러오는 중</string>

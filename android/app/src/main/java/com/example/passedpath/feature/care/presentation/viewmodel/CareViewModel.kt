@@ -7,21 +7,25 @@ import com.example.passedpath.app.AppContainer
 import com.example.passedpath.feature.care.domain.model.CareDependentLocationStreamEvent
 import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
 import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
 import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
 import com.example.passedpath.feature.care.presentation.mapper.toCareDependentMapMarkerUiStates
 import com.example.passedpath.feature.care.presentation.mapper.toCareDependentUserUiState
 import com.example.passedpath.feature.care.presentation.mapper.toProtectedPersonPlaceListUiState
+import com.example.passedpath.feature.care.presentation.mapper.toProtectedPersonRouteMapUiState
 import com.example.passedpath.feature.care.presentation.mapper.toProtectedPersonSummaryContentUiState
 import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBottomSheetTab
 import com.example.passedpath.feature.care.presentation.state.CareUiState
 import com.example.passedpath.feature.care.presentation.state.CareInviteUiState
 import com.example.passedpath.feature.care.presentation.state.ProtectedPersonPlaceListUiState
+import com.example.passedpath.feature.care.presentation.state.ProtectedPersonRouteMapUiState
 import com.example.passedpath.feature.care.presentation.state.ProtectedPersonSummaryUiState
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import java.time.LocalDate
@@ -37,6 +41,7 @@ import kotlinx.coroutines.launch
 
 class CareViewModel(
     private val getCareDependentsUseCase: GetCareDependentsUseCase,
+    private val getProtectedPersonDayRouteUseCase: GetProtectedPersonDayRouteUseCase,
     private val getProtectedPersonVisitedPlacesUseCase: GetProtectedPersonVisitedPlacesUseCase,
     private val getProtectedPersonDaySummaryUseCase: GetProtectedPersonDaySummaryUseCase,
     private val createCareRelationshipInviteLinkUseCase: CreateCareRelationshipInviteLinkUseCase,
@@ -96,6 +101,19 @@ class CareViewModel(
                         dependents = dependents,
                         mapMarkers = mapMarkers,
                         selectedDependentUserId = retainedSelectedId,
+                        route = if (retainedSelectedId == null) {
+                            ProtectedPersonRouteMapUiState()
+                        } else {
+                            state.route
+                        },
+                        isRouteLoading = retainedSelectedId != null && state.isRouteLoading,
+                        hasRouteLoaded = retainedSelectedId != null && state.hasRouteLoaded,
+                        isRouteEmpty = retainedSelectedId != null && state.isRouteEmpty,
+                        routeErrorMessage = if (retainedSelectedId == null) {
+                            null
+                        } else {
+                            state.routeErrorMessage
+                        },
                         placeListUiState = if (retainedSelectedId == null) {
                             ProtectedPersonPlaceListUiState()
                         } else {
@@ -163,6 +181,11 @@ class CareViewModel(
                     requestedSheetValue = BaseBottomSheetValue.HIDDEN,
                     selectedPlaceId = null,
                     focusedPlaceId = null,
+                    route = ProtectedPersonRouteMapUiState(),
+                    isRouteLoading = false,
+                    hasRouteLoaded = false,
+                    isRouteEmpty = false,
+                    routeErrorMessage = null,
                     placeListUiState = ProtectedPersonPlaceListUiState(),
                     summaryUiState = ProtectedPersonSummaryUiState()
                 )
@@ -187,6 +210,19 @@ class CareViewModel(
                 requestedSheetValue = BaseBottomSheetValue.MIDDLE,
                 selectedPlaceId = null,
                 focusedPlaceId = null,
+                route = if (isSameDependent && state.hasRouteLoaded) {
+                    state.route
+                } else {
+                    ProtectedPersonRouteMapUiState(dateKey = dateKey)
+                },
+                isRouteLoading = !isSameDependent || !state.hasRouteLoaded,
+                hasRouteLoaded = isSameDependent && state.hasRouteLoaded,
+                isRouteEmpty = isSameDependent && state.hasRouteLoaded && state.isRouteEmpty,
+                routeErrorMessage = if (isSameDependent && state.hasRouteLoaded) {
+                    state.routeErrorMessage
+                } else {
+                    null
+                },
                 placeListUiState = if (isSameDependent && state.placeListUiState.hasLoaded) {
                     state.placeListUiState
                 } else {
@@ -203,6 +239,7 @@ class CareViewModel(
         }
 
         if (!isSameDependent ||
+            !currentState.hasRouteLoaded ||
             !currentState.placeListUiState.hasLoaded ||
             !currentState.summaryUiState.hasLoaded
         ) {
@@ -319,6 +356,15 @@ class CareViewModel(
         val state = _uiState.value
         val dependentUserId = state.selectedDependentUserId ?: return
         loadProtectedPersonPlaces(
+            dependentUserId = dependentUserId,
+            dateKey = state.selectedDateKey
+        )
+    }
+
+    fun retryProtectedPersonRoute() {
+        val state = _uiState.value
+        val dependentUserId = state.selectedDependentUserId ?: return
+        loadProtectedPersonRoute(
             dependentUserId = dependentUserId,
             dateKey = state.selectedDateKey
         )
@@ -453,6 +499,10 @@ class CareViewModel(
         dependentUserId: Long,
         dateKey: String
     ) {
+        loadProtectedPersonRoute(
+            dependentUserId = dependentUserId,
+            dateKey = dateKey
+        )
         loadProtectedPersonPlaces(
             dependentUserId = dependentUserId,
             dateKey = dateKey
@@ -461,6 +511,64 @@ class CareViewModel(
             dependentUserId = dependentUserId,
             dateKey = dateKey
         )
+    }
+
+    private fun loadProtectedPersonRoute(
+        dependentUserId: Long,
+        dateKey: String
+    ) {
+        viewModelScope.launch {
+            _uiState.update { state ->
+                if (!state.isCurrentDetailRequest(dependentUserId, dateKey)) {
+                    state
+                } else {
+                    state.copy(
+                        isRouteLoading = true,
+                        hasRouteLoaded = false,
+                        isRouteEmpty = false,
+                        routeErrorMessage = null
+                    )
+                }
+            }
+
+            val result = getProtectedPersonDayRouteUseCase(
+                dependentUserId = dependentUserId,
+                dateKey = dateKey
+            )
+
+            _uiState.update { state ->
+                if (!state.isCurrentDetailRequest(dependentUserId, dateKey)) {
+                    return@update state
+                }
+
+                when (result) {
+                    ProtectedPersonDayRouteResult.Empty -> state.copy(
+                        isRouteLoading = false,
+                        hasRouteLoaded = true,
+                        isRouteEmpty = true,
+                        routeErrorMessage = null
+                    )
+
+                    is ProtectedPersonDayRouteResult.Error -> state.copy(
+                        isRouteLoading = false,
+                        hasRouteLoaded = true,
+                        isRouteEmpty = false,
+                        routeErrorMessage = ProtectedPersonRouteLoadErrorMessage
+                    )
+
+                    is ProtectedPersonDayRouteResult.Success -> {
+                        val route = result.routeDetail.toProtectedPersonRouteMapUiState()
+                        state.copy(
+                            route = route,
+                            isRouteLoading = false,
+                            hasRouteLoaded = true,
+                            isRouteEmpty = route.mapPolylinePoints.isEmpty(),
+                            routeErrorMessage = null
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun loadProtectedPersonPlaces(
@@ -596,6 +704,8 @@ class CareViewModel(
 
     private companion object {
         const val CareDependentsLoadErrorMessage = "Failed to load care dependents"
+        const val ProtectedPersonRouteLoadErrorMessage =
+            "Failed to load protected person route"
         const val ProtectedPersonPlacesLoadErrorMessage =
             "Failed to load protected person places"
         const val ProtectedPersonSummaryLoadErrorMessage =
@@ -614,6 +724,8 @@ class CareViewModelFactory(
         if (modelClass.isAssignableFrom(CareViewModel::class.java)) {
             return CareViewModel(
                 getCareDependentsUseCase = appContainer.getCareDependentsUseCase,
+                getProtectedPersonDayRouteUseCase =
+                    appContainer.getProtectedPersonDayRouteUseCase,
                 getProtectedPersonVisitedPlacesUseCase =
                     appContainer.getProtectedPersonVisitedPlacesUseCase,
                 getProtectedPersonDaySummaryUseCase =

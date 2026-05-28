@@ -58,11 +58,6 @@ private val bottomNavItems = listOf(
         route = NavRoute.MAIN,
         labelResId = R.string.bottom_nav_main,
         iconResId = R.drawable.ic_bottom_nav_route
-    ),
-    BottomNavItem(
-        route = NavRoute.MYPAGE,
-        labelResId = R.string.bottom_nav_profile,
-        iconResId = R.drawable.ic_person
     )
 )
 
@@ -71,7 +66,7 @@ private object BottomBarTokens {
     val containerColor = Color.White
     val shadowColor = Color.Black.copy(alpha = 0.08f)
     val shadowHeight = 10.dp
-    const val itemWidthRatio = 0.267f
+    const val itemWidthRatio = 0.32f
     val iconSize = 24.dp
     val labelTextSize = 12.sp
     val selectedColor = Green500

@@ -22,7 +22,7 @@ fun CareRoute(
     refreshEventId: Int = 0,
     modifier: Modifier = Modifier,
     onNavigateToProtectedPersonRouteHistory: (Long, String) -> Unit = { _, _ -> },
-    onNavigateToProtectedPersonWeeklySummary: (Long) -> Unit = {},
+    onNavigateToProtectedPersonWeeklySummary: (Long, String) -> Unit = { _, _ -> },
     viewModel: CareViewModel = viewModel(
         factory = CareViewModelFactory(LocalContext.current.appContainer)
     )
@@ -60,9 +60,13 @@ fun CareRoute(
         onPlaceRetryClick = viewModel::retryProtectedPersonPlaces,
         onPlaceGuideBannerClose = viewModel::dismissProtectedPersonPlaceGuideBanner,
         onSummaryRetryClick = viewModel::retryProtectedPersonSummary,
+        onRouteRetryClick = viewModel::retryProtectedPersonRoute,
         onProtectedPersonWeeklySummaryClick = {
             uiState.selectedDependent?.let { dependent ->
-                onNavigateToProtectedPersonWeeklySummary(dependent.dependentUserId)
+                onNavigateToProtectedPersonWeeklySummary(
+                    dependent.dependentUserId,
+                    dependent.nickname
+                )
             }
         },
         onProtectedPersonPastRouteClick = {

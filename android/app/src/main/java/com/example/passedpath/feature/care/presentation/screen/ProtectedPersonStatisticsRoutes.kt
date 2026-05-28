@@ -37,6 +37,7 @@ import java.util.Locale
 @Composable
 fun ProtectedPersonWeeklySummaryRoute(
     dependentUserId: Long,
+    dependentNickname: String,
     onBackClick: () -> Unit,
     onMetricClick: (SummaryDetailMetric) -> Unit,
     modifier: Modifier = Modifier,
@@ -48,6 +49,10 @@ fun ProtectedPersonWeeklySummaryRoute(
     )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val highlightedTitlePrefix = dependentNickname.trim()
+        .takeIf(String::isNotEmpty)
+    val title = highlightedTitlePrefix
+        ?.let { nickname -> "$nickname\uC758 \uC8FC\uAC04 \uC694\uC57D" }
 
     LaunchedEffect(viewModel) {
         viewModel.loadWeeklySummary()
@@ -58,6 +63,8 @@ fun ProtectedPersonWeeklySummaryRoute(
         onBackClick = onBackClick,
         onRetryClick = { viewModel.loadWeeklySummary(forceRefresh = true) },
         onMetricClick = onMetricClick,
+        title = title,
+        highlightedTitlePrefix = highlightedTitlePrefix,
         modifier = modifier
     )
 }
