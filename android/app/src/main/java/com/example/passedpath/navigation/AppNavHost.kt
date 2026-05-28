@@ -47,7 +47,6 @@ import com.example.passedpath.feature.main.presentation.screen.CalendarDateSelec
 import com.example.passedpath.feature.main.presentation.screen.MainRoute
 import com.example.passedpath.feature.main.presentation.screen.PlaceBookmarkChangedEvent
 import com.example.passedpath.feature.main.presentation.screen.PlaceCreatedEvent
-import com.example.passedpath.feature.mypage.presentation.screen.MyPageRoute
 import com.example.passedpath.feature.permission.presentation.screen.LocationPermissionIntroRoute
 import com.example.passedpath.feature.place.domain.model.PlaceSearchResult
 import com.example.passedpath.feature.place.presentation.screen.AddPlaceScreen
@@ -321,9 +320,12 @@ private fun AppNavigationGraph(
                             )
                         )
                     },
-                    onNavigateToProtectedPersonWeeklySummary = { dependentUserId ->
+                    onNavigateToProtectedPersonWeeklySummary = { dependentUserId, nickname ->
                         navController.navigate(
-                            NavRoute.careWeeklySummary(dependentUserId = dependentUserId)
+                            NavRoute.careWeeklySummary(
+                                dependentUserId = dependentUserId,
+                                nickname = nickname
+                            )
                         )
                     },
                     modifier = modifier
@@ -336,6 +338,10 @@ private fun AppNavigationGraph(
             arguments = listOf(
                 navArgument(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID) {
                     type = NavType.LongType
+                },
+                navArgument(NavRoute.CARE_WEEKLY_SUMMARY_NICKNAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
                 }
             ),
             enterTransition = { placeSearchEnterTransition() },
@@ -344,9 +350,13 @@ private fun AppNavigationGraph(
             val dependentUserId = backStackEntry.arguments
                 ?.getLong(NavRoute.CARE_WEEKLY_SUMMARY_DEPENDENT_USER_ID)
                 ?: return@composable
+            val nickname = backStackEntry.arguments
+                ?.getString(NavRoute.CARE_WEEKLY_SUMMARY_NICKNAME)
+                .orEmpty()
 
             ProtectedPersonWeeklySummaryRoute(
                 dependentUserId = dependentUserId,
+                dependentNickname = nickname,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -695,13 +705,12 @@ private fun AppNavigationGraph(
         }
 
         composable(NavRoute.MYPAGE) {
-            BottomBarScaffold(
-                navController = navController,
-                selectedRoute = NavRoute.MYPAGE,
-                onBottomBarReselected = onBottomBarReselected
-            ) { modifier ->
-                Box(modifier = modifier) {
-                    MyPageRoute()
+            LaunchedEffect(Unit) {
+                navController.navigate(NavRoute.MAIN) {
+                    popUpTo(NavRoute.MYPAGE) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
                 }
             }
         }

@@ -52,8 +52,7 @@ sealed interface MainRouteModeUiState {
         override val isRouteLoading: Boolean = false,
         override val isRouteEmpty: Boolean = false,
         override val routeEmptyMessage: String? = null,
-        override val routeErrorMessage: String? = null,
-        val isPlaybackEntryVisible: Boolean = true
+        override val routeErrorMessage: String? = null
     ) : MainRouteModeUiState
 }
 
@@ -61,5 +60,4 @@ sealed interface RouteUiAction {
     data object RefreshTodayRoute : RouteUiAction
     data object ToggleTracking : RouteUiAction
     data object RetryPastRoute : RouteUiAction
-    data object EnterPastPlayback : RouteUiAction
 }

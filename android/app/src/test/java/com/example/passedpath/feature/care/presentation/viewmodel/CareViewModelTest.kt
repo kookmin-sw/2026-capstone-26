@@ -5,20 +5,27 @@ import com.example.passedpath.feature.care.domain.model.CareDependentUser
 import com.example.passedpath.feature.care.domain.model.CareDependentUserList
 import com.example.passedpath.feature.care.domain.model.CareLatestGpsPoint
 import com.example.passedpath.feature.care.domain.model.CareRelationshipInviteLink
+import com.example.passedpath.feature.care.domain.model.ProtectedPersonDayRouteDetail
+import com.example.passedpath.feature.care.domain.model.ProtectedPersonDayRouteList
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonDaySummary
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonPlaceSourceType
+import com.example.passedpath.feature.care.domain.model.ProtectedPersonRoutePoint
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlace
 import com.example.passedpath.feature.care.domain.model.ProtectedPersonVisitedPlaceList
 import com.example.passedpath.feature.care.domain.repository.CareDependentLocationStreamRepository
 import com.example.passedpath.feature.care.domain.repository.CareDependentRepository
 import com.example.passedpath.feature.care.domain.repository.CareGuideRepository
 import com.example.passedpath.feature.care.domain.repository.CareRelationshipInviteRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteListResult
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteRepository
+import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDayRouteResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonDaySummaryResult
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceRepository
 import com.example.passedpath.feature.care.domain.repository.ProtectedPersonVisitedPlaceResult
 import com.example.passedpath.feature.care.domain.usecase.CreateCareRelationshipInviteLinkUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetCareDependentsUseCase
+import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDayRouteUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonDaySummaryUseCase
 import com.example.passedpath.feature.care.domain.usecase.GetProtectedPersonVisitedPlacesUseCase
 import com.example.passedpath.feature.care.domain.usecase.ObserveCareDependentLocationStreamUseCase
@@ -125,6 +132,8 @@ class CareViewModelTest {
         val state = viewModel.uiState.value
         assertNull(state.selectedDependentUserId)
         assertEquals(BaseBottomSheetValue.HIDDEN, state.requestedSheetValue)
+        assertFalse(state.hasRouteLoaded)
+        assertTrue(state.route.mapPolylinePoints.isEmpty())
         assertTrue(state.placeListUiState.places.isEmpty())
     }
 
@@ -154,7 +163,10 @@ class CareViewModelTest {
     }
 
     @Test
-    fun `selectDependent loads today places and summary`() = runTest {
+    fun `selectDependent loads today route places and summary`() = runTest {
+        val routeRepository = FakeProtectedPersonDayRouteRepository(
+            result = ProtectedPersonDayRouteResult.Success(routeDetail())
+        )
         val placeRepository = FakeProtectedPersonVisitedPlaceRepository(
             result = ProtectedPersonVisitedPlaceResult.Success(
                 ProtectedPersonVisitedPlaceList(
@@ -170,6 +182,7 @@ class CareViewModelTest {
             result = ProtectedPersonDaySummaryResult.Success(daySummary())
         )
         val viewModel = createLoadedViewModel(
+            routeRepository = routeRepository,
             placeRepository = placeRepository,
             summaryRepository = summaryRepository
         )
@@ -181,11 +194,54 @@ class CareViewModelTest {
         assertEquals(7L, state.selectedDependentUserId)
         assertEquals("2026-05-18", state.selectedDateKey)
         assertEquals(BaseBottomSheetValue.MIDDLE, state.requestedSheetValue)
+        assertTrue(state.hasRouteLoaded)
+        assertFalse(state.isRouteEmpty)
+        assertEquals(2, state.route.mapPolylinePoints.size)
         assertEquals(listOf(1L, 2L), state.placeListUiState.places.map { it.placeId })
         assertEquals(listOf(1, 2), state.visitedPlaceMarkers.map { it.displayOrderIndex })
         assertEquals("09:12", state.summaryUiState.summary.outingTimeText)
+        assertEquals(listOf(7L to "2026-05-18"), routeRepository.detailRequests)
         assertEquals(listOf(7L to "2026-05-18"), placeRepository.requests)
         assertEquals(listOf(7L to "2026-05-18"), summaryRepository.requests)
+    }
+
+    @Test
+    fun `selectDependent handles route empty without clearing places or summary`() = runTest {
+        val viewModel = createLoadedViewModel(
+            routeRepository = FakeProtectedPersonDayRouteRepository(
+                result = ProtectedPersonDayRouteResult.Empty
+            )
+        )
+
+        viewModel.selectDependent(7L)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.hasRouteLoaded)
+        assertTrue(state.isRouteEmpty)
+        assertNull(state.routeErrorMessage)
+        assertTrue(state.placeListUiState.hasLoaded)
+        assertTrue(state.summaryUiState.hasLoaded)
+    }
+
+    @Test
+    fun `route error preserves selected details and exposes route error only`() = runTest {
+        val viewModel = createLoadedViewModel(
+            routeRepository = FakeProtectedPersonDayRouteRepository(
+                result = ProtectedPersonDayRouteResult.Error(
+                    IllegalStateException("route failed")
+                )
+            )
+        )
+
+        viewModel.selectDependent(7L)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.hasRouteLoaded)
+        assertNotNull(state.routeErrorMessage)
+        assertTrue(state.placeListUiState.hasLoaded)
+        assertTrue(state.summaryUiState.hasLoaded)
     }
 
     @Test
@@ -538,6 +594,8 @@ class CareViewModelTest {
     }
 
     private fun TestScope.createLoadedViewModel(
+        routeRepository: ProtectedPersonDayRouteRepository =
+            FakeProtectedPersonDayRouteRepository(),
         placeRepository: ProtectedPersonVisitedPlaceRepository =
             FakeProtectedPersonVisitedPlaceRepository(),
         summaryRepository: ProtectedPersonDaySummaryRepository =
@@ -555,6 +613,7 @@ class CareViewModelTest {
                     dependentUsers = listOf(dependentUser(dependentUserId = 7L))
                 )
             ),
+            routeRepository = routeRepository,
             placeRepository = placeRepository,
             summaryRepository = summaryRepository,
             inviteRepository = inviteRepository,
@@ -567,6 +626,8 @@ class CareViewModelTest {
 
     private fun createViewModel(
         dependentRepository: CareDependentRepository,
+        routeRepository: ProtectedPersonDayRouteRepository =
+            FakeProtectedPersonDayRouteRepository(),
         placeRepository: ProtectedPersonVisitedPlaceRepository =
             FakeProtectedPersonVisitedPlaceRepository(),
         summaryRepository: ProtectedPersonDaySummaryRepository =
@@ -579,6 +640,8 @@ class CareViewModelTest {
     ): CareViewModel {
         return CareViewModel(
             getCareDependentsUseCase = GetCareDependentsUseCase(dependentRepository),
+            getProtectedPersonDayRouteUseCase =
+                GetProtectedPersonDayRouteUseCase(routeRepository),
             getProtectedPersonVisitedPlacesUseCase =
                 GetProtectedPersonVisitedPlacesUseCase(placeRepository),
             getProtectedPersonDaySummaryUseCase =
@@ -618,6 +681,36 @@ class CareViewModelTest {
         override suspend fun getDependents(): CareDependentUserList {
             requestCount++
             throwable?.let { throw it }
+            return result
+        }
+    }
+
+    private class FakeProtectedPersonDayRouteRepository(
+        private val result: ProtectedPersonDayRouteResult =
+            ProtectedPersonDayRouteResult.Success(routeDetail())
+    ) : ProtectedPersonDayRouteRepository {
+        val detailRequests = mutableListOf<Pair<Long, String>>()
+
+        override suspend fun fetchDayRoutes(
+            dependentUserId: Long,
+            cursorDate: String?,
+            size: Int?
+        ): ProtectedPersonDayRouteListResult {
+            return ProtectedPersonDayRouteListResult.Success(
+                ProtectedPersonDayRouteList(
+                    dayRouteCount = 0,
+                    hasNext = false,
+                    nextCursorDate = null,
+                    dayRoutes = emptyList()
+                )
+            )
+        }
+
+        override suspend fun fetchDayRoute(
+            dependentUserId: Long,
+            dateKey: String
+        ): ProtectedPersonDayRouteResult {
+            detailRequests += dependentUserId to dateKey
             return result
         }
     }
@@ -726,6 +819,30 @@ private fun latestGpsPoint(
         longitude = longitude,
         recordedAt = recordedAt,
         recordedAtEpochMillis = 1_746_925_200_000L
+    )
+}
+
+private fun routeDetail(): ProtectedPersonDayRouteDetail {
+    return ProtectedPersonDayRouteDetail(
+        dateKey = "2026-05-18",
+        totalDistanceKm = 3.4,
+        pathPointCount = 2,
+        routePoints = listOf(
+            routePoint(latitude = 37.5665, longitude = 126.978),
+            routePoint(latitude = 37.5765, longitude = 126.988)
+        )
+    )
+}
+
+private fun routePoint(
+    latitude: Double,
+    longitude: Double
+): ProtectedPersonRoutePoint {
+    return ProtectedPersonRoutePoint(
+        recordedAt = "2026-05-18T09:00:00+09:00",
+        recordedAtEpochMillis = null,
+        latitude = latitude,
+        longitude = longitude
     )
 }
 

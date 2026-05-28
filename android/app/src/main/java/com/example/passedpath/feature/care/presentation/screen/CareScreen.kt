@@ -44,22 +44,26 @@ import com.example.passedpath.feature.care.presentation.model.ProtectedPersonBot
 import com.example.passedpath.feature.care.presentation.state.CareDependentMapMarkerUiState
 import com.example.passedpath.feature.care.presentation.state.CareUiState
 import com.example.passedpath.feature.care.presentation.state.CareVisitedPlaceMarkerUiState
+import com.example.passedpath.feature.route.presentation.screen.RouteMapContent
 import com.example.passedpath.ui.component.bottomsheet.BaseAnchoredBottomSheetScaffold
 import com.example.passedpath.ui.component.bottomsheet.BaseBottomSheetValue
 import com.example.passedpath.ui.component.feedback.MapOverlayNetworkFailureDialog
 import com.example.passedpath.ui.component.floating.FloatingButtonColumn
 import com.example.passedpath.ui.component.floating.FloatingCircleIconButton
 import com.example.passedpath.ui.component.modal.PassedPathBottomModal
+import com.example.passedpath.ui.state.CoordinateUiState
 import com.example.passedpath.ui.theme.Black
 import com.example.passedpath.ui.theme.Gray500
 import com.example.passedpath.ui.theme.Green100
 import com.example.passedpath.ui.theme.Green50
+import com.example.passedpath.ui.theme.Green500
 import com.example.passedpath.ui.theme.Green700
 import com.example.passedpath.ui.theme.PassedPathTheme
 import com.example.passedpath.ui.theme.White
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -86,6 +90,7 @@ fun CareScreen(
     onPlaceRetryClick: () -> Unit,
     onPlaceGuideBannerClose: () -> Unit,
     onSummaryRetryClick: () -> Unit,
+    onRouteRetryClick: () -> Unit,
     onProtectedPersonWeeklySummaryClick: () -> Unit,
     onProtectedPersonPastRouteClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
@@ -115,7 +120,8 @@ fun CareScreen(
                     onProtectedPersonWeeklySummaryClick = onProtectedPersonWeeklySummaryClick,
                     onProtectedPersonPastRouteClick = onProtectedPersonPastRouteClick,
                     onLocationStreamRetryClick = onLocationStreamRetryClick,
-                    onLocationStreamErrorDismiss = onLocationStreamErrorDismiss
+                    onLocationStreamErrorDismiss = onLocationStreamErrorDismiss,
+                    onRouteRetryClick = onRouteRetryClick
                 )
             },
             sheet = { sheetModifier ->
@@ -168,6 +174,7 @@ private fun CareMapContent(
     onProtectedPersonPastRouteClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
+    onRouteRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -187,12 +194,28 @@ private fun CareMapContent(
     } else {
         uiState.visitedPlaceMarkers
     }
+    val routePoints = if (uiState.selectedDependentUserId == null) {
+        emptyList()
+    } else {
+        uiState.route.mapPolylinePoints.map(CoordinateUiState::toLatLng)
+    }
     val initialCameraTarget = markerDependents.firstOrNull()?.toLatLng() ?: SeoulFallbackLatLng
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(initialCameraTarget, InitialCareMapZoom)
     }
     val coroutineScope = rememberCoroutineScope()
     var isMapLoaded by remember { mutableStateOf(false) }
+    var fittedRouteKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val routeFitKey = routePoints.toCareRouteFitKey(
+        dependentUserId = uiState.selectedDependentUserId,
+        dateKey = uiState.selectedDateKey
+    )
+
+    LaunchedEffect(uiState.selectedDependentUserId) {
+        if (uiState.selectedDependentUserId == null) {
+            fittedRouteKey = null
+        }
+    }
 
     LaunchedEffect(isMapLoaded, uiState.selectedDependentUserId, uiState.hasLoaded) {
         if (!isMapLoaded) return@LaunchedEffect
@@ -212,6 +235,17 @@ private fun CareMapContent(
         cameraPositionState.animate(
             CameraUpdateFactory.newLatLngZoom(targetDependent.toLatLng(), zoom)
         )
+    }
+
+    LaunchedEffect(isMapLoaded, routeFitKey, uiState.isRouteLoading) {
+        if (!isMapLoaded || uiState.isRouteLoading) return@LaunchedEffect
+        if (uiState.selectedDependentUserId == null || routePoints.isEmpty()) {
+            return@LaunchedEffect
+        }
+        if (fittedRouteKey == routeFitKey) return@LaunchedEffect
+
+        cameraPositionState.animate(createCareRouteCameraUpdate(routePoints))
+        fittedRouteKey = routeFitKey
     }
 
     LaunchedEffect(isMapLoaded, uiState.focusedPlaceId, visitedPlaceMarkers) {
@@ -241,6 +275,12 @@ private fun CareMapContent(
             onMapLoaded = { isMapLoaded = true },
             onMapClick = { onMapClick() }
         ) {
+            RouteMapContent(
+                routePoints = routePoints,
+                markerPlaces = emptyList(),
+                routeAccentColor = Green500
+            )
+
             markerDependents.forEachIndexed { index, dependent ->
                 CareDependentMarker(
                     dependent = dependent,
@@ -290,6 +330,7 @@ private fun CareMapContent(
             onRetryClick = onRetryClick,
             onLocationStreamRetryClick = onLocationStreamRetryClick,
             onLocationStreamErrorDismiss = onLocationStreamErrorDismiss,
+            onRouteRetryClick = onRouteRetryClick,
             avoidTopStartFloatingActions = uiState.selectedDependentUserId != null,
             modifier = Modifier.align(Alignment.TopCenter)
         )
@@ -426,6 +467,7 @@ private fun CareMapStatusOverlay(
     onRetryClick: () -> Unit,
     onLocationStreamRetryClick: () -> Unit,
     onLocationStreamErrorDismiss: () -> Unit,
+    onRouteRetryClick: () -> Unit,
     avoidTopStartFloatingActions: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -478,6 +520,10 @@ private fun CareMapStatusOverlay(
             )
         }
 
+        if (uiState.routeErrorMessage != null) {
+            CareRouteFailureBanner(onRetryClick = onRouteRetryClick)
+        }
+
         when {
             uiState.hasLoaded && uiState.dependents.isEmpty() && !uiState.isLoading -> {
                 CareEmptyDependentsBanner()
@@ -495,6 +541,41 @@ private fun CareMapStatusOverlay(
                 onRetryClick()
             }
         )
+    }
+}
+
+@Composable
+private fun CareRouteFailureBanner(
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = Green50,
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, Green100),
+        shadowElevation = 6.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.care_route_error),
+                modifier = Modifier.weight(1f),
+                color = Gray500,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+            TextButton(onClick = onRetryClick) {
+                Text(
+                    text = stringResource(R.string.route_retry),
+                    color = Green700,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
@@ -587,6 +668,37 @@ private fun CareVisitedPlaceMarkerUiState.toLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }
 
+private fun CoordinateUiState.toLatLng(): LatLng {
+    return LatLng(latitude, longitude)
+}
+
+private fun List<LatLng>.toCareRouteFitKey(
+    dependentUserId: Long?,
+    dateKey: String
+): String {
+    val first = firstOrNull()
+    val last = lastOrNull()
+    return "$dependentUserId:$dateKey:$size:" +
+        "${first?.latitude}:${first?.longitude}:${last?.latitude}:${last?.longitude}"
+}
+
+private fun createCareRouteCameraUpdate(routePoints: List<LatLng>) =
+    when {
+        routePoints.size == 1 -> CameraUpdateFactory.newLatLngZoom(
+            routePoints.first(),
+            SelectedCareMapZoom
+        )
+
+        else -> {
+            val boundsBuilder = LatLngBounds.builder()
+            routePoints.forEach(boundsBuilder::include)
+            CameraUpdateFactory.newLatLngBounds(
+                boundsBuilder.build(),
+                CareRouteBoundsPaddingPx
+            )
+        }
+    }
+
 private val SeoulFallbackLatLng = LatLng(37.5662952, 126.9779451)
 private val CareStatusTopPadding = 128.dp
 private val CareProtectedPersonFloatingActionsHeight = 92.dp
@@ -596,3 +708,4 @@ private const val FocusedPlaceMapZoom = 17f
 private const val DependentMarkerZIndex = 0f
 private const val SelectedDependentMarkerZIndex = 1f
 private const val VisitedPlaceMarkerZIndex = 2f
+private const val CareRouteBoundsPaddingPx = 160

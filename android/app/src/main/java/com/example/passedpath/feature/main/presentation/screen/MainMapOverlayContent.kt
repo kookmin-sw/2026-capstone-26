@@ -21,7 +21,6 @@ import com.example.passedpath.R
 import com.example.passedpath.feature.main.presentation.component.MainMoreActionSheet
 import com.example.passedpath.feature.main.presentation.state.MainUiState
 import com.example.passedpath.feature.route.presentation.screen.RouteStatusOverlay
-import com.example.passedpath.feature.route.presentation.screen.RouteTopCenterControls
 import com.example.passedpath.feature.route.presentation.screen.RouteTopEndControls
 import com.example.passedpath.feature.route.presentation.state.MainRouteModeUiState
 import com.example.passedpath.feature.route.presentation.state.RouteUiAction
@@ -152,12 +151,6 @@ internal fun BoxScope.MainMapOverlayContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        if (routeErrorMessage == null) {
-            RouteTopCenterControls(
-                routeMode = routeModeUiState,
-                onRouteAction = onRouteAction
-            )
-        }
         if (BuildConfig.DEBUG && isDebugPanelVisible) {
             MainDebugPanel(
                 debugUiState = uiState.debugUiState,
