@@ -4,6 +4,7 @@ import backend.capstone.auth.dto.KakaoLoginRequest;
 import backend.capstone.auth.dto.LoginResponse;
 import backend.capstone.auth.dto.TokenPair;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -53,5 +54,14 @@ public interface AuthControllerSpec {
             """
     )
     TokenPair issueHyewonJwt();
+
+    @Operation(
+        summary = "일반 사용자 계정용 토큰 발급",
+        description = """
+            userId에 해당하는 사용자의 액세스 토큰과 리프레시 토큰을 발급합니다.<br>
+            테스트용으로만 사용해주세요.
+            """
+    )
+    TokenPair issueGeneralUserJwt(@Parameter(name = "userId", example = "24", required = true) Long userId);
 
 }

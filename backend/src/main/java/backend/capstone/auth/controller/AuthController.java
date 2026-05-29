@@ -52,7 +52,8 @@ public class AuthController implements AuthControllerSpec {
         return authService.testIssue(2L);
     }
 
-    @GetMapping("/general-user-token/issue")
+    @Override
+    @GetMapping("/general-user-token/{userId}/issue")
     public TokenPair issueGeneralUserJwt(@PathVariable("userId") Long userId) {
         return authService.testIssue(userId);
     }
