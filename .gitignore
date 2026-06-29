@@ -59,6 +59,8 @@ backend/build/
 backend/out/
 backend/target/
 backend/node_modules/
+backend/AGENTS.md
+backend/.claude
 
 # Keep placeholder
 !backend/.gitkeep
