@@ -1,0 +1,10 @@
+{
+  "plansDirectory": "./.claude/plans/",
+  "outputStyle": "Explanatory",
+  "permissions": {
+    "defaultMode": "plan"
+  },
+  "deny": [
+    "Read(./.env.*)"
+  ]
+}
