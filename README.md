@@ -70,3 +70,66 @@
 </div>
 
 <br>
+
+## 실행 방법
+
+### 사전 요구사항
+
+- Docker
+- MySQL (기본 포트 `3306`, `capstone` 데이터베이스)
+- Redis (기본 포트 `6379`)
+- Android Studio + Android SDK (API 36), 에뮬레이터 또는 실기기 (API 24 이상)
+
+### 1. 백엔드 실행 (Docker)
+
+```bash
+cd backend
+```
+
+`backend/.env.local` 파일을 생성하고 아래 항목을 채워 넣습니다. (실제 값은 팀 내부에서 별도로 공유받으세요)
+
+```
+DB_URL=jdbc:mysql://<DB_HOST>:3306/capstone
+DB_USERNAME=
+DB_PASSWORD=
+JWT_SECRET=
+REDIS_HOST=
+REDIS_PORT=6379
+KAKAO_REST_API_KEY=
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
+DDL_AUTO=update
+```
+
+Docker 이미지를 빌드하고 컨테이너를 실행합니다.
+
+```bash
+docker build -t capstone-backend .
+docker run -d --name capstone -p 8080:8080 --env-file .env.local capstone-backend
+```
+
+실행 후 아래 주소에서 API 문서를 확인할 수 있습니다.
+
+- Swagger UI: http://localhost:8080/swagger-ui.html
+
+### 2. Android 앱 실행
+
+`android` 디렉토리의 `local.properties.example`을 참고하여 `android/local.properties` 파일을 생성합니다.
+
+```properties
+sdk.dir=<Android SDK 경로>
+kakao.nativeAppKey=<Kakao Native App Key>
+app.baseUrl=<백엔드 서버 주소, 예: http://<PC-IP>:8080/>
+google.mapsApiKey=<Google Maps API Key>
+```
+
+> 실기기 또는 에뮬레이터에서 로컬 백엔드와 통신하려면 `app.baseUrl`을 `localhost`가 아닌 PC의 IP 주소로 설정해야 합니다.
+
+Android Studio로 `android` 디렉토리를 열어 실행하거나, CLI로 아래 명령을 사용합니다.
+
+```bash
+cd android
+./gradlew installDebug
+```
+
+<br>
